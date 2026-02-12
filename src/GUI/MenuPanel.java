@@ -10,26 +10,21 @@ import Control.Event;
 
 public class MenuPanel extends JPanel {
     private MainFrame mainFrame;
+    private PanelDecorator decorator;
+    private HeaderPanel headerPanel;
     private List<JButton> allOptionButtons = new ArrayList<>();
-    public MenuPanel(MainFrame mainFrame){
+    public MenuPanel(MainFrame mainFrame, PanelDecorator decorator, Event event){
         this.mainFrame = mainFrame;
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        setBackground(Colors.getBackgroundColor());
+        setBackground(Colors.bg());
         setMinimumSize(new Dimension(550, 500));
-        JLabel prompt = new JLabel("Choose what you would like to do:");
-        prompt.setHorizontalAlignment(SwingConstants.CENTER);
-        prompt.setFont(Fonts.getHeaderFont());
-        prompt.setForeground(Colors.getHeaderColor());
-        JPanel header = new JPanel(new GridLayout(2,1));
-        header.add(prompt);
-        header.setBackground(Colors.getBackgroundColor());
-        add(header);
+        this.headerPanel = new HeaderPanel(decorator, event);
         setOpaque(true);
 
         getButtons();
 
         JPanel menuButtons = new JPanel();
-        menuButtons.setBackground(Colors.getButtonBackgroundColor());
+        menuButtons.setBackground(Colors.button());
         menuButtons.setOpaque(true);
         menuButtons.setLayout(new BoxLayout(menuButtons, BoxLayout.Y_AXIS));
         menuButtons.setPreferredSize(new Dimension(300, allOptionButtons.size() * 60));
@@ -38,22 +33,22 @@ public class MenuPanel extends JPanel {
 
         for (JButton button : allOptionButtons){
             button.setFont(Fonts.getButtonFont());
-            button.setBackground(Colors.getButtonBackgroundColor());
-            button.setForeground(Colors.getButtonTextColor());
+            button.setBackground(Colors.button());
+            button.setForeground(Colors.text());
             button.setPreferredSize(new Dimension(300, 45) );
             button.setMinimumSize(new Dimension(300, 45));
             button.setMinimumSize(new Dimension(300, 45));
             button.add(Box.createHorizontalStrut(300));
             button.setAlignmentX(Component.CENTER_ALIGNMENT);
-            button.setBorder(BorderFactory.createLineBorder(Colors.getBorderColor(), 5, true));
+            button.setBorder(BorderFactory.createLineBorder(Colors.border(), 5, true));
 //
             menuButtons.add(Box.createVerticalStrut(5));
             menuButtons.add(button);
             menuButtons.add(Box.createVerticalStrut(5));
-            menuButtons.setBorder(BorderFactory.createLineBorder(Colors.getButtonBackgroundColor(), 10, true));
+            menuButtons.setBorder(BorderFactory.createLineBorder(Colors.border(), 10, true));
         }
         JPanel buttonPanel = new JPanel();
-        buttonPanel.setBackground(Colors.getBackgroundColor());
+        buttonPanel.setBackground(Colors.panel());
         buttonPanel.setOpaque(true);
         buttonPanel.setPreferredSize(menuButtons.getPreferredSize());
         buttonPanel.setMaximumSize(menuButtons.getMaximumSize());

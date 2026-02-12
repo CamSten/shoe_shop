@@ -31,6 +31,7 @@ public class Event {
         CREATE_ACCOUNT,
         CHOOSE_TYPE,
         SEARCH,
+        PURCHASE,
         VIEW
     }
     public enum Subject {
@@ -109,14 +110,14 @@ public class Event {
                 null
         );
     }
-    public static Event chooseType(Subject subject) {
+    public static Event chooseType(Subject subject, Object data) {
         return new Event(
                 Phase.COMPLETE,
                 Action.CHOOSE_TYPE,
                 subject,
                 Origin.GUI,
                 Outcome.OK,
-                null,
+                data,
                 null
         );
     }

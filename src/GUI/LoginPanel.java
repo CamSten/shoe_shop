@@ -25,36 +25,36 @@ public class LoginPanel extends JPanel {
     private JLabel streetAddressLabel;
     private JLabel cityLabel;
     private JLabel emailLabel;
-    private final Color backgroundColor = Color.darkGray;
 
     public LoginPanel(ApplicationManager manager, PanelDecorator decorator){
         this.manager = manager;
         this.decorator = decorator;
         this.centerPanel = new JPanel();
-        centerPanel.setBackground(backgroundColor);
-        setBackground(backgroundColor);
+        centerPanel.setBackground(Colors.bg());
+        setBackground(Colors.bg());
         showLoginPanel();
     }
     private void showLoginPanel(){
         JLabel welcomeLabel = new JLabel("Welcome!");
         welcomeLabel.setFont(Fonts.getHeaderFont());
-        welcomeLabel.setForeground(Colors.getHeaderColor());
+        welcomeLabel.setForeground(Colors.accent());
+        welcomeLabel.setBackground(Colors.bg());
         this.emailLabel = new JLabel("Enter email:");
-        emailLabel.setForeground(Colors.getHeaderColor());
+        emailLabel.setForeground(Colors.text());
         emailLabel.setFont(Fonts.getInputPromptFont());
         this.emailField = new JTextField();
-        emailField.setForeground(Colors.getHeaderColor());
+        emailField.setForeground(Colors.text());
         emailField.setFont(Fonts.getInputPromptFont());
         this.passwordLabel = new JLabel("Enter password:");
-        passwordLabel.setForeground(Colors.getHeaderColor());
+        passwordLabel.setForeground(Colors.text());
         passwordLabel.setFont(Fonts.getInputPromptFont());
         this.passwordField = new JPasswordField(20);
-        passwordField.setForeground(Colors.getHeaderColor());
+        passwordField.setForeground(Colors.text());
 
         JPanel inputFields = new JPanel(new GridLayout(2, 2));
-        inputFields.setBackground(backgroundColor);
+        inputFields.setBackground(Colors.bg());
         inputFields.setBorder(
-                BorderFactory.createLineBorder(Colors.getHeaderColor(), 4, true));
+                BorderFactory.createLineBorder(Colors.accent(), 4, true));
         inputFields.setPreferredSize(new Dimension(400, 80));
         inputFields.setMinimumSize(new Dimension(400, 80));
         inputFields.setMaximumSize(new Dimension(400, 80));
@@ -64,7 +64,7 @@ public class LoginPanel extends JPanel {
         inputFields.add(passwordField);
 
         JButton loginButton = new JButton("Log in");
-        loginButton.setForeground(Colors.getHeaderColor());
+        loginButton.setForeground(Colors.accent());
         loginButton.setFont(Fonts.getTextFont());
         loginButton.addActionListener(_ -> {
             String emailInput = emailField.getText().trim();
@@ -83,11 +83,11 @@ public class LoginPanel extends JPanel {
 
         JPanel inputPanel = new JPanel();
         inputPanel.setLayout(new BoxLayout(inputPanel, BoxLayout.Y_AXIS));
-        inputPanel.setBackground(backgroundColor);
+        inputPanel.setBackground(Colors.bg());
         inputPanel.add(inputFields);
         inputPanel.add(loginButton);
         JButton newUserButton = new JButton("Create account");
-        newUserButton.setForeground(Colors.getHeaderColor());
+            newUserButton.setForeground(Colors.accent());
         newUserButton.setFont(Fonts.getTextFont());
         newUserButton.addActionListener(_ -> createNewAccount());
         centerPanel.setLayout(new BorderLayout());
@@ -130,14 +130,14 @@ public class LoginPanel extends JPanel {
     public void createNewAccount(){
         JLabel prompt = new JLabel("Create a new account: ");
         prompt.setFont(Fonts.getTextFont());
-        prompt.setForeground(Colors.getHeaderColor());
+        prompt.setForeground(Colors.accent());
         String email = emailField.getText();
         centerPanel.removeAll();
         JPanel inputPanel = getInputPanel();
         emailField.setText(email);
         JButton createAccount = new JButton("Save");
         createAccount.setFont(Fonts.getTextFont());
-        createAccount.setForeground(Colors.getHeaderColor());
+        createAccount.setForeground(Colors.accent());
         createAccount.addActionListener(_ -> {
             String firstNameInput = firstnameField.getText().trim();
             String surnameInput = surnameField.getText().trim();
@@ -161,7 +161,7 @@ public class LoginPanel extends JPanel {
 
         inputPanel.add(createAccount);
         JButton returnButton = new JButton("Cancel");
-        returnButton.setForeground(Colors.getHeaderColor());
+        returnButton.setForeground(Colors.accent());
         returnButton.setFont(Fonts.getTextFont());
         returnButton.addActionListener(_ -> {
             centerPanel.removeAll();
@@ -178,15 +178,15 @@ public class LoginPanel extends JPanel {
         JPanel inputPanel = new JPanel();
         inputPanel.setLayout(new BoxLayout(inputPanel, BoxLayout.Y_AXIS));
         decorator.adjustInputPanel(inputPanel);
-        inputPanel.setBackground(backgroundColor);
-        inputPanel.setBorder(BorderFactory.createLineBorder(Colors.getBorderColor(), 5, true));
+        inputPanel.setBackground(Colors.panel());
+        inputPanel.setBorder(BorderFactory.createLineBorder(Colors.border(), 5, true));
         List<JTextField> allInputFields = getAllInputFields();
         List<JLabel> allLabels = getAllInputLabels();
         for (int i = 0; i < allLabels.size(); i++){
             JPanel singleInput = new JPanel(new GridLayout(1, 2));
             singleInput.add(allLabels.get(i));
             singleInput.add(allInputFields.get(i));
-            singleInput.setBorder(BorderFactory.createLineBorder(Colors.getBorderColor(), 5, true));
+            singleInput.setBorder(BorderFactory.createLineBorder(Colors.border(), 5, true));
             inputPanel.add(singleInput);
         }
         return inputPanel;

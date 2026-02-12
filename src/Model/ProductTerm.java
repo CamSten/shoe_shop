@@ -1,7 +1,7 @@
 package Model;
 
 public enum ProductTerm {
-    Name("'name'"), Brand("'brand'"), Color("'color'"), Size("'size'"), None ("'None'");
+    Category("category"), Name("name"), Brand("brand"), Color("color"), Size("size"), None ("None");
     private final String productTerm;
     ProductTerm(String productTerm){
         this.productTerm = productTerm;

@@ -1,6 +1,8 @@
 package GUI;
 
 import Control.Event;
+import Model.ProductTerm;
+
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
@@ -22,62 +24,52 @@ public class HeaderPanel extends JPanel {
     private int counter;
 
     public HeaderPanel(PanelDecorator decorator, Control.Event event){
+        System.out.println("HeaderPanel constructor is reached");
+        if (event.getExtraContents() != null){
+            System.out.println("extracontents instance of: " + event.getExtraContents().getClass());
+        }
         this.decorator = decorator;
         this.event = event;
         setTerms(event);
-        setBackground(Colors.getBackgroundColor());
+        setBackground(Colors.bg());
         setLayout(new BorderLayout());
         setVisible(true);
         add(getHeaderPanel(), BorderLayout.CENTER);
-        if (event.getOutcome() == Event.Outcome.OK &&(event.getAction() == Event.Action.VIEW)) {
-            add(getCounter(), BorderLayout.SOUTH);
-        }
     }
     private JPanel getHeaderPanel() {
         System.out.println();
         JPanel headerPanel = new JPanel(new GridLayout(2,1));
-        headerPanel.setBackground(Colors.getBackgroundColor());
+        headerPanel.setBackground(Colors.bg());
 
-        JTextArea header = new JTextArea(resolveHeaderText());
-        header.setBackground(Colors.getBackgroundColor());
-        header.setForeground(Colors.getHeaderColor());
+        JLabel header = new JLabel(resolveHeaderText());
+        header.setBackground(Colors.panel());
+        header.setForeground(Colors.accent());
         header.setFont(Fonts.getHeaderFont());
         headerPanel.add(header);
 
         String subHeaderText = resolveSubHeaderText();
         if (resolveSubHeaderText() != null){
-            JTextArea subHeader = new JTextArea(subHeaderText);
-            decorator.adjustHeader(subHeader);
+            JLabel subHeader = new JLabel(subHeaderText);
+            decorator.adjustLabel(subHeader);
             headerPanel.add(subHeader);
         }
         return headerPanel;
     }
-    private JPanel getCounter(){
-        JPanel wrapperPanel = new JPanel();
-        JPanel countPanel = new JPanel(new GridLayout(1, 3));
-        JLabel count = new JLabel("Total count:");
-        JTextArea showNumber = new JTextArea(String.valueOf(counter));
-        decorator.adjustLabel(count);
-        decorator.adjustTextArea(showNumber);
-        countPanel.add(count);
-        countPanel.add(showNumber);
-        wrapperPanel.add(countPanel);
-        wrapperPanel.setBackground(Colors.getBackgroundColor());
-        return wrapperPanel;
-    }
+
     private String resolveHeaderText() {
-        String text = actionTerm + " " + term;
-        if (event.getOrigin() == Event.Origin.LOGIC) {
+        String text = "";
+        if (event.getSubject() == Event.Subject.CUSTOMER && event.getContents() instanceof String){
+            String name = (String) event.getExtraContents();
+            text = "Welcome " + name;
+        }
+        else if (event.getOrigin() == Event.Origin.LOGIC) {
             if (event.getOutcome() == Event.Outcome.NOT_FOUND ||
                     event.getOutcome() == Event.Outcome.FAILURE) {
-                text = getErrorHeader(event);
+                text = "No results were found";
             }
             else if (event.getAction() == Event.Action.VIEW){
-                text = "";
+                text = "Browse shoes";
             }
-        }
-        else if (event.getAction() == Event.Action.CHOOSE_TYPE ){
-            text = "";
         }
         return text;
     }
@@ -101,9 +93,9 @@ public class HeaderPanel extends JPanel {
         return event.getAction() != Event.Action.CHOOSE_TYPE && event.getOutcome() == Event.Outcome.OK;
     }
     private String getConfirmHeader(){
-        String text = ";";
+        String text = "";
         if (event.getAction() == Event.Action.VIEW) {
-            text = "The following " + term + pluralNoun + " ha"+ pluralHas + " been found:";
+            text = "Filter on:";
         }
 
         else {

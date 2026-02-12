@@ -3,6 +3,7 @@ import Control.ApplicationManager;
 import Control.Event;
 import Control.Subscriber;
 import Model.Customer;
+import Model.Product;
 
 import javax.swing.*;
 import java.awt.*;
@@ -18,8 +19,9 @@ public class MainFrame extends JFrame implements Subscriber {
     private PanelDecorator decorator;
     private OptionsPanel optionsPanel;
     private CartPanel cartPanel;
+    private HeaderPanel headerPanel;
     private JPanel bottomPanel;
-    private final Color backgroundColor = Color.darkGray;
+    private final Color backgroundColor = Colors.bg();
     private Customer user;
     private final ApplicationManager manager;
     JButton backToMenu;
@@ -30,10 +32,8 @@ public class MainFrame extends JFrame implements Subscriber {
         }
         this.manager = manager;
         this.decorator = new PanelDecorator();
-        setVisible(true);
         setLayout(new BorderLayout());
-        setEnabled(true);
-        setMinimumSize(new Dimension(500, 600));
+        setMinimumSize(new Dimension(800, 600));
         setBackground(backgroundColor);
         centerPanel = new JPanel(new BorderLayout());
         centerPanel.setBackground(backgroundColor);
@@ -62,6 +62,8 @@ public class MainFrame extends JFrame implements Subscriber {
 
             }
         });
+        setVisible(true);
+        setEnabled(true);
         repaint();
         revalidate();
         pack();
@@ -75,19 +77,26 @@ public class MainFrame extends JFrame implements Subscriber {
         revalidate();
         pack();
     }
-    public void showMenuPanel(){
+    public void showMenuPanel(Event event){
         System.out.println("showMenuPanel in MainFrame is reached");
-        if (bottomPanel != null){
-            bottomPanel.removeAll();
-        }
+        adjustHeaderAndFooter(event);
         centerPanel.removeAll();
-        this.menuPanel = new MenuPanel(this);
+        this.menuPanel = new MenuPanel(this, decorator, event);
         centerPanel.add(menuPanel);
         repaint();
         revalidate();
         pack();
     }
-    private void addReturnButton() {
+    private void adjustHeaderAndFooter(Event event){
+        if (bottomPanel != null){
+            bottomPanel.removeAll();
+        }
+        if (headerPanel!= null){
+            this.headerPanel = new HeaderPanel(decorator, event);
+            add(headerPanel, BorderLayout.NORTH);
+        }
+    }
+    public void addBottomPanel(Event event) {
         bottomPanel.removeAll();
         if (backToMenu == null) {
             this.backToMenu = new JButton("Return to menu");
@@ -97,13 +106,10 @@ public class MainFrame extends JFrame implements Subscriber {
             backToMenu.setBorder(
                     BorderFactory.createLineBorder(Colors.getHeaderColor(), 4, true));
             backToMenu.addActionListener(_ -> {
-                try {
-                    manager.Update(new Event(null, null, null, null, null, null, null));
-                } catch (SQLException | ClassNotFoundException e) {
-                    throw new RuntimeException(e);
-                }
+                showMenuPanel(event);
             });
         }
+
         bottomPanel.add(backToMenu, BorderLayout.WEST);
         bottomPanel.setVisible(true);
         bottomPanel.setBackground(backgroundColor);
@@ -123,10 +129,12 @@ public class MainFrame extends JFrame implements Subscriber {
         }
         switch (event.getOrigin()){
             case GUI -> {
-                if (event.getAction() == Event.Action.VIEW){
+                if (event.getAction() == Event.Action.PURCHASE && event.getPhase() == Event.Phase.SELECT) {
+                    showCartPanel(event);
+                }
+                else {
                     manager.Update(event);
                 }
-
             }
             case LOGIC -> {
                 if (event.getAction() == Event.Action.CREATE_ACCOUNT && event.getOutcome() == Event.Outcome.ALREADY_EXISTS){
@@ -143,38 +151,60 @@ public class MainFrame extends JFrame implements Subscriber {
                     loginPanel.promptWrongPassword();
                 }
                 else if (event.getAction() == Event.Action.VALIDATE || event.getAction() == Event.Action.CREATE_ACCOUNT && event.getOutcome() == Event.Outcome.OK){
-                    showMenuPanel();
+                    showMenuPanel(event);
                 }
                 else if (event.getAction() == Event.Action.VIEW && event.getPhase() == Event.Phase.DISPLAY && event.getOutcome() == Event.Outcome.OK && event.getSubject() != Event.Subject.NONE){
                     showOptionsPanel(event);
                 }
                 else if (event.getAction() == Event.Action.VIEW && event.getOutcome() == Event.Outcome.OK){
-                    showMenuPanel();
+                    showMenuPanel(event);
                 }
                 else if (event.getAction() == Event.Action.VIEW){
                     panelActions(event);
                 }
                 else if (event.getOutcome() == Event.Outcome.OK && event.getSubject() == Event.Subject.CUSTOMER){
-                    showMenuPanel();
+                    showMenuPanel(event);
                 }
             }
         }
     }
     private void showOptionsPanel(Event event){
         System.out.println("show options panel in mainFrame is reached");
-        if (bottomPanel != null){
-            bottomPanel.removeAll();
-        }
-        addReturnButton();
+        adjustHeaderAndFooter(event);
+        addBottomPanel(event);
         centerPanel.removeAll();
         this.optionsPanel = new OptionsPanel(this, decorator, event);
         centerPanel.add(optionsPanel);
         repaint();
         revalidate();
-        pack();
+
     }
-    private void showCartPanel(){
-        this.cartPanel = new CartPanel(this);
+    private void showCartPanel(Event event){
+        adjustHeaderAndFooter(event);
+        addBottomPanel(event);
+        centerPanel.removeAll();
+        this.cartPanel = new CartPanel(this, event, decorator);
+        centerPanel.add(cartPanel);
+        repaint();
+        revalidate();
+
+    }
+    public void getAddButtonPanel(Product p){
+        JPanel buttonPanel = new JPanel();
+        JButton addToCart = new JButton("Add to cart");
+        addToCart.addActionListener(_ ->
+        {
+            System.out.println("getAddToCart is activated");
+            try {
+
+                Update(new Event(Event.Phase.SELECT, Event.Action.PURCHASE, Event.Subject.SHOE, Event.Origin.GUI, Event.Outcome.PENDING, p, null));
+            } catch (SQLException | ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+        });
+        decorator.adjustSubmitButton(addToCart);
+        buttonPanel.add(addToCart);
+        bottomPanel.add(addToCart, BorderLayout.CENTER);
     }
 
     private void panelActions(Event event){
