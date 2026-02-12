@@ -7,6 +7,7 @@ import java.util.*;
 
 public class ApplicationManager implements Subscriber {
     private MainFrame mainFrame;
+    //    private Retrieving retrieving;
     private LoginPanel loginPanel;
     private DatabaseRelay databaseRelay;
     private int customerId;
@@ -14,9 +15,11 @@ public class ApplicationManager implements Subscriber {
     public enum Action {
         select("select "), insert("insert into "), update("update ");
         private final String actionName;
+
         Action(String actionName) {
             this.actionName = actionName;
         }
+
         @Override
         public String toString() {
             return actionName;
@@ -44,37 +47,43 @@ public class ApplicationManager implements Subscriber {
             }
         }
         Event.Origin origin = event.getOrigin();
+
         switch (origin) {
             case GUI -> {
-                if (event.getAction() == Event.Action.CREATE_ACCOUNT) {
-                    createNewAccount(event);
-                }
-                else if (event.getAction() == Event.Action.VIEW && event.getSubject() == Event.Subject.CART){
-                    event.setContents(customerId);
-                    databaseRelay.Update(event);
-                }
-                else if (event.getAction() == Event.Action.VIEW || event.getAction() == Event.Action.CHOOSE_TYPE || event.getAction() == Event.Action.PURCHASE) {
-                    databaseRelay.Update(event);
+                switch (event.getAction()) {
+                    case CREATE_ACCOUNT -> createNewAccount(event);
+                    case VIEW, CHOOSE_TYPE, PURCHASE -> databaseRelay.Update(event); // skickas till DBR
                 }
             }
+
             case LOGIC -> {
-                if (event.getAction() == Event.Action.VALIDATE && event.getOutcome() == Event.Outcome.NOT_FOUND) {
-                    promptCreateNewAccount();
-                } else if (event.getAction() == Event.Action.VALIDATE && event.getOutcome() == Event.Outcome.INVALID_INPUT) {
-                    promptWrongPassword();
-                } else if (event.getAction() == Event.Action.VALIDATE && event.getOutcome() == Event.Outcome.OK) {
-                    saveCustomer((Integer) event.getExtraContents());
-                    if (event.getExtraContents() != null){
-                        System.out.println("in Update, extracontents instance of: " + event.getExtraContents().getClass());
+                switch (event.getAction()) {
+                    case VALIDATE -> {
+                        switch (event.getOutcome()) {
+                            case NOT_FOUND -> promptCreateNewAccount();
+                            case INVALID_INPUT -> promptWrongPassword();
+                            case OK -> {
+                                saveCustomer((Integer) event.getExtraContents());
+                                mainFrame.Update(event);
+                            }
+                        }
                     }
-                    mainFrame.Update(event);
-                } else if (event.getAction() == Event.Action.CREATE_ACCOUNT) {
-                    if (event.getOutcome() == Event.Outcome.OK) {
-                        saveCustomer((Integer) event.getContents());
+                    case CREATE_ACCOUNT -> {
+                        if (event.getOutcome() == Event.Outcome.OK) {
+                            saveCustomer((Integer) event.getContents());
+                        }
+                        mainFrame.Update(event);
                     }
-                    mainFrame.Update(event);
-                } else if (event.getAction() == Event.Action.VIEW && event.getPhase() == Event.Phase.DISPLAY || event.getAction() == Event.Action.PURCHASE || event.getSubject() == Event.Subject.CART) {
-                    mainFrame.Update(event);
+                    case VIEW -> {
+                        if (event.getPhase() == Event.Phase.DISPLAY && event.getSubject() == Event.Subject.SHOE) {
+                            mainFrame.Update(event);
+                        } else if (event.getPhase() == Event.Phase.COMPLETE && event.getSubject() == Event.Subject.CART) {
+                            mainFrame.Update(event);
+                        }
+                    }
+                    case PURCHASE -> {
+                        mainFrame.Update(event);
+                    }
                 }
             }
         }
@@ -87,8 +96,35 @@ public class ApplicationManager implements Subscriber {
             System.out.println("customerId is: " + customerId);
         }
     }
+
+    private void createNewAccount(Event event) throws SQLException, ClassNotFoundException {
+        System.out.println("createNewAccount in AppManager is reached");
+        List<String> userInput = new ArrayList<>();
+        if (event.getContents() instanceof List list && list.getFirst() instanceof String) {
+            userInput = (List<String>) event.getContents();
+            if (!userInput.isEmpty()) {
+                databaseRelay.Update(new Event(Event.Phase.SUBMIT, Event.Action.CREATE_ACCOUNT, Event.Subject.CUSTOMER, Event.Origin.LOGIC, Event.Outcome.PENDING, userInput, null));
+            }
+        }
+    }
+
+    private void promptCreateNewAccount() throws SQLException, ClassNotFoundException {
+        mainFrame.Update(new Event(Event.Phase.AWAIT_INPUT, Event.Action.VALIDATE, Event.Subject.CUSTOMER, Event.Origin.LOGIC, Event.Outcome.NOT_FOUND, null, null));
+    }
+
+    public int getCustomerId() {
+        return customerId;
+    }
+
+
+    public void assessQuit(int choice) throws SQLException, ClassNotFoundException {
+        if (choice == 0) {
+            System.exit(0);
+        }
+    }
+
     public void validateCustomer(String emailInput, String password) throws SQLException, ClassNotFoundException {
-        System.out.println("VALIDATE USER in appManager is reached, email is: " + emailInput +  " password is: " + password);
+        System.out.println("VALIDATE USER in appManager is reached, email is: " + emailInput + " password is: " + password);
         List<String> userInput = new ArrayList<>();
         userInput.add(emailInput);
         userInput.add(password);
@@ -104,89 +140,13 @@ public class ApplicationManager implements Subscriber {
     private void promptWrongPassword() throws SQLException, ClassNotFoundException {
         mainFrame.Update(new Event(Event.Phase.AWAIT_INPUT, Event.Action.VALIDATE, Event.Subject.NONE, Event.Origin.LOGIC, Event.Outcome.FAILURE, null, null));
     }
-
-    public void assessQuit(int choice) throws SQLException, ClassNotFoundException {
-        if (choice == 0) {
-            System.exit(0);
-        }
-    }
-    private void createNewAccount(Event event) throws SQLException, ClassNotFoundException {
-        System.out.println("createNewAccount in AppManager is reached");
-        List<String> userInput = new ArrayList<>();
-        if (event.getContents() instanceof List list && list.getFirst() instanceof String ) {
-            userInput = (List<String>) event.getContents();
-            if (!userInput.isEmpty()) {
-                databaseRelay.Update(new Event(Event.Phase.SUBMIT, Event.Action.CREATE_ACCOUNT, Event.Subject.CUSTOMER, Event.Origin.LOGIC, Event.Outcome.PENDING, userInput, null));
-            }
-        }
-    }
-
-    private void promptCreateNewAccount() throws SQLException, ClassNotFoundException {
-        mainFrame.Update(new Event(Event.Phase.AWAIT_INPUT, Event.Action.VALIDATE, Event.Subject.CUSTOMER, Event.Origin.LOGIC, Event.Outcome.NOT_FOUND, null, null));
-    }
-    public int getCustomerId(){
-        return customerId;
-    }
 }
-//private void getAllShoes(List<List<String>> shoes, Event event) throws SQLException, ClassNotFoundException {
-//    List<Product> allShoes = new ArrayList<>();
-//    for (List<String> shoe : shoes) {
-//        System.out.println("START SHOE MAKING. String 0 in showShoes: " + shoe.getFirst());
-//        String id = shoe.getFirst();
-//        int idNumber = 0;
-//        int quantityNumber = 0;
-//        String name = shoe.get(1);
-//        System.out.println("String 1 in showShoes: " + shoe.get(1));
-//        String brand = shoe.get(2);
-//        System.out.println("String 2 in showShoes: " + shoe.get(2));
-//        String color = shoe.get(4);
-//        System.out.println("String 3 in showShoes: " + shoe.get(3));
-//        String price = shoe.get(3);
-//        System.out.println("String 4 in showShoes: " + shoe.get(4));
-//        String quantity = shoe.getFirst();
-//        System.out.println("String 5 in showShoes:  " + shoe.get(5));
-//        try {
-//            idNumber = Integer.parseInt(id.trim());
-//            System.out.println("in tryParse, idNumber is: " + idNumber);
-//            quantityNumber = Integer.parseInt(quantity.trim());
-//            System.out.println("in tryParse, quantityNumber is: " + quantityNumber);
-//        } catch (NumberFormatException e) {
-//            System.out.println("Parsing failed in showShoes");
-//        }
-//    }
-//}
-//private void handleOutput(Event event, List<Object> data, int numberOfColumns) throws SQLException, ClassNotFoundException {
-//        List<String> lines = new ArrayList<>();
-//        for (Object o : data) {
-//            String line = (String) o;
-//            lines.add(line);
-//        }
-//        switch (event.getSubject()) {
-//            case CART -> {
-//                {
-//
-//                }
-//            }
-//            case SHOE -> {
-//                List<List<String>> shoes = new ArrayList<>();
-//                for (int i = 0; i < lines.size(); i += numberOfColumns) {
-//                    shoes.add(lines.subList(i, i + numberOfColumns));
-//                }
-//                getAllShoes(shoes, event);
-//            }
-//        }
-//    }
-//        private void showMenu() throws SQLException, ClassNotFoundException {
-//            mainFrame.Update(new Event(Event.Phase.COMPLETE, null, Event.Subject.CUSTOMER, Event.Origin.LOGIC, Event.Outcome.OK, null, null));
-//        }
-//    private void tempSeeShoes(Event event) {
-//        if (event.getContents() instanceof ProductTerm term) {
+
+//    private void tempSeeShoes(Event event){
+//        if (event.getContents() instanceof ProductTerm term){
 //
 //        }
 //    }
-//        private void receiveValidationReceipt(Event event){
-//
-//        }
 
 //    private void viewActions(Event event) throws SQLException, ClassNotFoundException {
 //        List<String> columns = new ArrayList<>();
@@ -224,10 +184,6 @@ public class ApplicationManager implements Subscriber {
 ////                        databaseOutput = databaseRelay.runSelect(1, "product", columns);
 ////                        handleOutput(event, databaseOutput, columns.size());
 ////                    }
-
-
-
-//            Product newShoe = new Product(idNumber, name, brand, color, price);
 //            newShoe.setQuantity(quantityNumber);
 //            newShoe.setSize(shoe.get(5));
 //            System.out.println("String 6 in showShoes: " + shoe.get(6));
@@ -417,4 +373,3 @@ public class ApplicationManager implements Subscriber {
 //        System.out.println(" IN G P S shoesToSend.SIZE IS: " + shoesToSend.size());
 //        mainFrame.Update(new Event(Event.Phase.DISPLAY, Event.Action.VIEW, Event.Subject.SHOE, Event.Origin.LOGIC, Event.Outcome.OK, shoesToSend, event.getExtraContents()));
 //    }
-

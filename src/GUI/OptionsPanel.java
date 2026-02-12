@@ -168,28 +168,27 @@ public class OptionsPanel extends JPanel {
                 resultPanel.add(singleResultPanel);
             }
         }
-
         if (data instanceof List list && list.getFirst() instanceof Product) {
             System.out.println("in OPTIONSPANEL GET RESULT, DATA INSTANCE OF PRODUCT-LIST");
             List<Product> shoes = (List<Product>) data;
             resultPanel.add(createAllShoePanels(shoes));
-        } else if (data instanceof Product product) {
-            System.out.println("data instance of product");
-            resultPanel.removeAll();
-            mainFrame.getAddButtonPanel(product);
-
-            JPanel singleShoe = new JPanel();
-            singleShoe.setBackground(Colors.panel());
-            singleShoe.setLayout(new BoxLayout(singleShoe, BoxLayout.Y_AXIS));
-            singleShoe.add(getShoeInfoPanel(product));
-            resultPanel.add(singleShoe);
-
-            repaint();
-            revalidate();
         }
-
         return resultPanel;
     }
+//        else if (data instanceof Product product) {
+//            System.out.println("data instance of product");
+//            resultPanel.removeAll();
+//            mainFrame.getAddButtonPanel(product);
+//
+//            JPanel singleShoe = new JPanel();
+//            singleShoe.setBackground(Colors.panel());
+//            singleShoe.setLayout(new BoxLayout(singleShoe, BoxLayout.Y_AXIS));
+//            singleShoe.add(getShoeInfoPanel(product));
+//            resultPanel.add(singleShoe);
+//
+//            repaint();
+//            revalidate();
+//        }
 
     private JPanel createAllShoePanels(List<Product> products) {
         System.out.println("CreateAllShoePanels in OptionsPanel is reached");
@@ -220,16 +219,8 @@ public class OptionsPanel extends JPanel {
             decorator.adjustButton(shoeButton);
             shoeButton.addActionListener(_ -> {
                 try {
-                    mainFrame.Update(new Event(
-                            Event.Phase.SUBMIT,
-                            Event.Action.CHOOSE_TYPE,
-                            Event.Subject.SHOE,
-                            Event.Origin.GUI,
-                            Event.Outcome.PENDING,
-                            p,
-                            null
-                    ));
-                } catch (SQLException | ClassNotFoundException e) {
+                    mainFrame.Update(new Event(Event.Phase.SELECT, Event.Action.CHOOSE_TYPE, Event.Subject.SHOE, Event.Origin.GUI, Event.Outcome.PENDING, p, null));
+                } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
             });
@@ -275,26 +266,36 @@ public class OptionsPanel extends JPanel {
         colorInfoPanel.setBackground(Colors.card());
         JLabel colorLabel = new JLabel("Available colors:");
         decorator.adjustLabel(colorLabel);
+        JPanel colorPanel = new JPanel();
+        colorPanel.setBackground(Colors.card());
+        colorPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
 
-        JPanel colorButtons = new JPanel();
-        colorButtons.setBackground(Colors.button());
-        colorButtons.setLayout(new BoxLayout(colorButtons, BoxLayout.X_AXIS));
-        JButton color = new JButton(p.getColor());
-        color.setPreferredSize(new Dimension(30, 30));
-        colorInfoPanel.add(color);
+        for (String c : p.getColors()) {
+            JLabel cLabel = new JLabel(c);
+            decorator.adjustLabel(cLabel);
+            cLabel.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
+            colorPanel.add(colorLabel);
+        }
         colorInfoPanel.add(colorLabel);
-        colorInfoPanel.add(colorButtons);
-
+        colorInfoPanel.add(colorPanel);
         JPanel sizeInfoPanel = new JPanel();
         JPanel sizeFields = new JPanel();
         JLabel sizeLabel = new JLabel("Available sizes");
         decorator.adjustLabel(sizeLabel);
 
-        JTextField sizeField = new JTextField(String.valueOf(p.getSize()));
-        sizeField.setPreferredSize(new Dimension(30, 30));
-        sizeField.setMaximumSize(new Dimension(30, 30));
-        sizeField.setMinimumSize(new Dimension(30, 30));
-        sizeFields.add(sizeField);
+        JPanel sizePanel = new JPanel();
+        sizePanel.setBackground(Colors.card());
+        sizePanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+
+        for (Integer size : p.getSizes()) {
+            JLabel sizeLabelValue = new JLabel(String.valueOf(size));
+            decorator.adjustLabel(sizeLabelValue);
+            sizeLabelValue.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
+            sizePanel.add(sizeLabelValue);
+        }
+
+        sizeInfoPanel.add(sizeLabel);
+        sizeInfoPanel.add(sizePanel);
 
         sizeInfoPanel.add(sizeLabel);
         sizeInfoPanel.add(sizeFields);
