@@ -86,9 +86,9 @@ public void adjustCardText(JTextArea area){
 
 
     public void adjustSmallLabel(JLabel label) {
-        label.setPreferredSize(new Dimension(110, 50));
-        label.setMinimumSize(new Dimension(110, 50));
-        label.setMaximumSize(new Dimension(150, 50));
+//        label.setPreferredSize(new Dimension(110, 50));
+//        label.setMinimumSize(new Dimension(110, 50));
+//        label.setMaximumSize(new Dimension(150, 50));
         label.setForeground(Colors.text());
         label.setBackground(Colors.panel());
         label.setFont(Fonts.getLabelFont());
