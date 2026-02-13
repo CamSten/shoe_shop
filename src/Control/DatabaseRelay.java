@@ -1,7 +1,10 @@
 package Control;
 
 import java.sql.*;
+import java.time.LocalDateTime;
 import java.util.*;
+
+import Model.OrderPost;
 import Model.Product;
 import Model.ProductTerm;
 import Model.ShoeSpecification;
@@ -71,6 +74,14 @@ public class DatabaseRelay implements Subscriber {
                 results.add(output);
             }
             outputList.addAll(results);
+            System.out.println("outputList.size: " + outputList.size());
+            if (outputList.isEmpty()) {
+                outcome = Event.Outcome.FAILURE;
+            }
+
+            applicationManager.Update(
+                    new Event(Event.Phase.DISPLAY, Event.Action.VIEW, Event.Subject.SHOE, Event.Origin.LOGIC, outcome, outputList, productTerm)
+            );
         } else if (productTerm != null) {
             switch (productTerm) {
                 case Category -> {
@@ -89,14 +100,7 @@ public class DatabaseRelay implements Subscriber {
             }
         }
 
-        System.out.println("outputList.size: " + outputList.size());
-        if (outputList.isEmpty()) {
-            outcome = Event.Outcome.FAILURE;
-        }
 
-        applicationManager.Update(
-                new Event(Event.Phase.DISPLAY, Event.Action.VIEW, Event.Subject.SHOE, Event.Origin.LOGIC, outcome, outputList, productTerm)
-        );
     }
 
     private static void executeShoeQuery(ProductTerm productTerm, String choice, int id, PreparedStatement p) throws SQLException, ClassNotFoundException {
@@ -280,6 +284,37 @@ public class DatabaseRelay implements Subscriber {
             applicationManager.Update(Event.confirmComplete(Event.Action.PURCHASE, Event.Subject.SHOE, outcome, product));
         }
     }
+    private void executeOrderQuery(int customerId) throws SQLException, ClassNotFoundException {
+        System.out.println("executeOrderQuery in DBR reached for customerId: " + customerId);
+
+        List<List<OrderPost>> orders = new ArrayList<>();
+
+        PreparedStatement s = c.prepareStatement("SELECT firstname, surname, name, brand, size, buyQuantity FROM order_inventory WHERE customerId = ?");
+        {
+            s.setInt(1, customerId);
+
+            ResultSet rs = s.executeQuery();
+            while (rs.next()) {
+                OrderPost row = new ArrayList<>();
+                int customerId = rs.getInt("customerId");
+                String firstName = rs.getString("firstName");
+                String surname = rs.getString("surname");
+              String productName = rs.getString("productName");
+                String brand = rs.getString("brand");
+                String color = rs.getString("color");
+                int size = rs.getInt("size");
+                int prixe = rs.getInt("price");
+                int buyQuantity = rs.getInt("orderedQuantity");
+                LocalDateTime date = rs.getTimestamp("date");
+                OrderPost post = new OrderPost(customerId, brand, firstName, color, size, buyQuantity, price, date);
+                orders.add(post);
+            }
+
+            System.out.println("Orders fetched: " + orders.size());
+            applicationManager.Update(new Event(Event.Phase.DISPLAY, Event.Action.VIEW, Event.Subject.CART, Event.Origin.LOGIC, Event.Outcome.OK, orders, null
+            ));
+        }
+    }
 
     @Override
     public void Update(Event event) throws SQLException, ClassNotFoundException {
@@ -301,6 +336,9 @@ public class DatabaseRelay implements Subscriber {
                     if (event.getExtraContents() instanceof String extra) choice = extra;
                     getShoesFromDB(event, choice);
                 }
+            }
+            case CART -> {
+
             }
         }
     }

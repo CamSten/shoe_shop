@@ -199,7 +199,7 @@ public class MainFrame extends JFrame implements Subscriber {
                 switch (event.getAction()) {
                     case CREATE_ACCOUNT -> showLoginPanel();
                     case VIEW -> {
-                        if (event.getOutcome() == Event.Outcome.PENDING && event.getPhase() == Event.Phase.SELECT) {
+                        if (event.getOutcome() == Event.Outcome.PENDING && event.getPhase() == Event.Phase.SELECT || event.getSubject() == Event.Subject.CART) {
                             manager.Update(event);
                         } else {
                             showOptionsPanel(event);

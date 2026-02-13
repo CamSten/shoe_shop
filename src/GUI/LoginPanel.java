@@ -14,7 +14,6 @@ public class LoginPanel extends JPanel {
     private PanelDecorator decorator;
     private JPanel centerPanel;
 
-    // Alla inputfält som instansvariabler
     private JTextField firstnameField;
     private JTextField surnameField;
     private JTextField streetField;
