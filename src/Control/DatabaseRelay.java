@@ -22,7 +22,7 @@ public class DatabaseRelay implements Subscriber {
         );
     }
 
-    private static void getShoesFromDB(Event event, String choice) throws SQLException, ClassNotFoundException {
+    public static void getShoesFromDB(Event event, String choice) throws SQLException, ClassNotFoundException {
         System.out.println("GETSHOES IN DBR IS REACHED");
         Event.Outcome outcome = Event.Outcome.OK;
         List<String> outputList = new ArrayList<>();

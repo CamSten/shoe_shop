@@ -1,6 +1,8 @@
 import Control.ApplicationManager;
+import Control.DatabaseRelay;
 import Control.Event;
 import Model.Product;
+import Model.ProductTerm;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -8,17 +10,41 @@ import java.util.List;
 
 public class Main {
     static Control.ApplicationManager appManager = new ApplicationManager();
+
     public static void main(String[] args) throws SQLException, ClassNotFoundException {
-        appManager.Update(Event.awaitInput(Event.Action.VALIDATE, Event.Subject.NONE, Event.Origin.LOGIC));
+      appManager.Update(Event.awaitInput(Event.Action.VALIDATE, Event.Subject.NONE, Event.Origin.LOGIC));
+    //    addToCartIKris();
     }
-
-
-    private void addToCart() {
-
-    }
-
-
 }
+
+//    private static void addToCartIKris() throws SQLException {
+//        DatabaseRelay db = new DatabaseRelay(appManager);
+//        ProductTerm content = ProductTerm.Category;
+//        List<Product> products = db.getShoesFromDB(new Event(Event.Phase.SELECT, Event.Action.VIEW, Event.Subject.SHOE, Event.Origin.GUI, Event.Outcome.PENDING, content, null), "Sneakers");
+//
+//        System.out.println("Produkter i kategori 'Running':");
+//        for (Product p : products) {
+//            System.out.println(p.getName() + " | Storlek: " + p.getSize() + " | Inventory: " + p.getInvQuantity());
+//        }
+//
+//        int customerId = 1;
+//        int productId = products.get(0).getId();
+//        int size = products.get(0).getSize();
+//        int quantity = 1;
+//
+//        boolean success = db.addToCart(customerId, productId, size, quantity);
+//        if (success) {
+//            System.out.println("Produkten lades till i kundvagnen!");
+//        } else {
+//            System.out.println("Kunde inte lägga till produkten.");
+//        }
+//
+//        Product updatedProduct = db.getProductById(productId, size);
+//        System.out.println("Ny inventory: " + updatedProduct.getInventory());
+//    }
+//}
+
+
 // Skapa ett gränssnitt till din procedur AddToCart (alltså ett Java-program som låter
 //        användaren lägga in produkter i en beställning.
 //        Ett enkelt console-program räcker bra, men det är ok att bygga ett grafiskt gränssnitt om du vill.)
