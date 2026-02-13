@@ -63,6 +63,7 @@ public class MainFrame extends JFrame implements Subscriber {
     }
 
     private void showSingleProductPanel(Event event) {
+        System.out.println("showSingleProductPanel is reached");
         if (event.getContents() instanceof Product) {
             this.currentProduct = (Product) event.getContents();
 
@@ -90,11 +91,7 @@ public class MainFrame extends JFrame implements Subscriber {
             addToCartButton.setFont(Fonts.getButtonFont());
             addToCartButton.setBorder(BorderFactory.createLineBorder(Colors.accent(), 4, true));
             addToCartButton.addActionListener(e -> {
-                try {
-                    manager.Update(new Event(Event.Phase.SELECT, Event.Action.PURCHASE, Event.Subject.SHOE, Event.Origin.GUI, Event.Outcome.PENDING, currentProduct, null));
-                } catch (SQLException | ClassNotFoundException ex) {
-                    throw new RuntimeException(ex);
-                }
+                showPurchasePanel(event);
             });
             bottomPanel.add(addToCartButton, BorderLayout.EAST);
 
@@ -196,6 +193,7 @@ public class MainFrame extends JFrame implements Subscriber {
 
         switch (origin) {
             case GUI -> {
+                //(Event.Phase.SUBMIT, Event.Action.CHOOSE_TYPE, Event.Subject.SHOE, Event.Origin.GUI, Event.Outcome.PENDING, p, null
                 switch (event.getAction()) {
                     case CREATE_ACCOUNT -> showLoginPanel();
                     case VIEW -> {
@@ -213,7 +211,13 @@ public class MainFrame extends JFrame implements Subscriber {
                             manager.Update(event);
                         }
                     }
-                    case PURCHASE -> showPurchasePanel(event);
+                    case PURCHASE -> {
+                        manager.Update(event);
+                        //showPurchasePanel(event);
+                        //if (event.getOutcome == Event.Outcome.PENDING){
+                        //                            showSingleProductPanel(event);
+                        //                        }
+                    }
                 }
             }
             case LOGIC -> {
@@ -242,11 +246,17 @@ public class MainFrame extends JFrame implements Subscriber {
                         System.out.println("case VIEW is reached");
                         if (event.getPhase() == Event.Phase.DISPLAY && event.getSubject() == Event.Subject.SHOE) {
                             showOptionsPanel(event);
-                        } else if (event.getPhase() == Event.Phase.COMPLETE && event.getSubject() == Event.Subject.CART) {
+                        } else if (event.getSubject() == Event.Subject.CART) {
                             showCartPanel(event);
                         }
                     }
-                    case PURCHASE -> showPurchasePanel(event);
+                    case PURCHASE -> {
+                        if (event.getPhase() == Event.Phase.COMPLETE) {
+                            purchasePanel.getConfirmationPanel(event);
+                        } else {
+                            showPurchasePanel(event);
+                        }
+                    }
                 }
             }
         }

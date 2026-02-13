@@ -208,7 +208,7 @@ public class PurchasePanel extends JPanel {
             nameValue = product.getName();
             colorValue = product.getColor();
             sizeValue = product.getSize();
-            quantityValue = product.getInvQuantity();
+            quantityValue = product.getBuyQuantity();
             stringValues.add(brandValue);
             stringValues.add(nameValue);
             stringValues.add(colorValue);
@@ -265,6 +265,9 @@ public class PurchasePanel extends JPanel {
                     int size = Integer.parseInt(sizeBox.getSelectedItem().toString());
                     ShoeSpecification sc = new ShoeSpecification(size, color, invQuantity);
                         sc.setBuyQuantity(buyQuantity);
+                        p.setColor(color);
+                        p.setSize(size);
+                        p.setBuyQuantity(buyQuantity);
                         mainFrame.Update(new Event(Event.Phase.SUBMIT, Event.Action.PURCHASE, Event.Subject.SHOE, Event.Origin.GUI, Event.Outcome.OK, p, sc));
                 } catch (NumberFormatException e) {}
             } else {

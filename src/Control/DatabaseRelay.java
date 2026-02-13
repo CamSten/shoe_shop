@@ -112,7 +112,7 @@ public class DatabaseRelay implements Subscriber {
 
         if (productTerm == null) {
             thisProductTerm = ProductTerm.Name;
-             }
+        }
         else if (!choice.equals("")){
             System.out.println("choice is: " + choice) ;
             p.setString(1, choice);
@@ -152,20 +152,49 @@ public class DatabaseRelay implements Subscriber {
         newShoe.addSpecification(sc);
         return newShoe;
     }
+    private void callCheckInventory(int productId, int size, String color, int buyQuantity) throws SQLException {
+        //checkShoeInventory(IN productId int, IN size int, IN color VARCHAR(15), IN removeQuantity int, OUT doesExist boolean)
 
-    private boolean callAddToCart(int customerId, int productId, int size, String color, int newQuantity) throws ClassNotFoundException, SQLException {
+        System.out.println("callCheckInventory is reached in DBR");
+        CallableStatement s = c.prepareCall("CALL checkShoeInventory(?, ?, ?, ?, ?)");
+        s.setInt(1, productId);
+        s.setInt(2, size);
+        s.setString(3, color);
+        s.setInt(4, buyQuantity);
+        s.executeUpdate();
+        boolean found = s.getBoolean(5);
+        System.out.println("found is: " + found);
+    }
+
+
+    private boolean callAddToCart(int customerId, int productId, int size, String color, int buyQuantity) throws ClassNotFoundException, SQLException {
         System.out.println("callAddToCart is reached in DBR");
-        CallableStatement s = c.prepareCall("CALL addToCart(?, ?, ?, ?, ?, ?)");
+        callCheckInventory(productId, size, color, buyQuantity);
+        CallableStatement s = c.prepareCall("CALL addToCart(?, ?, ?, ?, ?, ?, ?)");
         s.setInt(1, customerId);
         s.setInt(2, productId);
         s.setInt(3, size);
         s.setString(4, color);
-        s.setInt(5, newQuantity);
+        s.setInt(5, buyQuantity);
         s.executeUpdate();
         boolean success = s.getBoolean(6);
-        System.out.println("Success is: " + success);
-        return success;
-    }
+        boolean found = s.getBoolean(7);
+        System.out.println("found is: " + found);
+        System.out.println("success is: " + success);
+        return success; }
+//    private boolean callAddToCart(int customerId, int productId, int size, String color, int newQuantity) throws ClassNotFoundException, SQLException {
+//        System.out.println("callAddToCart is reached in DBR");
+//        CallableStatement s = c.prepareCall("CALL addToCart(?, ?, ?, ?, ?, ?)");
+//        s.setInt(1, customerId);
+//        s.setInt(2, productId);
+//        s.setInt(3, size);
+//        s.setString(4, color);
+//        s.setInt(5, newQuantity);
+//        s.executeUpdate();
+//        boolean success = s.getBoolean(6);
+//        System.out.println("Success is: " + success);
+//        return success;
+//    }
 
     private static void addNewCustomer(List<String> userInput) throws SQLException, ClassNotFoundException {
         String newFirstname = userInput.get(0);
@@ -260,86 +289,85 @@ public class DatabaseRelay implements Subscriber {
         int size = -1;
         int quantity = -1;
         String color = "";
+        Event.Outcome outcome = Event.Outcome.OK;
         int customerId = applicationManager.getCustomerId();
 
         if (event.getContents() instanceof Product) {
+
             product = (Product) event.getContents();
             productId = product.getProductId();
+            System.out.println("in purchaseActions, product is: " + product.getName());
 
             if (event.getExtraContents() instanceof ShoeSpecification sc) {
                 size = sc.getSize();
-                quantity = sc.getInvQuantity();
+                quantity = sc.getBuyQuantity();
                 color = sc.getColor();
+            } else {
+                size = product.getSize();
+                quantity = product.getBuyQuantity();
+                color = product.getColor();
             }
-
-            Event.Outcome outcome = Event.Outcome.OK;
             boolean result = callAddToCart(customerId, productId, size, color, quantity);
-            if (!result) outcome = Event.Outcome.FAILURE;
-            else {
-                product.setColor(color);
-                product.setSize(size);
-                product.setInvQuantity(quantity);
-            }
-
-            applicationManager.Update(Event.confirmComplete(Event.Action.PURCHASE, Event.Subject.SHOE, outcome, product));
+            if (!result)
+                outcome = Event.Outcome.FAILURE;
         }
-    }
-    private void executeOrderQuery(int customerId) throws SQLException, ClassNotFoundException {
-        System.out.println("executeOrderQuery in DBR reached for customerId: " + customerId);
 
-        List<List<OrderPost>> orders = new ArrayList<>();
-
-        PreparedStatement s = c.prepareStatement("SELECT firstname, surname, name, brand, size, buyQuantity FROM order_inventory WHERE customerId = ?");
-        {
-            s.setInt(1, customerId);
-
-            ResultSet rs = s.executeQuery();
-            while (rs.next()) {
-                OrderPost row = new ArrayList<>();
-                int customerId = rs.getInt("customerId");
-                String firstName = rs.getString("firstName");
-                String surname = rs.getString("surname");
-              String productName = rs.getString("productName");
-                String brand = rs.getString("brand");
-                String color = rs.getString("color");
-                int size = rs.getInt("size");
-                int prixe = rs.getInt("price");
-                int buyQuantity = rs.getInt("orderedQuantity");
-                LocalDateTime date = rs.getTimestamp("date");
-                OrderPost post = new OrderPost(customerId, brand, firstName, color, size, buyQuantity, price, date);
-                orders.add(post);
-            }
-
-            System.out.println("Orders fetched: " + orders.size());
-            applicationManager.Update(new Event(Event.Phase.DISPLAY, Event.Action.VIEW, Event.Subject.CART, Event.Origin.LOGIC, Event.Outcome.OK, orders, null
-            ));
-        }
+        applicationManager.Update(Event.confirmComplete(Event.Action.PURCHASE, Event.Subject.SHOE, outcome, product));
     }
 
-    @Override
-    public void Update(Event event) throws SQLException, ClassNotFoundException {
-        System.out.println("UPDATE IN DBR IS REACHED");
+private void executeOrderQuery(int customerId) throws SQLException, ClassNotFoundException {
+    System.out.println("executeOrderQuery in DBR reached for customerId: " + customerId);
 
-        switch (event.getSubject()) {
-            case CUSTOMER -> {
-                if (event.getAction() == Event.Action.VALIDATE && event.getContents() instanceof List list) {
-                    checkCustomer((List<String>) list);
-                } else if (event.getAction() == Event.Action.CREATE_ACCOUNT && event.getContents() instanceof List list) {
-                    addNewCustomer((List<String>) list);
-                }
-            }
-            case SHOE -> {
-                if (event.getAction() == Event.Action.PURCHASE) {
-                    purchaseActions(event);
-                } else {
-                    String choice = "";
-                    if (event.getExtraContents() instanceof String extra) choice = extra;
-                    getShoesFromDB(event, choice);
-                }
-            }
-            case CART -> {
+    List<OrderPost> orders = new ArrayList<>();
 
+    PreparedStatement s = c.prepareStatement("SELECT * FROM order_inventory WHERE customerId = ?");
+        s.setInt(1, customerId);
+//customer.id AS 'customerId', customer.firstName, customer.surname, product.name as 'product', product.brand as 'brand', shoeInventory.size AS 'size', orderPost.orderedQuantity as 'buyQuantity', shoeInventory.color as 'color', product.price, orderingDate as 'date'
+        ResultSet rs = s.executeQuery();
+        while (rs.next()) {
+            String productName = rs.getString("product");
+            String brand = rs.getString("brand");
+            String color = rs.getString("color");
+            int size = rs.getInt("size");
+            int price = rs.getInt("price");
+            int buyQuantity = rs.getInt("buyQuantity");
+            LocalDateTime date = rs.getTimestamp("date").toLocalDateTime();
+            OrderPost post = new OrderPost(customerId, brand, productName, color, size, buyQuantity, price, date);
+            orders.add(post);
+        }
+
+        System.out.println("Orders fetched: " + orders.size());
+        applicationManager.Update(new Event(Event.Phase.DISPLAY, Event.Action.VIEW, Event.Subject.CART, Event.Origin.LOGIC, Event.Outcome.OK, orders, null
+        ));
+    }
+
+@Override
+public void Update(Event event) throws SQLException, ClassNotFoundException {
+    System.out.println("UPDATE IN DBR IS REACHED");
+
+    switch (event.getSubject()) {
+        case CUSTOMER -> {
+            if (event.getAction() == Event.Action.VALIDATE && event.getContents() instanceof List list) {
+                checkCustomer((List<String>) list);
+            } else if (event.getAction() == Event.Action.CREATE_ACCOUNT && event.getContents() instanceof List list) {
+                addNewCustomer((List<String>) list);
+            }
+        }
+        case SHOE -> {
+            if (event.getAction() == Event.Action.PURCHASE) {
+                purchaseActions(event);
+            } else {
+                String choice = "";
+                if (event.getExtraContents() instanceof String extra) choice = extra;
+                getShoesFromDB(event, choice);
+            }
+        }
+        case CART -> {
+            if (event.getContents() instanceof Integer){
+                int customerId = (Integer) event.getContents();
+                executeOrderQuery(customerId);
             }
         }
     }
+}
 }

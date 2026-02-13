@@ -50,7 +50,12 @@ public class ApplicationManager implements Subscriber {
             case GUI -> {
                 switch (event.getAction()) {
                     case CREATE_ACCOUNT -> createNewAccount(event);
-                    case VIEW, CHOOSE_TYPE, PURCHASE -> databaseRelay.Update(event); // skickas till DBR
+                    case VIEW, CHOOSE_TYPE, PURCHASE -> {
+                        if (event.getAction() == Event.Action.VIEW && event.getSubject() == Event.Subject.CART){
+                            event.setContents(customerId);
+                        }
+                        databaseRelay.Update(event);
+                    }
                 }
             }
 
@@ -77,11 +82,11 @@ public class ApplicationManager implements Subscriber {
                         mainFrame.Update(event);
                     }
                     case VIEW -> {
-                        if (event.getPhase() == Event.Phase.DISPLAY && event.getSubject() == Event.Subject.SHOE) {
+                       // if (event.getPhase() == Event.Phase.DISPLAY && event.getSubject() == Event.Subject.SHOE) {
                             mainFrame.Update(event);
-                        } else if (event.getPhase() == Event.Phase.COMPLETE && event.getSubject() == Event.Subject.CART) {
-                            mainFrame.Update(event);
-                        }
+//                        } else if (event.getPhase() == Event.Phase.COMPLETE && event.getSubject() == Event.Subject.CART) {
+//                            mainFrame.Update(event);
+//                        }
                     }
                     case PURCHASE -> {
                         mainFrame.Update(event);
