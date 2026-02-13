@@ -11,6 +11,7 @@ import java.util.List;
 
 public class LoginPanel extends JPanel {
     private ApplicationManager manager;
+    private MainFrame mainFrame;
     private PanelDecorator decorator;
     private JPanel centerPanel;
 
@@ -21,8 +22,9 @@ public class LoginPanel extends JPanel {
     private JTextField emailField;
     private JPasswordField passwordField;
 
-    public LoginPanel(ApplicationManager manager, PanelDecorator decorator){
+    public LoginPanel(ApplicationManager manager, MainFrame mainFrame, PanelDecorator decorator){
         this.manager = manager;
+        this.mainFrame = mainFrame;
         this.decorator = decorator;
         this.centerPanel = new JPanel(new BorderLayout());
         setLayout(new BorderLayout());
@@ -33,32 +35,58 @@ public class LoginPanel extends JPanel {
 
     public void showLoginPanel() {
         centerPanel.removeAll();
+//        JPanel panel = new JPanel(new BorderLayout());
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.setBackground(Colors.bg());
+        panel.setBackground(Colors.panel());
 
-        JPanel emailRow = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        emailRow.setBackground(Colors.bg());
-        JLabel emailLabel = new JLabel("Enter email:");
+        JPanel inputCol = new JPanel(new GridLayout(2, 1));
+//        decorator.adjustInputPanel(inputCol);
+        inputCol.setBackground(Colors.panel());
+//        JPanel labelWrapperMail = new JPanel();
+        JLabel emailLabel = new JLabel("  Enter email:");
         decorator.adjustLabel(emailLabel);
-        emailField = new JTextField();
+        this.emailField = new JTextField();
         decorator.adjustTextField(emailField);
-        emailRow.add(emailLabel);
-        emailRow.add(emailField);
+        inputCol.add(emailField);
+        //inputCol.setBorder(BorderFactory.createLineBorder(Colors.buttonHover(), 4, true));
 
-        JPanel passwordRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
-        passwordRow.setBackground(Colors.bg());
-        JLabel passwordLabel = new JLabel("Enter password:");
+
+        JPanel labelCol = new JPanel(new GridLayout(2,1));
+//        decorator.adjustInputPanel(labelCol);
+        labelCol.setBackground(Colors.bg());
+//        JPanel labelWrapperPass = new JPanel();
+        JLabel passwordLabel = new JLabel("  Enter password:");
+//        labelWrapperPass.add(passwordLabel);
         decorator.adjustLabel(passwordLabel);
         passwordField = new JPasswordField();
         decorator.adjustTextField(passwordField);
-        passwordRow.add(passwordLabel);
-        passwordRow.add(passwordField);
 
-        panel.add(emailRow);
-        panel.add(passwordRow);
+//        labelCol.add(Box.createVerticalGlue());
+        labelCol.add(emailLabel);
+        labelCol.add(Box.createVerticalGlue());
+        labelCol.add(passwordLabel);
+//        labelCol.add(Box.createVerticalGlue());
 
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
+//        inputCol.add(Box.createVerticalGlue());
+        inputCol.add(emailField);
+        inputCol.add(Box.createVerticalGlue());
+        inputCol.add(passwordField);
+//        inputCol.add(Box.createVerticalGlue());
+        JPanel wrapperPanel = new JPanel();
+        wrapperPanel.setLayout(new BoxLayout(wrapperPanel, BoxLayout.X_AXIS));
+        decorator.adjustWrapperPanel(wrapperPanel);
+        wrapperPanel.add(labelCol);
+        wrapperPanel.add(Box.createHorizontalGlue());
+        wrapperPanel.add(inputCol);
+
+
+        JPanel buttonWrapperPanel = new JPanel();
+        decorator.adjustWrapperPanel(buttonWrapperPanel);
+//        JPanel buttonPanel = new JPanel();
+        JPanel buttonPanel = new JPanel(new GridLayout(2, 1));
+        decorator.adjustWrapperPanel(buttonPanel);
+//        buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.Y_AXIS));
         buttonPanel.setBackground(Colors.bg());
         JButton loginButton = new JButton("Log in");
         decorator.adjustButton(loginButton);
@@ -68,8 +96,11 @@ public class LoginPanel extends JPanel {
         newUserButton.addActionListener(_ -> showCreateAccountPanel());
         buttonPanel.add(loginButton);
         buttonPanel.add(newUserButton);
+        buttonWrapperPanel.add(buttonPanel);
 
-        panel.add(buttonPanel);
+        panel.add(wrapperPanel, BorderLayout.CENTER);
+        panel.add(buttonWrapperPanel, BorderLayout.SOUTH);
+
         centerPanel.add(panel, BorderLayout.CENTER);
         revalidate();
         repaint();
@@ -95,26 +126,38 @@ public class LoginPanel extends JPanel {
         surnameField = new JTextField();
         streetField = new JTextField();
         cityField = new JTextField();
-        emailField = new JTextField();
         passwordField = new JPasswordField();
+        mainFrame.adjustHeaderAndFooter("Fill in your details:");
 
         List<JTextField> fields = List.of(firstnameField, surnameField, streetField, cityField, emailField, passwordField);
         for (JTextField f : fields) decorator.adjustTextField(f);
 
         List<String> labelsText = List.of("First name:", "Surname:", "Street:", "City:", "Email:", "Password:");
         JPanel inputPanel = new JPanel();
-        inputPanel.setLayout(new BoxLayout(inputPanel, BoxLayout.Y_AXIS));
+//        inputPanel.setLayout(new BoxLayout(inputPanel, BoxLayout.Y_AXIS));
         inputPanel.setBackground(Colors.bg());
+        JPanel labelCol = new JPanel(new GridLayout(labelsText.size(), 1, 5, 5));
+//        labelCol.setLayout(new BoxLayout(labelCol, BoxLayout.Y_AXIS));
+        JPanel inputCol = new JPanel(new GridLayout(fields.size(), 1, 5, 5));
+//        inputCol.setLayout(new BoxLayout(labelCol, BoxLayout.Y_AXIS));
+        labelCol.setBackground(Colors.panel());
+        inputCol.setBackground(Colors.panel());
 
         for (int i = 0; i < labelsText.size(); i++){
-            JPanel row = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
-            row.setBackground(Colors.bg());
+//            JPanel row = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
             JLabel label = new JLabel(labelsText.get(i));
             decorator.adjustLabel(label);
-            row.add(label);
-            row.add(fields.get(i));
-            inputPanel.add(row);
+            labelCol.add(label);
+            inputCol.add(fields.get(i));
         }
+        JPanel wrapperPanel = new JPanel();
+        wrapperPanel.setLayout(new BoxLayout(wrapperPanel, BoxLayout.X_AXIS));
+        decorator.adjustWrapperPanel(wrapperPanel);
+        wrapperPanel.add(labelCol);
+        wrapperPanel.add(inputCol);
+        inputPanel.add(wrapperPanel);
+        inputPanel.add(wrapperPanel);
+
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
         buttonPanel.setBackground(Colors.bg());
         JButton saveButton = new JButton("Save");

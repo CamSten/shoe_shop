@@ -3,10 +3,10 @@ package GUI;
 import java.awt.*;
 
 public class Fonts {
-    private static Font headerFont = new Font("Inter", Font.BOLD, 32);
-    private static Font buttonFont = new Font("Inter", Font.BOLD, 20);
-    private static Font labelFont = new Font("Inter", Font.BOLD, 18);
-    private static Font inputFont = new Font("Inter", Font.PLAIN, 16);
+    private static Font headerFont = new Font("Inter", Font.BOLD, 40);
+    private static Font buttonFont = new Font("Inter", Font.BOLD, 22);
+    private static Font labelFont = new Font("Inter", Font.BOLD, 22);
+    private static Font inputFont = new Font("Inter", Font.PLAIN, 22);
 
     public static Font getHeaderFont() {
         return headerFont;

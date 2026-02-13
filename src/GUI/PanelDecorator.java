@@ -27,7 +27,7 @@ public class PanelDecorator {
     public void adjustLabel(JLabel label){
         label.setFont(Fonts.getLabelFont());
         label.setForeground(Colors.text());
-        label.setPreferredSize(new Dimension(100, 30));
+//        label.setPreferredSize(new Dimension(100, 30));
     }
 
     public void adjustTextField(JTextField field){
@@ -35,8 +35,8 @@ public class PanelDecorator {
         field.setForeground(Colors.text());
         field.setBackground(Color.WHITE);
         field.setBorder(BorderFactory.createLineBorder(Colors.border(), 2, true));
-        field.setPreferredSize(new Dimension(200, 30));
-        field.setMaximumSize(new Dimension(250, 35));
+        field.setPreferredSize(new Dimension(250, 50));
+        field.setMinimumSize(new Dimension(250, 50));
     }
 
 
@@ -61,12 +61,12 @@ public class PanelDecorator {
     }
 
     public void adjustWrapperPanel(JPanel wrapperPanel){
-        wrapperPanel.setBackground(Colors.bg());
+        wrapperPanel.setBackground(Colors.panel());
         wrapperPanel.setBorder(BorderFactory.createEmptyBorder(15,15,15,15));
         wrapperPanel.setOpaque(true);
         wrapperPanel.setVisible(true);
         wrapperPanel.setEnabled(true);
-        wrapperPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+//        wrapperPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
     }
 
     public void adjustInputPanel(JPanel inputPanel){

@@ -107,7 +107,7 @@ public class MainFrame extends JFrame implements Subscriber {
             headerPanel = new HeaderPanel(decorator, "ShoeShop");
             add(headerPanel, BorderLayout.NORTH);
             centerPanel.removeAll();
-            loginPanel = new LoginPanel(manager, decorator);
+            this.loginPanel = new LoginPanel(manager, this, decorator);
             centerPanel.add(loginPanel, BorderLayout.CENTER);
             bottomPanel.removeAll();
             revalidate();
@@ -115,7 +115,7 @@ public class MainFrame extends JFrame implements Subscriber {
         }
 
     private void showMenuPanel() {
-        adjustHeaderAndFooter("Choose what would you like to do");
+        adjustHeaderAndFooter("Choose what you would like to do: ");
         centerPanel.removeAll();
         this.menuPanel = new MenuPanel(this, decorator);
         centerPanel.add(menuPanel);
@@ -153,7 +153,7 @@ public class MainFrame extends JFrame implements Subscriber {
             headerPanel = null;
         }
     }
-    private void adjustHeaderAndFooter(String headerText) {
+    public void adjustHeaderAndFooter(String headerText) {
         removeHeader();
         if (headerText != null && !headerText.isEmpty()) {
             this.headerPanel = new HeaderPanel(decorator, headerText);
