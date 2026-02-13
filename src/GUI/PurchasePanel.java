@@ -48,7 +48,7 @@ public class PurchasePanel extends JPanel {
         List<Integer> sizes = new ArrayList<>();
         List<String> colors = new ArrayList<>();
 //        List<Integer> quantities = new ArrayList<>();
-        for (ShoeSpecification sc : p.getShoeSpecifications()){
+        for (ShoeSpecification sc : p.getSizeColors()){
             sizes.add(sc.getSize());
             colors.add(sc.getColor());
         }

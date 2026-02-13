@@ -11,6 +11,35 @@ public class PanelDecorator {
 
     public PanelDecorator(){ }
 
+    public void adjustButton(JButton button){
+        button.setFont(Fonts.getButtonFont());
+        button.setBackground(Colors.button());
+        button.setForeground(Colors.buttonText());
+        button.setBorder(BorderFactory.createEmptyBorder(6,14,6,14));
+        button.setFocusPainted(false);
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        button.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent e) { button.setBackground(Colors.buttonHover()); }
+            public void mouseExited(MouseEvent e) { button.setBackground(Colors.button()); }
+        });
+    }
+
+    public void adjustLabel(JLabel label){
+        label.setFont(Fonts.getLabelFont());
+        label.setForeground(Colors.text());
+        label.setPreferredSize(new Dimension(100, 30));
+    }
+
+    public void adjustTextField(JTextField field){
+        field.setFont(Fonts.getInputFont());
+        field.setForeground(Colors.text());
+        field.setBackground(Color.WHITE);
+        field.setBorder(BorderFactory.createLineBorder(Colors.border(), 2, true));
+        field.setPreferredSize(new Dimension(200, 30));
+        field.setMaximumSize(new Dimension(250, 35));
+    }
+
+
     public void adjustSubmitButton(JButton submitButton) {
         submitButton.setFont(Fonts.getButtonFont());
         submitButton.setBackground(Colors.button());
@@ -21,33 +50,6 @@ public class PanelDecorator {
         submitButton.setMinimumSize(new Dimension(200, 45));
     }
 
-    public void adjustButton(JButton button){
-        button.setFont(Fonts.getButtonFont());
-        button.setBackground(Colors.button());
-        button.setForeground(Colors.buttonText());
-        button.setBorder(BorderFactory.createEmptyBorder(6,14,6,14));
-        button.setFocusPainted(false);
-        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
-        button.addMouseListener(new MouseAdapter() {
-            public void mouseEntered(MouseEvent e) {
-                button.setBackground(Colors.buttonHover());
-            }
-            public void mouseExited(MouseEvent e) {
-                button.setBackground(Colors.button());
-            }
-        });
-    }
-
-    // public void adjustNameButton(JButton button){
-    //     button.setFont(Fonts.getButtonFont());
-    //     button.setForeground(Colors.getHeaderColor());
-    //     button.setBackground(Colors.getButtonTextColor());
-    //     button.setHorizontalAlignment(SwingConstants.LEFT);
-    //     button.setBorder(
-    //         BorderFactory.createLineBorder(Colors.getBorderColor(), 4, true)
-    //     );
-    // }
 
     public void adjustSmallLabel(JLabel label) {
         label.setPreferredSize(new Dimension(110, 50));
@@ -55,7 +57,7 @@ public class PanelDecorator {
         label.setMaximumSize(new Dimension(150, 50));
         label.setForeground(Colors.text());
         label.setBackground(Colors.panel());
-        label.setFont(Fonts.getInputPromptFont());
+        label.setFont(Fonts.getLabelFont());
     }
 
     public void adjustWrapperPanel(JPanel wrapperPanel){
@@ -76,22 +78,10 @@ public class PanelDecorator {
         inputPanel.setBorder(BorderFactory.createLineBorder(Colors.border(), 10, true));
     }
 
-    public void adjustLabel(JLabel label){
-        label.setFont(Fonts.getTextFont());
-        label.setForeground(Colors.text());
-        label.setPreferredSize(new Dimension(250, 45));
-        label.setMinimumSize(new Dimension(250, 45));
-        label.setMinimumSize(new Dimension(250, 45));
-        label.setFont(Fonts.getInputPromptFont());
-    }
-
     public void editInputField(JTextField inputField) {
         inputField.setBackground(Color.WHITE);
         inputField.setForeground(Colors.text());
-        // inputField.setPreferredSize(new Dimension(150, 45));
-        // inputField.setMinimumSize(new Dimension(150, 45));
-        // inputField.setMinimumSize(new Dimension(150, 45));
-        inputField.setFont(Fonts.getInputPromptFont());
+        inputField.setFont(Fonts.getInputFont());
         inputField.setBorder(
                 BorderFactory.createLineBorder(Colors.border(), 4, true));
     }
@@ -108,14 +98,6 @@ public class PanelDecorator {
         textArea.setBorder(
                 BorderFactory.createLineBorder(Colors.bg(), 4, true)
         );
-        textArea.setFont(Fonts.getButtonFont());
-        textArea.setForeground(Colors.text());
-        textArea.setBackground(Colors.panel());
-        textArea.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-    }
-
-    public void adjustTextField(JTextField textArea){
-        textArea.setEditable(false);
         textArea.setFont(Fonts.getButtonFont());
         textArea.setForeground(Colors.text());
         textArea.setBackground(Colors.panel());

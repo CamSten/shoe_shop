@@ -81,7 +81,7 @@ public class CartPanel extends JPanel {
 
     private JLabel getCellLabel(String text) {
         JLabel label = new JLabel(text);
-        label.setFont(Fonts.getTextFont());
+        label.setFont(Fonts.getLabelFont());
         label.setForeground(Colors.text());
         return label;
     }

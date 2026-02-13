@@ -54,9 +54,7 @@ public class MainFrame extends JFrame implements Subscriber {
                 }
             }
         });
-
         showLoginPanel();
-
         setVisible(true);
         setEnabled(true);
         repaint();
@@ -76,7 +74,7 @@ public class MainFrame extends JFrame implements Subscriber {
                 this.returnButton = new JButton("Return");
                 returnButton.setBackground(backgroundColor);
                 returnButton.setForeground(Colors.accent());
-                returnButton.setFont(Fonts.getTextFont());
+                returnButton.setFont(Fonts.getButtonFont());
                 returnButton.setBorder(BorderFactory.createLineBorder(Colors.accent(), 4, true));
                 returnButton.addActionListener(e -> {
                     if (optionsPanel != null && event != null) {
@@ -89,7 +87,7 @@ public class MainFrame extends JFrame implements Subscriber {
             addToCartButton = new JButton("Add to Cart");
             addToCartButton.setBackground(backgroundColor);
             addToCartButton.setForeground(Colors.accent());
-            addToCartButton.setFont(Fonts.getTextFont());
+            addToCartButton.setFont(Fonts.getButtonFont());
             addToCartButton.setBorder(BorderFactory.createLineBorder(Colors.accent(), 4, true));
             addToCartButton.addActionListener(e -> {
                 try {
@@ -108,26 +106,30 @@ public class MainFrame extends JFrame implements Subscriber {
     }
 
     private void showLoginPanel() {
-        centerPanel.removeAll();
-        loginPanel = new LoginPanel(manager, decorator);
-        centerPanel.add(loginPanel, BorderLayout.CENTER);
-        revalidate();
-        repaint();
-        pack();
-    }
+            removeHeader();
+            headerPanel = new HeaderPanel(decorator, "ShoeShop");
+            add(headerPanel, BorderLayout.NORTH);
+            centerPanel.removeAll();
+            loginPanel = new LoginPanel(manager, decorator);
+            centerPanel.add(loginPanel, BorderLayout.CENTER);
+            bottomPanel.removeAll();
+            revalidate();
+            repaint();
+        }
 
-    private void showMenuPanel(Event event) {
+    private void showMenuPanel() {
         adjustHeaderAndFooter("Choose what would you like to do");
         centerPanel.removeAll();
-        menuPanel = new MenuPanel(this, decorator);
+        this.menuPanel = new MenuPanel(this, decorator);
         centerPanel.add(menuPanel);
         revalidate();
         repaint();
     }
     private void showOptionsPanel(Event event) {
+        System.out.println("showOptionsPanel is reached");
         adjustHeaderAndFooter("Browse shoes");
         centerPanel.removeAll();
-        optionsPanel = new OptionsPanel(this, decorator, event);
+        this.optionsPanel = new OptionsPanel(this, decorator, event);
         centerPanel.add(optionsPanel);
         revalidate();
         repaint();
@@ -135,7 +137,7 @@ public class MainFrame extends JFrame implements Subscriber {
     private void showCartPanel(Event event) {
         adjustHeaderAndFooter("Your orders:");
         centerPanel.removeAll();
-        cartPanel = new CartPanel(this, event, decorator);
+        this.cartPanel = new CartPanel(this, event, decorator);
         centerPanel.add(cartPanel);
         revalidate();
         repaint();
@@ -143,7 +145,7 @@ public class MainFrame extends JFrame implements Subscriber {
     private void showPurchasePanel(Event event) {
         removeHeader();
         centerPanel.removeAll();
-        purchasePanel = new PurchasePanel(this, event, decorator);
+        this.purchasePanel = new PurchasePanel(this, event, decorator);
         centerPanel.add(purchasePanel);
         revalidate();
         repaint();
@@ -157,7 +159,7 @@ public class MainFrame extends JFrame implements Subscriber {
     private void adjustHeaderAndFooter(String headerText) {
         removeHeader();
         if (headerText != null && !headerText.isEmpty()) {
-            headerPanel = new HeaderPanel(decorator, headerText);
+            this.headerPanel = new HeaderPanel(decorator, headerText);
             add(headerPanel, BorderLayout.NORTH);
         }
         bottomPanel.removeAll();
@@ -165,9 +167,9 @@ public class MainFrame extends JFrame implements Subscriber {
             backToMenu = new JButton("Return to menu");
             backToMenu.setBackground(backgroundColor);
             backToMenu.setForeground(Colors.accent());
-            backToMenu.setFont(Fonts.getTextFont());
+            backToMenu.setFont(Fonts.getButtonFont());
             backToMenu.setBorder(BorderFactory.createLineBorder(Colors.accent(), 4, true));
-            backToMenu.addActionListener(_ -> showMenuPanel(null));
+            backToMenu.addActionListener(_ -> showMenuPanel());
         }
         bottomPanel.add(backToMenu, BorderLayout.WEST);
         bottomPanel.setVisible(true);
@@ -196,10 +198,19 @@ public class MainFrame extends JFrame implements Subscriber {
             case GUI -> {
                 switch (event.getAction()) {
                     case CREATE_ACCOUNT -> showLoginPanel();
-                    case VIEW -> showOptionsPanel(event);
+                    case VIEW -> {
+                        if (event.getOutcome() == Event.Outcome.PENDING && event.getPhase() == Event.Phase.SELECT) {
+                            manager.Update(event);
+                        } else {
+                            showOptionsPanel(event);
+                        }
+                    }
                     case CHOOSE_TYPE -> {
                         if (event.getContents() instanceof Product) {
                             showSingleProductPanel(event);
+                        }
+                        else if (event.getContents() instanceof ProductTerm){
+                            manager.Update(event);
                         }
                     }
                     case PURCHASE -> showPurchasePanel(event);
@@ -207,19 +218,28 @@ public class MainFrame extends JFrame implements Subscriber {
             }
             case LOGIC -> {
                 switch (event.getAction()) {
+                    //        mainFrame.Update(new Event(Event.Phase.AWAIT_INPUT, Event.Action.VALIDATE, Event.Subject.CUSTOMER, Event.Origin.LOGIC, Event.Outcome.NOT_FOUND, null, null));
                     case VALIDATE -> {
+                        if (event.getPhase() == Event.Phase.AWAIT_INPUT && event.getSubject() == Event.Subject.NONE){
+                            showLoginPanel();
+                            break;
+                        }
                         switch (event.getOutcome()) {
-                            case NOT_FOUND -> showLoginPanel(); // prompt create new account
-                            case INVALID_INPUT -> showLoginPanel(); // prompt wrong password
-                            case OK -> showMenuPanel(event);
+                            case NOT_FOUND -> loginPanel.promptNoSuchUser();
+                            case INVALID_INPUT -> loginPanel.promptWrongPassword();
+                            case OK -> showMenuPanel();
                         }
                     }
                     case CREATE_ACCOUNT -> {
                         if (event.getOutcome() == Event.Outcome.OK) {
-                            showMenuPanel(event);
+                            showMenuPanel();
+                        }
+                        else if (event.getPhase() == Event.Phase.AWAIT_INPUT){
+                            loginPanel.showCreateAccountPanel();
                         }
                     }
                     case VIEW -> {
+                        System.out.println("case VIEW is reached");
                         if (event.getPhase() == Event.Phase.DISPLAY && event.getSubject() == Event.Subject.SHOE) {
                             showOptionsPanel(event);
                         } else if (event.getPhase() == Event.Phase.COMPLETE && event.getSubject() == Event.Subject.CART) {

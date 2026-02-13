@@ -7,7 +7,6 @@ import java.util.*;
 
 public class ApplicationManager implements Subscriber {
     private MainFrame mainFrame;
-    //    private Retrieving retrieving;
     private LoginPanel loginPanel;
     private DatabaseRelay databaseRelay;
     private int customerId;
@@ -15,11 +14,9 @@ public class ApplicationManager implements Subscriber {
     public enum Action {
         select("select "), insert("insert into "), update("update ");
         private final String actionName;
-
         Action(String actionName) {
             this.actionName = actionName;
         }
-
         @Override
         public String toString() {
             return actionName;
@@ -27,9 +24,10 @@ public class ApplicationManager implements Subscriber {
     }
 
     public ApplicationManager() {
-        mainFrame = new MainFrame(this);
+        System.out.println("appManager constructor is reached");
+        this.mainFrame = new MainFrame(this);
         try {
-            databaseRelay = new DatabaseRelay(this);
+            this.databaseRelay = new DatabaseRelay(this);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -59,6 +57,10 @@ public class ApplicationManager implements Subscriber {
             case LOGIC -> {
                 switch (event.getAction()) {
                     case VALIDATE -> {
+                        if (event.getPhase() == Event.Phase.AWAIT_INPUT && event.getSubject() == Event.Subject.NONE){
+                            mainFrame.Update(event);
+                            break;
+                        }
                         switch (event.getOutcome()) {
                             case NOT_FOUND -> promptCreateNewAccount();
                             case INVALID_INPUT -> promptWrongPassword();
