@@ -35,6 +35,11 @@ public class PurchasePanel extends JPanel {
         if (event.getContents()!= null && event.getContents() instanceof Product){
             this.p = (Product) event.getContents();
         }
+        System.out.println("in purchasePanel: Action=" + event.getAction() +
+                ", Phase=" + event.getPhase() +
+                ", Subject=" + event.getSubject() +
+                ", Outcome=" + event.getOutcome() +
+                ", Origin=" + event.getOrigin());
         this.decorator = decorator;
         setBackground(Colors.panel());
         add(getCartPanel(event));
@@ -45,6 +50,7 @@ public class PurchasePanel extends JPanel {
         this.cartPanel = new JPanel();
         cartPanel.setLayout(new BoxLayout(cartPanel, BoxLayout.X_AXIS));
         cartPanel.setBackground(Colors.panel());
+        mainFrame.adjustHeaderAndFooter("Choose color and size:", true, true, true);
         List<Integer> sizes = new ArrayList<>();
         List<String> colors = new ArrayList<>();
 //        List<Integer> quantities = new ArrayList<>();
@@ -183,9 +189,16 @@ public class PurchasePanel extends JPanel {
         decorator.adjustWrapperPanel(confirmationPanel);
         Product product = null;
         String confText = "";
-        JTextArea confirmArea = new JTextArea();
-        decorator.adjustHeader(confirmArea);
-        confirmationPanel.add(confirmArea, BorderLayout.NORTH);
+        switch  (event.getOutcome()){
+            case OK -> {
+                confText = "Added to cart: check!\nfor:";
+            }
+            case FAILURE -> {
+                confText = "Add to cart failed for:";
+            }
+        }
+        mainFrame.adjustHeaderAndFooter(confText, true, false, false);
+
         String brandValue = "";
         String nameValue = "";
         String colorValue = "";
@@ -215,15 +228,6 @@ public class PurchasePanel extends JPanel {
             intValues.add(sizeValue);
             intValues.add(quantityValue);
         }
-        switch  (event.getOutcome()){
-            case OK -> {
-                confText = "The following product has been added to your cart:";
-            }
-            case FAILURE -> {
-                confText = "The following product could not be added to your cart:";
-            }
-        }
-        confirmArea.setText(confText);
         List<JLabel> intValueLabels = new ArrayList<>();
         for (int i = 0; i < stringValues.size(); i++) {
             if (i < intValues.size()) {
@@ -234,13 +238,15 @@ public class PurchasePanel extends JPanel {
             infoLabels.add(stringValueLabel);
         }
         infoLabels.addAll(intValueLabels);
-        JPanel infoPanel = new JPanel(new GridLayout(infoLabels.size(), 1));
-        decorator.adjustInputPanel(infoPanel);
+        JPanel infoPanel = new JPanel();
+//        JPanel infoPanel = new JPanel(new GridLayout(infoLabels.size(), 1));
+        decorator.adjustWrapperPanel(infoPanel);
         for (int i = 0; i < infoLabels.size(); i++){
             JPanel singleValuePanel = new JPanel(new GridLayout(1, 2));
             decorator.adjustSingleResultPanel(singleValuePanel);
             JLabel descriptionLabel = new JLabel(descriptions.get(i));
             decorator.adjustLabel(descriptionLabel);
+            descriptionLabel.setForeground(Colors.textMuted());
             JLabel infoLabel = infoLabels.get(i);
             decorator.adjustLabel(infoLabel);
             singleValuePanel.add(descriptionLabel);
@@ -248,11 +254,12 @@ public class PurchasePanel extends JPanel {
             infoPanel.add(singleValuePanel);
         }
         confirmationPanel.add(infoPanel, BorderLayout.CENTER);
+       confirmationPanel.setBorder(BorderFactory.createLineBorder(Colors.bg(), 10, true));
         cartPanel.add(confirmationPanel);
         repaint();
         revalidate();
     }
-    private void submitActions() throws SQLException, ClassNotFoundException {
+    public void submitActions() throws SQLException, ClassNotFoundException {
         System.out.println("submitActions is reached in CartPanel");
         int buyQuantity = assessQuantityInput();
         if (colorBox.getSelectedItem() != null && sizeBox.getSelectedItem() != null) {

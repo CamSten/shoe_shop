@@ -23,12 +23,15 @@ public class MainFrame extends JFrame implements Subscriber {
     private MenuPanel menuPanel;
     private OptionsPanel optionsPanel;
     private CartPanel cartPanel;
+    private SingleProductPanel singlePanel;
     private PurchasePanel purchasePanel;
     private JButton backToMenu;
     private final Color backgroundColor = Colors.bg();
     private JButton addToCartButton;
     private JButton returnButton;
     private Product currentProduct;
+    private Event currentEvent;
+    private JButton getAddToCartButton;
 
     public MainFrame(ApplicationManager manager) {
         this.manager = manager;
@@ -63,60 +66,34 @@ public class MainFrame extends JFrame implements Subscriber {
     }
 
     private void showSingleProductPanel(Event event) {
-        System.out.println("showSingleProductPanel is reached");
         if (event.getContents() instanceof Product) {
+            Product product = (Product) event.getContents();
+            adjustHeaderAndFooter("Available options:", true, false ,true);
+
             this.currentProduct = (Product) event.getContents();
-
             centerPanel.removeAll();
-            SingleProductPanel singlePanel = new SingleProductPanel(currentProduct, decorator);
+            this.singlePanel = new SingleProductPanel(this, currentProduct, decorator);
             centerPanel.add(singlePanel, BorderLayout.CENTER);
-            bottomPanel.removeAll();
-            if (returnButton == null) {
-                this.returnButton = new JButton("Return");
-                returnButton.setBackground(backgroundColor);
-                returnButton.setForeground(Colors.accent());
-                returnButton.setFont(Fonts.getButtonFont());
-                returnButton.setBorder(BorderFactory.createLineBorder(Colors.accent(), 4, true));
-                returnButton.addActionListener(e -> {
-                    if (optionsPanel != null && event != null) {
-                        showOptionsPanel(event); // återgå till gamla optionspanel
-                    }
-                });
-            }
-            bottomPanel.add(returnButton, BorderLayout.WEST);
-
-            addToCartButton = new JButton("Add to Cart");
-            addToCartButton.setBackground(backgroundColor);
-            addToCartButton.setForeground(Colors.accent());
-            addToCartButton.setFont(Fonts.getButtonFont());
-            addToCartButton.setBorder(BorderFactory.createLineBorder(Colors.accent(), 4, true));
-            addToCartButton.addActionListener(e -> {
-                showPurchasePanel(event);
-            });
-            bottomPanel.add(addToCartButton, BorderLayout.EAST);
-
-            bottomPanel.setVisible(true);
             revalidate();
             repaint();
-            pack();
         }
     }
 
     private void showLoginPanel() {
             removeHeader();
 //            headerPanel = new HeaderPanel(decorator, "ShoeShop");
-        adjustHeaderAndFooter("ShoeShop", false);
+        adjustHeaderAndFooter("ShoeShop", false, false, false);
             add(headerPanel, BorderLayout.NORTH);
             centerPanel.removeAll();
             this.loginPanel = new LoginPanel(manager, this, decorator);
             centerPanel.add(loginPanel, BorderLayout.CENTER);
-            bottomPanel.removeAll();
+//            bottomPanel.removeAll();
             revalidate();
             repaint();
         }
 
     private void showMenuPanel() {
-        adjustHeaderAndFooter("Choose what you would like to do: ", false);
+        adjustHeaderAndFooter("Choose what you would like to do: ", false, false, false);
         centerPanel.removeAll();
         this.menuPanel = new MenuPanel(this, decorator);
         centerPanel.add(menuPanel);
@@ -125,7 +102,7 @@ public class MainFrame extends JFrame implements Subscriber {
     }
     private void showOptionsPanel(Event event) {
         System.out.println("showOptionsPanel is reached");
-        adjustHeaderAndFooter("Browse shoes", true);
+        adjustHeaderAndFooter("Browse shoes", true, false, false);
         centerPanel.removeAll();
         this.optionsPanel = new OptionsPanel(this, decorator, event);
         centerPanel.add(optionsPanel);
@@ -133,7 +110,7 @@ public class MainFrame extends JFrame implements Subscriber {
         repaint();
     }
     private void showCartPanel(Event event) {
-        adjustHeaderAndFooter("Your orders:", true);
+        adjustHeaderAndFooter("Your orders:", true, false, false);
         centerPanel.removeAll();
         this.cartPanel = new CartPanel(this, event, decorator);
         centerPanel.add(cartPanel);
@@ -141,7 +118,8 @@ public class MainFrame extends JFrame implements Subscriber {
         repaint();
     }
     private void showPurchasePanel(Event event) {
-        adjustHeaderAndFooter("", true);
+        System.out.println("showPurchasePanel is reached");
+        adjustHeaderAndFooter("Choose color and size", true, true, true);
         centerPanel.removeAll();
         this.purchasePanel = new PurchasePanel(this, event, decorator);
         centerPanel.add(purchasePanel);
@@ -154,7 +132,8 @@ public class MainFrame extends JFrame implements Subscriber {
             headerPanel = null;
         }
     }
-    public void adjustHeaderAndFooter(String headerText, boolean showBackToMenu) {
+    public void adjustHeaderAndFooter(String headerText, boolean showBackToMenu, boolean showReturn, boolean showAdd) {
+        System.out.println("headerText: " + headerText + " showBackToMenu: " + showBackToMenu + " showReturn: " + showReturn + " showAdd: " + showAdd);
         bottomPanel.removeAll();
         removeHeader();
         if (headerText != null && !headerText.isEmpty()) {
@@ -162,22 +141,71 @@ public class MainFrame extends JFrame implements Subscriber {
             add(headerPanel, BorderLayout.NORTH);
         }
         if(showBackToMenu) {
-            if (backToMenu == null) {
+                JPanel buttonPanel = new JPanel();
                 backToMenu = new JButton("Return to menu");
+                decorator.adjustWrapperPanel(buttonPanel);
+                buttonPanel.add(backToMenu);
                 decorator.adjustButton(backToMenu);
-//                backToMenu.setBackground(backgroundColor);
-//                backToMenu.setForeground(Colors.accent());
-//                backToMenu.setFont(Fonts.getButtonFont());
-//                backToMenu.setBorder(BorderFactory.createLineBorder(Colors.accent(), 4, true));
                 backToMenu.setBorder(BorderFactory.createLineBorder(Colors.bg(), 10, true));
                 backToMenu.addActionListener(_ -> showMenuPanel());
-            }
-            bottomPanel.add(backToMenu, BorderLayout.WEST);
-            bottomPanel.setVisible(true);
+                buttonPanel.add(backToMenu);
+                bottomPanel.add(buttonPanel, BorderLayout.WEST);
+                bottomPanel.setVisible(true);
         }
+
+        if (showReturn){
+            JPanel buttonPanel = new JPanel();
+            decorator.adjustWrapperPanel(buttonPanel);
+            this.returnButton = new JButton("Return");
+            decorator.adjustButton(returnButton);
+            buttonPanel.add(returnButton);
+            returnButton.setBorder(BorderFactory.createLineBorder(Colors.bg(), 10, true));
+            returnButton.addActionListener(e -> {
+                if (optionsPanel != null && currentEvent != null) {
+                    showOptionsPanel(currentEvent);
+                }
+            });
+            buttonPanel.add(returnButton);
+            bottomPanel.add(buttonPanel, BorderLayout.EAST);
+        }
+           if (showAdd) {
+               JPanel buttonPanel = new JPanel();
+               decorator.adjustWrapperPanel(buttonPanel);
+               if (addToCartButton != null){
+                   addToCartButton.setText("Submit");
+                   addToCartButton.setBackground(Color.WHITE);
+                   addToCartButton.setBorder(BorderFactory.createLineBorder(Colors.buttonHover(), 10, true));
+               }
+               else {
+                   this.addToCartButton = new JButton("Add to Cart");
+                   addToCartButton.setBorder(BorderFactory.createLineBorder(Colors.bg(), 10, true));
+                   decorator.adjustButton(addToCartButton);
+                   addToCartButton.setBorder(BorderFactory.createLineBorder(Colors.bg(), 10, true));
+               }
+
+               addToCartButton.addActionListener(e -> {
+                   if (currentEvent.getAction() == Event.Action.CHOOSE_TYPE) {
+                       showPurchasePanel(currentEvent);
+                   }
+                   else{
+                       try {
+                           purchasePanel.submitActions();
+                       } catch (Exception ex) {
+                           throw new RuntimeException(ex);
+                       }
+                   }
+               });
+               buttonPanel.add(addToCartButton);
+               bottomPanel.add(buttonPanel, BorderLayout.CENTER);
+           }
+            bottomPanel.setVisible(true);
+            revalidate();
+            repaint();
+            pack();
     }
 
     public void Update(Event event) throws SQLException, ClassNotFoundException {
+        this.currentEvent = event;
         System.out.println("in MainFrame.UPDATE: Action=" + event.getAction() +
                 ", Phase=" + event.getPhase() +
                 ", Subject=" + event.getSubject() +
@@ -193,7 +221,6 @@ public class MainFrame extends JFrame implements Subscriber {
                 System.out.println("ProductTerm: " + pt);
             }
         }
-
         Event.Origin origin = event.getOrigin();
 
         switch (origin) {
@@ -258,6 +285,7 @@ public class MainFrame extends JFrame implements Subscriber {
                     case PURCHASE -> {
                         if (event.getPhase() == Event.Phase.COMPLETE) {
                             purchasePanel.getConfirmationPanel(event);
+                            remove(addToCartButton);
                         } else {
                             showPurchasePanel(event);
                         }

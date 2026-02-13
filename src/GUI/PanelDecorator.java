@@ -42,6 +42,7 @@ public class PanelDecorator {
     public void adjustLabel(JLabel label){
         label.setFont(Fonts.getLabelFont());
         label.setForeground(Colors.text());
+//        label.setOpaque(true);
 //        label.setPreferredSize(new Dimension(100, 30));
     }
     public void adjustCardLabel(JLabel label){
@@ -167,6 +168,7 @@ public void adjustCardText(JTextArea area){
         singleResultPanel.setLayout(new BoxLayout(singleResultPanel, BoxLayout.Y_AXIS));
         singleResultPanel.setBorder(BorderFactory.createLineBorder(Colors.border(), 5, true));
         singleResultPanel.setBackground(Colors.panel());
+        singleResultPanel.setMinimumSize(new Dimension(300, Integer.MAX_VALUE));
         singleResultPanel.setMaximumSize(new Dimension(450, Integer.MAX_VALUE));
         singleResultPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
     }

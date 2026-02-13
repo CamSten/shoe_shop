@@ -7,8 +7,12 @@ import java.util.List;
 
 public class SingleProductPanel extends JPanel {
     private PanelDecorator decorator;
+    private Product product;
+    private MainFrame mainFrame;
 
-    public SingleProductPanel(Product product, PanelDecorator decorator) {
+    public SingleProductPanel(MainFrame mainFrame, Product product, PanelDecorator decorator) {
+        this.mainFrame = mainFrame;
+        this.product = product;
         this.decorator = decorator;
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         setBackground(Colors.panel());

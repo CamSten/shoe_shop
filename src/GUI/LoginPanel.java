@@ -127,7 +127,7 @@ public class LoginPanel extends JPanel {
         streetField = new JTextField();
         cityField = new JTextField();
         passwordField = new JPasswordField();
-        mainFrame.adjustHeaderAndFooter("Fill in your details:", false);
+        mainFrame.adjustHeaderAndFooter("Fill in your details:", false, false, false);
 
         List<JTextField> fields = List.of(firstnameField, surnameField, streetField, cityField, emailField, passwordField);
         for (JTextField f : fields) decorator.adjustTextField(f);
