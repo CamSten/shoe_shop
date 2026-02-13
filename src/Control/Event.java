@@ -39,6 +39,7 @@ public class Event {
         SHOE,
         CUSTOMER,
         CART,
+        ADMIN,
         NONE
     }
     public enum Origin {

@@ -1,4 +1,5 @@
-package GUI;
+package GUI.AdminGUI;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -6,16 +7,15 @@ import java.awt.event.ActionListener;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import Control.Event;
 
-public class MenuPanel extends JPanel {
+public class AdminMenuPanel extends JPanel{
     private MainFrame mainFrame;
     private PanelDecorator decorator;
     private List<JButton> allOptionButtons = new ArrayList<>();
 
-    public MenuPanel(MainFrame mainFrame, PanelDecorator decorator) {
+    public AdminMenuPanel( MainFrame mainFrame, PanelDecorator decorator) {
         this.mainFrame = mainFrame;
-//        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        this.decorator = decorator;
         setLayout(new BorderLayout());
         setBackground(Colors.bg());
 //        setMinimumSize(new Dimension(550, 500));
@@ -69,22 +69,22 @@ public class MenuPanel extends JPanel {
     }
 
     private void getButtons() {
-        JButton optionHandleSeeker = new JButton("Browse shoes");
-        allOptionButtons.add(optionHandleSeeker);
-        optionHandleSeeker.addActionListener(new ActionListener() {
+        JButton optionSeeOrders = new JButton("See order history");
+        allOptionButtons.add(optionSeeOrders);
+        optionSeeOrders.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    System.out.println("--- IN MENU PANEL, SEE SHOES IS CHOSEN");
+                    System.out.println("");
                     Update(Event.select(Event.Subject.SHOE));
                 } catch (SQLException | ClassNotFoundException ex) {
                     throw new RuntimeException(ex);
                 }
             }
         });
-        JButton optionHandleOpening = new JButton("See items in cart");
-        allOptionButtons.add(optionHandleOpening);
-        optionHandleOpening.addActionListener(new ActionListener() {
+        JButton optionSeeSales = new JButton("See sales overview");
+        allOptionButtons.add(optionSeeSales);
+        optionSeeSales.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
@@ -95,9 +95,9 @@ public class MenuPanel extends JPanel {
                 }
             }
         });
-        JButton optionEditDetails = new JButton("See account details");
-        allOptionButtons.add(optionEditDetails);
-        optionHandleOpening.addActionListener(new ActionListener() {
+        JButton optionSeeInventory = new JButton("See current inventory");
+        allOptionButtons.add(optionSeeInventory);
+        optionSeeInventory.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {

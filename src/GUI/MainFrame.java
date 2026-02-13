@@ -2,6 +2,7 @@ package GUI;
 import Control.ApplicationManager;
 import Control.Event;
 import Control.Subscriber;
+import GUI.AdminGUI.AdminMenuPanel;
 import Model.Customer;
 import Model.Product;
 import Model.ProductTerm;
@@ -25,6 +26,7 @@ public class MainFrame extends JFrame implements Subscriber {
     private CartPanel cartPanel;
     private SingleProductPanel singlePanel;
     private PurchasePanel purchasePanel;
+    private AdminMenuPanel adminMenu;
     private JButton backToMenu;
     private final Color backgroundColor = Colors.bg();
     private JButton addToCartButton;
@@ -204,6 +206,15 @@ public class MainFrame extends JFrame implements Subscriber {
             pack();
     }
 
+    private void showAdminMenu(){
+        adjustHeaderAndFooter("Choose what you would like to do: ", false, false, false);
+        centerPanel.removeAll();
+        this.adminMenu = new AdminMenuPanel(this, decorator);
+        centerPanel.add(adminMenu);
+        revalidate();
+        repaint();
+    }
+
     public void Update(Event event) throws SQLException, ClassNotFoundException {
         this.currentEvent = event;
         System.out.println("in MainFrame.UPDATE: Action=" + event.getAction() +
@@ -256,7 +267,10 @@ public class MainFrame extends JFrame implements Subscriber {
                 switch (event.getAction()) {
                     //        mainFrame.Update(new Event(Event.Phase.AWAIT_INPUT, Event.Action.VALIDATE, Event.Subject.CUSTOMER, Event.Origin.LOGIC, Event.Outcome.NOT_FOUND, null, null));
                     case VALIDATE -> {
-                        if (event.getPhase() == Event.Phase.AWAIT_INPUT && event.getSubject() == Event.Subject.NONE){
+                        if (event.getSubject() == Subject.ADMIN && event.getOutcome == Event.Outcome.OK){
+                            showAdminMenu();
+                        }
+                        else if (event.getPhase() == Event.Phase.AWAIT_INPUT && event.getSubject() == Event.Subject.NONE){
                             showLoginPanel();
                             break;
                         }

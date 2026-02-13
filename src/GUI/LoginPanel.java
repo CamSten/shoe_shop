@@ -219,4 +219,8 @@ public class LoginPanel extends JPanel {
     public void promptWrongPassword() {
         JOptionPane.showMessageDialog(this, "The password that you have entered is incorrect");
     }
+    public void promptInvalidAdminLogin(){
+        JOptionPane.showMessageDialog(this, "The password that you have entered is incorrect, admin login failed.");
+
+    }
 }

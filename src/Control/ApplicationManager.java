@@ -10,6 +10,7 @@ public class ApplicationManager implements Subscriber {
     private LoginPanel loginPanel;
     private DatabaseRelay databaseRelay;
     private int customerId;
+    private String adminId = "admin";
 
     public enum Action {
         select("select "), insert("insert into "), update("update ");
@@ -62,12 +63,18 @@ public class ApplicationManager implements Subscriber {
             case LOGIC -> {
                 switch (event.getAction()) {
                     case VALIDATE -> {
-                        if (event.getPhase() == Event.Phase.AWAIT_INPUT && event.getSubject() == Event.Subject.NONE){
+                        if (event.getPhase() == Event.Phase.AWAIT_INPUT && event.getSubject() == Event.Subject.NONE || (event.getSubject == Event.Subject.ADMIN && event.getOutcome == Event.Outcome.OK){
                             mainFrame.Update(event);
                             break;
                         }
                         switch (event.getOutcome()) {
-                            case NOT_FOUND -> promptCreateNewAccount();
+                            case NOT_FOUND -> {
+                                if (event.getSubject == Event.Subject.ADMIN) {
+
+                                } else {
+                                    promptCreateNewAccount();
+                                }
+                            }
                             case INVALID_INPUT -> promptWrongPassword();
                             case OK -> {
                                 saveCustomer((Integer) event.getExtraContents());
@@ -114,6 +121,9 @@ public class ApplicationManager implements Subscriber {
             }
         }
     }
+    private void promptInvalidAdminLogin(){
+        loginPanel.promptInvalidAdminLogin();
+    }
 
     private void promptCreateNewAccount() throws SQLException, ClassNotFoundException {
         mainFrame.Update(new Event(Event.Phase.AWAIT_INPUT, Event.Action.VALIDATE, Event.Subject.CUSTOMER, Event.Origin.LOGIC, Event.Outcome.NOT_FOUND, null, null));
@@ -132,10 +142,14 @@ public class ApplicationManager implements Subscriber {
 
     public void validateCustomer(String emailInput, String password) throws SQLException, ClassNotFoundException {
         System.out.println("VALIDATE USER in appManager is reached, email is: " + emailInput + " password is: " + password);
+        Event.Subject subject = Event.Subject.CUSTOMER;
+        if (emailInput.equals(adminId){
+            subject = Event.Subject.ADMIN;
+        }
         List<String> userInput = new ArrayList<>();
         userInput.add(emailInput);
         userInput.add(password);
-        databaseRelay.Update(Event.submit(Event.Action.VALIDATE, Event.Subject.CUSTOMER, userInput, null));
+        databaseRelay.Update(Event.submit(Event.Action.VALIDATE, subject, userInput, null));
     }
 
     public void assessCreateAccount(int choice) throws SQLException, ClassNotFoundException {
