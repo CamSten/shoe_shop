@@ -16,9 +16,10 @@ public class MenuPanel extends JPanel {
 
     public MenuPanel(MainFrame mainFrame, PanelDecorator decorator) {
         this.mainFrame = mainFrame;
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+//        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        setLayout(new BorderLayout());
         setBackground(Colors.bg());
-        setMinimumSize(new Dimension(550, 500));
+//        setMinimumSize(new Dimension(550, 500));
         setOpaque(true);
 
         getButtons();
@@ -27,36 +28,43 @@ public class MenuPanel extends JPanel {
         menuButtons.setBackground(Colors.panel());
         menuButtons.setOpaque(true);
         menuButtons.setLayout(new BoxLayout(menuButtons, BoxLayout.Y_AXIS));
-        menuButtons.setPreferredSize(new Dimension(300, allOptionButtons.size() * 60));
-        menuButtons.setMaximumSize(new Dimension(300, Integer.MAX_VALUE));
+//        menuButtons.setPreferredSize(new Dimension(300, allOptionButtons.size() * 60));
+//        menuButtons.setMaximumSize(new Dimension(300, Integer.MAX_VALUE));
         menuButtons.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         for (JButton button : allOptionButtons) {
-            button.setFont(Fonts.getButtonFont());
-            button.setBackground(Colors.button());
-            button.setForeground(Colors.buttonText());
-            button.setPreferredSize(new Dimension(300, 45));
-            button.setMinimumSize(new Dimension(300, 45));
-            button.setMinimumSize(new Dimension(300, 45));
-            button.add(Box.createHorizontalStrut(300));
+            JPanel singleButtonPanel = new JPanel();
+            decorator.adjustInputPanel(singleButtonPanel);
+            decorator.adjustButton(button);
+//            button.setFont(Fonts.getButtonFont());
+//            button.setBackground(Colors.button());
+//            button.setForeground(Colors.buttonText());
+//            button.setPreferredSize(new Dimension(300, 45));
+//            button.setMinimumSize(new Dimension(300, 45));
+//            button.setMinimumSize(new Dimension(300, 45));
+//            button.add(Box.createHorizontalStrut(300));
             button.setAlignmentX(Component.CENTER_ALIGNMENT);
-            button.setBorder(BorderFactory.createLineBorder(Colors.border(), 5, true));
+//            button.setBorder(BorderFactory.createLineBorder(Colors.border(), 5, true));
 //
-            menuButtons.add(Box.createVerticalStrut(5));
-            menuButtons.add(button);
-            menuButtons.add(Box.createVerticalStrut(5));
+            singleButtonPanel.add(button);
+            menuButtons.add(Box.createVerticalStrut(15));
+            menuButtons.add(singleButtonPanel);
+            menuButtons.add(Box.createVerticalStrut(15));
             menuButtons.setBorder(BorderFactory.createLineBorder(Colors.bg(), 10, true));
         }
+//        JPanel buttonPanel = new JPanel(new BorderLayout());
         JPanel buttonPanel = new JPanel();
+//        buttonPanel.setBorder(BorderFactory.createLineBorder(Colors.buttonHover(), 4, true));
         buttonPanel.setBackground(Colors.panel());
         buttonPanel.setOpaque(true);
         buttonPanel.setPreferredSize(menuButtons.getPreferredSize());
         buttonPanel.setMaximumSize(menuButtons.getMaximumSize());
-        buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));
+//        buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));
+//        buttonPanel.add(menuButtons, BorderLayout.CENTER);
         buttonPanel.add(menuButtons);
-        add(Box.createHorizontalGlue());
-        add(buttonPanel);
-        add(Box.createHorizontalGlue());
+//        add(Box.createHorizontalGlue());
+        add(buttonPanel, BorderLayout.CENTER);
+//        add(Box.createHorizontalGlue());
         repaint();
         revalidate();
     }
@@ -88,8 +96,8 @@ public class MenuPanel extends JPanel {
                 }
             }
         });
-        JButton optionEditDetails = new JButton("Account details");
-        allOptionButtons.add(optionHandleOpening);
+        JButton optionEditDetails = new JButton("See account details");
+        allOptionButtons.add(optionEditDetails);
         optionHandleOpening.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {

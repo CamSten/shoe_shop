@@ -32,6 +32,7 @@ public class Event {
         CHOOSE_TYPE,
         SEARCH,
         PURCHASE,
+        EDIT,
         VIEW
     }
     public enum Subject {

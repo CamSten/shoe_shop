@@ -34,13 +34,13 @@ public class MainFrame extends JFrame implements Subscriber {
         this.manager = manager;
         this.decorator = new PanelDecorator();
         setLayout(new BorderLayout());
-        setMinimumSize(new Dimension(800, 600));
+        setMinimumSize(new Dimension(800, 750));
         setBackground(backgroundColor);
         centerPanel = new JPanel(new BorderLayout());
         centerPanel.setBackground(backgroundColor);
         add(centerPanel, BorderLayout.CENTER);
         bottomPanel = new JPanel(new BorderLayout());
-        bottomPanel.setBackground(backgroundColor);
+        bottomPanel.setBackground(Colors.panel());
         add(bottomPanel, BorderLayout.SOUTH);
 
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -104,7 +104,8 @@ public class MainFrame extends JFrame implements Subscriber {
 
     private void showLoginPanel() {
             removeHeader();
-            headerPanel = new HeaderPanel(decorator, "ShoeShop");
+//            headerPanel = new HeaderPanel(decorator, "ShoeShop");
+        adjustHeaderAndFooter("ShoeShop", false);
             add(headerPanel, BorderLayout.NORTH);
             centerPanel.removeAll();
             this.loginPanel = new LoginPanel(manager, this, decorator);
@@ -115,7 +116,7 @@ public class MainFrame extends JFrame implements Subscriber {
         }
 
     private void showMenuPanel() {
-        adjustHeaderAndFooter("Choose what you would like to do: ");
+        adjustHeaderAndFooter("Choose what you would like to do: ", false);
         centerPanel.removeAll();
         this.menuPanel = new MenuPanel(this, decorator);
         centerPanel.add(menuPanel);
@@ -124,7 +125,7 @@ public class MainFrame extends JFrame implements Subscriber {
     }
     private void showOptionsPanel(Event event) {
         System.out.println("showOptionsPanel is reached");
-        adjustHeaderAndFooter("Browse shoes");
+        adjustHeaderAndFooter("Browse shoes", true);
         centerPanel.removeAll();
         this.optionsPanel = new OptionsPanel(this, decorator, event);
         centerPanel.add(optionsPanel);
@@ -132,7 +133,7 @@ public class MainFrame extends JFrame implements Subscriber {
         repaint();
     }
     private void showCartPanel(Event event) {
-        adjustHeaderAndFooter("Your orders:");
+        adjustHeaderAndFooter("Your orders:", true);
         centerPanel.removeAll();
         this.cartPanel = new CartPanel(this, event, decorator);
         centerPanel.add(cartPanel);
@@ -140,7 +141,7 @@ public class MainFrame extends JFrame implements Subscriber {
         repaint();
     }
     private void showPurchasePanel(Event event) {
-        removeHeader();
+        adjustHeaderAndFooter("", true);
         centerPanel.removeAll();
         this.purchasePanel = new PurchasePanel(this, event, decorator);
         centerPanel.add(purchasePanel);
@@ -153,23 +154,27 @@ public class MainFrame extends JFrame implements Subscriber {
             headerPanel = null;
         }
     }
-    public void adjustHeaderAndFooter(String headerText) {
+    public void adjustHeaderAndFooter(String headerText, boolean showBackToMenu) {
+        bottomPanel.removeAll();
         removeHeader();
         if (headerText != null && !headerText.isEmpty()) {
             this.headerPanel = new HeaderPanel(decorator, headerText);
             add(headerPanel, BorderLayout.NORTH);
         }
-        bottomPanel.removeAll();
-        if (backToMenu == null) {
-            backToMenu = new JButton("Return to menu");
-            backToMenu.setBackground(backgroundColor);
-            backToMenu.setForeground(Colors.accent());
-            backToMenu.setFont(Fonts.getButtonFont());
-            backToMenu.setBorder(BorderFactory.createLineBorder(Colors.accent(), 4, true));
-            backToMenu.addActionListener(_ -> showMenuPanel());
+        if(showBackToMenu) {
+            if (backToMenu == null) {
+                backToMenu = new JButton("Return to menu");
+                decorator.adjustButton(backToMenu);
+//                backToMenu.setBackground(backgroundColor);
+//                backToMenu.setForeground(Colors.accent());
+//                backToMenu.setFont(Fonts.getButtonFont());
+//                backToMenu.setBorder(BorderFactory.createLineBorder(Colors.accent(), 4, true));
+                backToMenu.setBorder(BorderFactory.createLineBorder(Colors.bg(), 10, true));
+                backToMenu.addActionListener(_ -> showMenuPanel());
+            }
+            bottomPanel.add(backToMenu, BorderLayout.WEST);
+            bottomPanel.setVisible(true);
         }
-        bottomPanel.add(backToMenu, BorderLayout.WEST);
-        bottomPanel.setVisible(true);
     }
 
     public void Update(Event event) throws SQLException, ClassNotFoundException {

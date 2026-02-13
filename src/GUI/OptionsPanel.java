@@ -44,18 +44,7 @@ public class OptionsPanel extends JPanel {
 
     private JPanel getCategoryPanel() {
         System.out.println("getCategoryPanel is reached");
-        JPanel categoryPanel = new JPanel();
-        JPanel wrapperPanel = new JPanel();
-        wrapperPanel.setLayout(new BoxLayout(wrapperPanel, BoxLayout.X_AXIS));
-
-        decorator.adjustWrapperPanel(categoryPanel);
-        decorator.adjustWrapperPanel(wrapperPanel);
-
-        categoryPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
         List<JButton> catPanelButtons = new ArrayList<>();
-
-        JLabel filterLabel = new JLabel("Filter on:");
-        decorator.adjustLabel(filterLabel);
 
         this.categoryButton = new JButton("Category");
         categoryButton.addActionListener(_ -> {
@@ -87,39 +76,56 @@ public class OptionsPanel extends JPanel {
         });
         catPanelButtons.add(colorButton);
 
+        JPanel categoryPanel = new JPanel();
+//        decorator.adjustWrapperPanel(categoryPanel);
+        decorator.adjustInputPanel(categoryPanel);
+        categoryPanel.setLayout(new BoxLayout(categoryPanel, BoxLayout.X_AXIS));
+
+        JLabel filterLabel = new JLabel("Filter on:");
+        decorator.adjustLabel(filterLabel);
+        categoryPanel.add(filterLabel);
         for (JButton b : catPanelButtons) {
             decorator.adjustButton(b);
             Box.createHorizontalStrut(10);
             categoryPanel.add(b);
             Box.createHorizontalStrut(10);
         }
-
-        wrapperPanel.add(filterLabel);
+        JPanel wrapperPanel = new JPanel();
+//        wrapperPanel.setLayout(new GridLayout(2, 1, 0, 0));
+        decorator.adjustWrapperPanel(wrapperPanel);
+//        wrapperPanel.add(filterLabel);
         wrapperPanel.add(categoryPanel);
+//        wrapperPanel.setBorder(BorderFactory.createLineBorder(Colors.buttonHover(), 10, true));
         return wrapperPanel;
     }
 
     public JPanel getOptionsPanel(Event event) {
         System.out.println("getOptionsPanel is reached");
-
-        this.displayingResult = new JPanel();
-        displayingResult.setLayout(new BoxLayout(displayingResult, BoxLayout.Y_AXIS));
-        decorator.adjustWrapperPanel(displayingResult);
-
+        JPanel optionsPanel = new JPanel(new BorderLayout());
         JPanel categoryPanel = getCategoryPanel();
-        displayingResult.add(categoryPanel);
-        displayingResult.add(Box.createVerticalStrut(5));
-        displayingResult.add(getResultPanel(event));
-        displayingResult.add(Box.createVerticalStrut(5));
+        optionsPanel.add(categoryPanel, BorderLayout.NORTH);
+        this.displayingResult = new JPanel();
+//        displayingResult.setLayout(new BoxLayout(displayingResult, BoxLayout.Y_AXIS));
+        displayingResult.setLayout(new BorderLayout());
+        decorator.adjustWrapperPanel(displayingResult);
+        displayingResult.setBorder(BorderFactory.createLineBorder(Colors.bg(), 10, true));
+
+
+//        displayingResult.add(Box.createVerticalStrut(5));
+        displayingResult.add(getResultPanel(event),BorderLayout.CENTER);
+//        displayingResult.add(Box.createVerticalStrut(5));
 
         JPanel wrapperPanel = new JPanel();
         wrapperPanel.setBackground(Colors.panel());
-        wrapperPanel.setBorder(BorderFactory.createEmptyBorder(10, 40, 10, 40));
+//        wrapperPanel.setBorder(BorderFactory.createEmptyBorder(10, 40, 10, 40));
+
         decorator.adjustWrapperPanel(wrapperPanel);
 
         this.inputPanel = wrapperPanel;
+//        inputPanel.setBackground(Colors.bg());
         addScrollBar(inputPanel, displayingResult);
-        return wrapperPanel;
+        optionsPanel.add(inputPanel);
+        return optionsPanel;
     }
 
     private JPanel getResultPanel(Event event) {
@@ -132,7 +138,6 @@ public class OptionsPanel extends JPanel {
         if (event.getExtraContents() != null && event.getExtraContents() instanceof ProductTerm p) {
             currentProductTerm = p;
         }
-
         JPanel resultPanel = new JPanel();
         resultPanel.setLayout(new BoxLayout(resultPanel, BoxLayout.Y_AXIS));
         decorator.adjustWrapperPanel(resultPanel);
@@ -152,11 +157,9 @@ public class OptionsPanel extends JPanel {
                 System.out.println("in GET RESULT PANEL, STRING IS: " + s);
                 JPanel singleResultPanel = new JPanel();
                 decorator.adjustSingleResultPanel(singleResultPanel);
-
                 JButton button = new JButton(s);
                 decorator.adjustButton(button);
                 singleResultPanel.add(button);
-
                 button.addActionListener(_ -> {
                     try {
                         sendUserChoice(s);
@@ -164,8 +167,9 @@ public class OptionsPanel extends JPanel {
                         throw new RuntimeException(e);
                     }
                 });
-
+                resultPanel.add(Box.createVerticalGlue());
                 resultPanel.add(singleResultPanel);
+                resultPanel.add(Box.createVerticalGlue());
             }
         }
 
@@ -194,7 +198,7 @@ public class OptionsPanel extends JPanel {
     private JPanel createAllShoePanels(List<Product> products) {
         System.out.println("CreateAllShoePanels in OptionsPanel is reached");
         JPanel allShoesPanel = new JPanel(new GridLayout(0, 3, 20, 20));
-        allShoesPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+//        allShoesPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         allShoesPanel.setBackground(Colors.panel());
 
         for (Product p : products) {
@@ -203,21 +207,19 @@ public class OptionsPanel extends JPanel {
             decorator.adjustShoeInfoPanel(shoePanel);
 
             JLabel shoeBrand = new JLabel(p.getBrand());
+            decorator.adjustBrandLabel(shoeBrand);
             JLabel shoeName = new JLabel(p.getName());
-            shoePanel.add(shoeBrand);
-            shoePanel.add(shoeName);
-            shoePanel.add(Box.createVerticalStrut(10));
+            decorator.adjustCardLabel(shoeName);
+            JPanel cardTop = new JPanel(new GridLayout(1, 2));
+//            decorator.adjustInputPanel(cardTop);
+            cardTop.add(shoeBrand);
+            cardTop.add(shoeName);
+            shoePanel.add(cardTop);
+//            shoePanel.add(Box.createVerticalStrut(10));
 
-            JLabel priceLabel = new JLabel(String.valueOf(p.getPrice()));
-            shoePanel.add(priceLabel);
-            shoePanel.add(Box.createVerticalGlue());
-
-            JTextArea description = new JTextArea(p.getDescription());
-            description.setEditable(false);
-            shoePanel.add(description);
 
             JButton shoeButton = new JButton("See details");
-            decorator.adjustButton(shoeButton);
+            decorator.adjustShoeCardButton(shoeButton);
             shoeButton.addActionListener(_ -> {
                 try {
                     mainFrame.Update(new Event(Event.Phase.SUBMIT, Event.Action.CHOOSE_TYPE, Event.Subject.SHOE, Event.Origin.GUI, Event.Outcome.PENDING, p, null
@@ -226,9 +228,24 @@ public class OptionsPanel extends JPanel {
                     throw new RuntimeException(e);
                 }
             });
-
+            shoeButton.setAlignmentX(Component.CENTER_ALIGNMENT);
             shoePanel.add(shoeButton);
             decorator.adjustSingleShoePanel(shoePanel);
+
+
+            shoePanel.add(Box.createVerticalGlue());
+
+            JTextArea description = new JTextArea(p.getDescription());
+            decorator.adjustCardText(description);
+            shoePanel.add(description);
+            String thisPrice = String.valueOf(p.getPrice());
+            JLabel priceLabel = new JLabel(thisPrice + " SEK");
+            priceLabel.setFont(Fonts.getTinyFont());
+            priceLabel.setForeground(Colors.text());
+            priceLabel.setBackground(Colors.border());
+            priceLabel.setOpaque(true);
+//            decorator.adjustCardLabel(priceLabel);
+            shoePanel.add(priceLabel);
             allShoesPanel.add(shoePanel);
         }
 
@@ -238,18 +255,21 @@ public class OptionsPanel extends JPanel {
     private JPanel getShoeInfoPanel(Product p) {
         System.out.println("getSingleShoePanel is reached");
         JPanel wrapperPanel = new JPanel(new BorderLayout());
+        wrapperPanel.setBackground(Colors.panel());
         JPanel singleShoePanel = new JPanel();
-        JPanel shoeInfo = new JPanel();
-        shoeInfo.setLayout(new BoxLayout(shoeInfo, BoxLayout.Y_AXIS));
+        JPanel shoeInfo = new JPanel(new BorderLayout());
+//        shoeInfo.setLayout(new BoxLayout(shoeInfo, BoxLayout.Y_AXIS));
         shoeInfo.setBackground(Colors.card());
         shoeInfo.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         decorator.adjustWrapperPanel(singleShoePanel);
 
         JPanel header = new JPanel();
+        decorator.adjustSingleResultLine(header);
         JLabel shoeBrand = new JLabel(p.getBrand());
-        decorator.adjustLabel(shoeBrand);
+        decorator.adjustBrandLabel(shoeBrand);
         JLabel shoeName = new JLabel(p.getName());
         decorator.adjustLabel(shoeName);
+        shoeName.setForeground(Colors.buttonHover());
         header.add(shoeBrand);
         header.add(shoeName);
 
@@ -267,35 +287,41 @@ public class OptionsPanel extends JPanel {
         JPanel colorInfoPanel = new JPanel();
         colorInfoPanel.setBackground(Colors.card());
         JLabel colorLabel = new JLabel("Available colors:");
-        decorator.adjustLabel(colorLabel);
+        decorator.adjustCardLabel(colorLabel);
 
-        JPanel colorButtons = new JPanel();
-        colorButtons.setBackground(Colors.button());
-        colorButtons.setLayout(new BoxLayout(colorButtons, BoxLayout.X_AXIS));
-        JButton color = new JButton(p.getColor());
-        color.setPreferredSize(new Dimension(30, 30));
-        colorInfoPanel.add(color);
+        JPanel colorPanel = new JPanel();
+        colorPanel.setBackground(Colors.button());
+        colorLabel.setLayout(new BoxLayout(colorPanel, BoxLayout.X_AXIS));
         colorInfoPanel.add(colorLabel);
-        colorInfoPanel.add(colorButtons);
-
+        for (String s : p.getColors()) {
+            JLabel color = new JLabel();
+            color.setPreferredSize(new Dimension(30, 30));
+            colorPanel.add(color);
+        }
+        colorInfoPanel.add(colorPanel);
         JPanel sizeInfoPanel = new JPanel();
         JPanel sizeFields = new JPanel();
+        sizeFields.setLayout(new BoxLayout(sizeFields, BoxLayout.X_AXIS));
         JLabel sizeLabel = new JLabel("Available sizes");
-        decorator.adjustLabel(sizeLabel);
+        decorator.adjustCardLabel(sizeLabel);
 
-        JTextField sizeField = new JTextField(String.valueOf(p.getSize()));
-        sizeField.setPreferredSize(new Dimension(30, 30));
-        sizeField.setMaximumSize(new Dimension(30, 30));
-        sizeField.setMinimumSize(new Dimension(30, 30));
-        sizeFields.add(sizeField);
-
+        for (int i : p.getSizes()){
+            JTextField sizeField = new JTextField(String.valueOf(i));
+            sizeField.setPreferredSize(new Dimension(30, 30));
+            sizeField.setMaximumSize(new Dimension(30, 30));
+            sizeField.setMinimumSize(new Dimension(30, 30));
+            sizeFields.add(sizeField);
+        }
         sizeInfoPanel.add(sizeLabel);
         sizeInfoPanel.add(sizeFields);
+        JPanel specificsPanel = new JPanel(new GridLayout(2, 1));
+        decorator.adjustSingleResultPanel(specificsPanel);
+        specificsPanel.add(specificsPanel);
+        specificsPanel.add(colorInfoPanel);
 
-        shoeInfo.add(colorInfoPanel);
-        shoeInfo.add(sizeInfoPanel);
+        shoeInfo.add(specificsPanel);
 
-        singleShoePanel.add(shoeInfo);
+        singleShoePanel.add(shoeInfo, BorderLayout.CENTER);
         wrapperPanel.add(singleShoePanel, BorderLayout.CENTER);
         return wrapperPanel;
     }
@@ -305,7 +331,7 @@ public class OptionsPanel extends JPanel {
         JScrollPane scrollResults = new JScrollPane(panel);
         scrollResults.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         scrollResults.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        scrollResults.setPreferredSize(new Dimension(550, 400));
+        scrollResults.setPreferredSize(new Dimension(750, 480));
         SwingUtilities.invokeLater(() ->
                 scrollResults.getVerticalScrollBar().setValue(0)
         );

@@ -316,7 +316,7 @@ public class DatabaseRelay implements Subscriber {
 
         applicationManager.Update(Event.confirmComplete(Event.Action.PURCHASE, Event.Subject.SHOE, outcome, product));
     }
-    private void getCustomerInfo(int customerId) throws SQLException {
+    private void getCustomerInfo(int customerId) throws SQLException, ClassNotFoundException {
         Customer customer = null;
         Event.Outcome outcome = Event.Outcome.OK;
         PreparedStatement s = c.prepareStatement("SELECT * from customer where id = ?");
@@ -335,6 +335,10 @@ public class DatabaseRelay implements Subscriber {
             outcome = Event.Outcome.NOT_FOUND;
         }
         applicationManager.Update(new Event(Event.Phase.COMPLETE, Event.Action.VIEW, Event.Subject.CUSTOMER, Event.Origin.LOGIC, outcome, customer, null));
+    }
+    private void editCustomerInfo(Customer customer){
+
+
     }
 
     private void executeOrderQuery(int customerId) throws SQLException, ClassNotFoundException {
@@ -375,7 +379,10 @@ public class DatabaseRelay implements Subscriber {
                     addNewCustomer((List<String>) list);
                 }
                 else if (event.getAction() == Event.Action.VIEW && event.getContents() instanceof Integer){
-
+                    getCustomerInfo((Integer) event.getContents());
+                }
+                else if (event.getAction() == Event.Action.EDIT && event.getContents() instanceof Customer customer){
+                    editCustomerInfo(customer);
                 }
             }
             case SHOE -> {

@@ -23,13 +23,46 @@ public class PanelDecorator {
             public void mouseExited(MouseEvent e) { button.setBackground(Colors.button()); }
         });
     }
+    public void adjustShoeCardButton(JButton button){
+            button.setFont(Fonts.getTinyFont());
+            button.setBackground(Colors.button());
+            button.setForeground(Colors.buttonText());
+//            button.setBorder(BorderFactory.createEmptyBorder(6,14,6,14));
+        button.setPreferredSize(new Dimension(100, 30));
+        button.setMinimumSize(new Dimension(100, 30));
+        button.setMaximumSize(new Dimension(100, 30));
+            button.setFocusPainted(false);
+            button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            button.addMouseListener(new MouseAdapter() {
+                public void mouseEntered(MouseEvent e) { button.setBackground(Colors.buttonHover()); }
+                public void mouseExited(MouseEvent e) { button.setBackground(Colors.button()); }
+            });
+    }
 
     public void adjustLabel(JLabel label){
         label.setFont(Fonts.getLabelFont());
         label.setForeground(Colors.text());
 //        label.setPreferredSize(new Dimension(100, 30));
     }
-
+    public void adjustCardLabel(JLabel label){
+        label.setFont(Fonts.getTinyFont());
+        label.setForeground(Colors.text());
+        label.setBackground(Colors.border());
+        label.setOpaque(true);
+    }
+    public void adjustBrandLabel(JLabel label){
+        label.setFont(Fonts.getLabelFont());
+        label.setForeground(Colors.buttonHover());
+        label.setBackground(Colors.border());
+        label.setOpaque(true);
+    }
+public void adjustCardText(JTextArea area){
+    area.setEditable(false);
+    area.setFont(Fonts.getTinyFont());
+    area.setForeground(Colors.text());
+    area.setBackground(Colors.border());
+    area.setOpaque(true);
+}
     public void adjustTextField(JTextField field){
         field.setFont(Fonts.getInputFont());
         field.setForeground(Colors.text());
@@ -58,6 +91,7 @@ public class PanelDecorator {
         label.setForeground(Colors.text());
         label.setBackground(Colors.panel());
         label.setFont(Fonts.getLabelFont());
+        label.setOpaque(true);
     }
 
     public void adjustWrapperPanel(JPanel wrapperPanel){
@@ -141,7 +175,7 @@ public class PanelDecorator {
         singleResultPanel.setLayout(new BoxLayout(singleResultPanel, BoxLayout.X_AXIS));
         singleResultPanel.setBorder(BorderFactory.createLineBorder(Colors.bg(), 5, true));
         singleResultPanel.setBackground(Colors.panel());
-        singleResultPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+//        singleResultPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
         singleResultPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
     }
 }
