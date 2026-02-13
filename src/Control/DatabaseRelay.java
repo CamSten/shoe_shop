@@ -1,11 +1,13 @@
 package Control;
 
+import java.lang.classfile.CustomAttribute;
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.*;
 
 import Model.OrderPost;
 import Model.Product;
+import Model.Customer;
 import Model.ProductTerm;
 import Model.ShoeSpecification;
 
@@ -314,13 +316,33 @@ public class DatabaseRelay implements Subscriber {
 
         applicationManager.Update(Event.confirmComplete(Event.Action.PURCHASE, Event.Subject.SHOE, outcome, product));
     }
+    private void getCustomerInfo(int customerId) throws SQLException {
+        Customer customer = null;
+        Event.Outcome outcome = Event.Outcome.OK;
+        PreparedStatement s = c.prepareStatement("SELECT * from customer where id = ?");
+        s.setInt(1, customerId);
+        ResultSet rs = s.executeQuery();
+        while (rs.next()){
+            String firstName = rs.getString("firstName");
+            String surname = rs.getString("surname");
+            String streetAddress = rs.getString("streetAddress");
+            String city = rs.getString("city");
+            String email = rs.getString("email");
+            String password = rs.getString("password");
+            customer = new Customer(customerId, firstName, surname, streetAddress, city, email, password);
+        }
+        if (customer == null){
+            outcome = Event.Outcome.NOT_FOUND;
+        }
+        applicationManager.Update(new Event(Event.Phase.COMPLETE, Event.Action.VIEW, Event.Subject.CUSTOMER, Event.Origin.LOGIC, outcome, customer, null));
+    }
 
-private void executeOrderQuery(int customerId) throws SQLException, ClassNotFoundException {
-    System.out.println("executeOrderQuery in DBR reached for customerId: " + customerId);
+    private void executeOrderQuery(int customerId) throws SQLException, ClassNotFoundException {
+        System.out.println("executeOrderQuery in DBR reached for customerId: " + customerId);
 
-    List<OrderPost> orders = new ArrayList<>();
+        List<OrderPost> orders = new ArrayList<>();
 
-    PreparedStatement s = c.prepareStatement("SELECT * FROM order_inventory WHERE customerId = ?");
+        PreparedStatement s = c.prepareStatement("SELECT * FROM order_inventory WHERE customerId = ?");
         s.setInt(1, customerId);
 //customer.id AS 'customerId', customer.firstName, customer.surname, product.name as 'product', product.brand as 'brand', shoeInventory.size AS 'size', orderPost.orderedQuantity as 'buyQuantity', shoeInventory.color as 'color', product.price, orderingDate as 'date'
         ResultSet rs = s.executeQuery();
@@ -341,33 +363,36 @@ private void executeOrderQuery(int customerId) throws SQLException, ClassNotFoun
         ));
     }
 
-@Override
-public void Update(Event event) throws SQLException, ClassNotFoundException {
-    System.out.println("UPDATE IN DBR IS REACHED");
+    @Override
+    public void Update(Event event) throws SQLException, ClassNotFoundException {
+        System.out.println("UPDATE IN DBR IS REACHED");
 
-    switch (event.getSubject()) {
-        case CUSTOMER -> {
-            if (event.getAction() == Event.Action.VALIDATE && event.getContents() instanceof List list) {
-                checkCustomer((List<String>) list);
-            } else if (event.getAction() == Event.Action.CREATE_ACCOUNT && event.getContents() instanceof List list) {
-                addNewCustomer((List<String>) list);
+        switch (event.getSubject()) {
+            case CUSTOMER -> {
+                if (event.getAction() == Event.Action.VALIDATE && event.getContents() instanceof List list) {
+                    checkCustomer((List<String>) list);
+                } else if (event.getAction() == Event.Action.CREATE_ACCOUNT && event.getContents() instanceof List list) {
+                    addNewCustomer((List<String>) list);
+                }
+                else if (event.getAction() == Event.Action.VIEW && event.getContents() instanceof Integer){
+
+                }
             }
-        }
-        case SHOE -> {
-            if (event.getAction() == Event.Action.PURCHASE) {
-                purchaseActions(event);
-            } else {
-                String choice = "";
-                if (event.getExtraContents() instanceof String extra) choice = extra;
-                getShoesFromDB(event, choice);
+            case SHOE -> {
+                if (event.getAction() == Event.Action.PURCHASE) {
+                    purchaseActions(event);
+                } else {
+                    String choice = "";
+                    if (event.getExtraContents() instanceof String extra) choice = extra;
+                    getShoesFromDB(event, choice);
+                }
             }
-        }
-        case CART -> {
-            if (event.getContents() instanceof Integer){
-                int customerId = (Integer) event.getContents();
-                executeOrderQuery(customerId);
+            case CART -> {
+                if (event.getContents() instanceof Integer){
+                    int customerId = (Integer) event.getContents();
+                    executeOrderQuery(customerId);
+                }
             }
         }
     }
-}
 }

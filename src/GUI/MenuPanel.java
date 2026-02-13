@@ -14,7 +14,7 @@ public class MenuPanel extends JPanel {
     private HeaderPanel headerPanel;
     private List<JButton> allOptionButtons = new ArrayList<>();
 
-    public MenuPanel(MainFrame mainFrame, PanelDecorator decorator){
+    public MenuPanel(MainFrame mainFrame, PanelDecorator decorator) {
         this.mainFrame = mainFrame;
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         setBackground(Colors.bg());
@@ -31,11 +31,11 @@ public class MenuPanel extends JPanel {
         menuButtons.setMaximumSize(new Dimension(300, Integer.MAX_VALUE));
         menuButtons.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        for (JButton button : allOptionButtons){
+        for (JButton button : allOptionButtons) {
             button.setFont(Fonts.getButtonFont());
             button.setBackground(Colors.button());
             button.setForeground(Colors.buttonText());
-            button.setPreferredSize(new Dimension(300, 45) );
+            button.setPreferredSize(new Dimension(300, 45));
             button.setMinimumSize(new Dimension(300, 45));
             button.setMinimumSize(new Dimension(300, 45));
             button.add(Box.createHorizontalStrut(300));
@@ -62,33 +62,46 @@ public class MenuPanel extends JPanel {
     }
 
     private void getButtons() {
-            JButton optionHandleSeeker = new JButton("Browse shoes");
-            allOptionButtons.add(optionHandleSeeker);
-            optionHandleSeeker.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    try {
-                        System.out.println( "--- IN MENU PANEL, SEE SHOES IS CHOSEN");
-                        Update(Event.select(Event.Subject.SHOE));
-                    } catch (SQLException | ClassNotFoundException ex) {
-                        throw new RuntimeException(ex);
-                    }
+        JButton optionHandleSeeker = new JButton("Browse shoes");
+        allOptionButtons.add(optionHandleSeeker);
+        optionHandleSeeker.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    System.out.println("--- IN MENU PANEL, SEE SHOES IS CHOSEN");
+                    Update(Event.select(Event.Subject.SHOE));
+                } catch (SQLException | ClassNotFoundException ex) {
+                    throw new RuntimeException(ex);
                 }
-            });
-            JButton optionHandleOpening = new JButton("See items in cart");
-            allOptionButtons.add(optionHandleOpening);
-            optionHandleOpening.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    try {
-                        System.out.println( "--- IN MENU PANEL, SEE CART IS CHOSEN");
-                        Update(Event.select(Event.Subject.CART));
-                    } catch (SQLException | ClassNotFoundException ex) {
-                        throw new RuntimeException(ex);
-                    }
+            }
+        });
+        JButton optionHandleOpening = new JButton("See items in cart");
+        allOptionButtons.add(optionHandleOpening);
+        optionHandleOpening.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    System.out.println("--- IN MENU PANEL, SEE CART IS CHOSEN");
+                    Update(Event.select(Event.Subject.CART));
+                } catch (SQLException | ClassNotFoundException ex) {
+                    throw new RuntimeException(ex);
                 }
-            });
-        }
+            }
+        });
+        JButton optionEditDetails = new JButton("Account details");
+        allOptionButtons.add(optionHandleOpening);
+        optionHandleOpening.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    System.out.println("--- IN MENU PANEL, ACCOUNT DETAILS IS CHOSEN");
+                    Update(new Event(Event.Phase.SELECT, Event.Action.VIEW, Event.Subject.CUSTOMER, Event.Origin.GUI, Event.Outcome.PENDING, null, null));
+                } catch (SQLException | ClassNotFoundException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
+        });
+    }
     public void Update(Event event ) throws SQLException, ClassNotFoundException {
         System.out.println("UPDATE IN MENUPANEL IS REACHED, event.Subject is: " + event.getSubject());
         mainFrame.Update(event);
