@@ -1,24 +1,30 @@
-package Model;
+package Model.Repositories;
 
-import Control.ApplicationManager;
 import Control.Event;
+import Control.Subscriber;
+import Model.DatabaseRelay;
+import Model.ProductTerm;
+import Model.DataHandling.ShoeSpecification;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-public class ProductRepo {
+public class ProductRepo implements Subscriber {
     private static DatabaseRelay databaseRelay;
+    private Connection c;
     private OrderRepo orderRepo;
 
 
-    public ProductRepo(DatabaseRelay databaseRelay, OrderRepo orderRepo){
+    public ProductRepo(DatabaseRelay databaseRelay, Connection c,  OrderRepo orderRepo){
         this.orderRepo = orderRepo;
+        this.c = c;
         this.databaseRelay = databaseRelay;
     }
 
-    private static void executeShoeQuery(ProductTerm productTerm, String choice, int id, PreparedStatement p) throws SQLException, ClassNotFoundException {
+    private void executeShoeQuery(ProductTerm productTerm, String choice, int id, PreparedStatement p) throws SQLException, ClassNotFoundException {
         System.out.println("executeShoeQuery in DBR is reached, choice is: " + choice);
         List<Product> foundShoes = new ArrayList<>();
         List<Product> shoesToSend = new ArrayList<>();
@@ -49,7 +55,7 @@ public class ProductRepo {
         if (foundShoes.isEmpty()) {
             outcome = Event.Outcome.FAILURE;
         } else {
-            shoesToSend = getUniqueValues(foundShoes);
+            shoesToSend = getUniqueProductValues(foundShoes);
             System.out.println("shoesToSend.size: " + shoesToSend.size());
         }
         if (shoesToSend.size() == 1) {
@@ -60,7 +66,7 @@ public class ProductRepo {
         }
     }
 
-    public static void getShoesFromDB(Event event, String choice) throws SQLException, ClassNotFoundException {
+    public void getShoesFromDB(Event event, String choice) throws SQLException, ClassNotFoundException {
         System.out.println("GETSHOES IN DBR IS REACHED");
         Event.Outcome outcome = Event.Outcome.OK;
         List<String> outputList = new ArrayList<>();
@@ -198,7 +204,7 @@ public class ProductRepo {
         int quantity = -1;
         String color = "";
         Event.Outcome outcome = Event.Outcome.OK;
-        int customerId = applicationManager.getCustomerId();
+        int customerId = databaseRelay.getCustomerId();
 
         if (event.getContents() instanceof Product) {
 
@@ -219,6 +225,17 @@ public class ProductRepo {
             if (!result)
                 outcome = Event.Outcome.FAILURE;
         }
-        applicationManager.Update(Event.confirmComplete(Event.Action.PURCHASE, Event.Subject.SHOE, outcome, product));
+        databaseRelay.Relay(Event.confirmComplete(Event.Action.PURCHASE, Event.Subject.SHOE, outcome, product));
+    }
+
+    @Override
+    public void Update(Event event) throws SQLException, ClassNotFoundException {
+        if (event.getAction() == Event.Action.PURCHASE) {
+            purchaseActions(event);
+        } else {
+            String choice = "";
+            if (event.getExtraContents() instanceof String extra) choice = extra;
+            getShoesFromDB(event, choice);
+        }
     }
 }

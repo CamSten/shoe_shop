@@ -1,19 +1,20 @@
-package Model;
+package Model.Repositories;
 
-import Control.ApplicationManager;
 import Control.Event;
+import Control.Subscriber;
+import Model.DataHandling.Customer;
+import Model.DatabaseRelay;
 
-import java.sql.CallableStatement;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.List;
 
-public class CustomerRepo {
+public class CustomerRepo implements Subscriber {
     private static DatabaseRelay databaseRelay;
+    private static Connection c;
 
-    public CustomerRepo(DatabaseRelay databaseRelay){
+    public CustomerRepo(DatabaseRelay databaseRelay, Connection c){
         this.databaseRelay = databaseRelay;
+        this.c = c;
     }
     private void getCustomerInfo(int customerId) throws SQLException, ClassNotFoundException {
         Customer customer = null;
@@ -64,7 +65,7 @@ public class CustomerRepo {
         if (!exists) outcome = Event.Outcome.NOT_FOUND;
         else if (!validLogin) outcome = Event.Outcome.INVALID_INPUT;
 
-         databaseRelay.Relay(new Event(Event.Phase.COMPLETE, Event.Action.VALIDATE, Event.Subject.CUSTOMER, Event.Origin.LOGIC, outcome, results, foundId));
+        databaseRelay.Relay(new Event(Event.Phase.COMPLETE, Event.Action.VALIDATE, Event.Subject.CUSTOMER, Event.Origin.LOGIC, outcome, results, foundId));
     }
 
     private static void addNewCustomer(List<String> userInput) throws SQLException, ClassNotFoundException {
@@ -100,5 +101,20 @@ public class CustomerRepo {
         }
 
         databaseRelay.Relay(Event.confirmComplete(Event.Action.CREATE_ACCOUNT, Event.Subject.CUSTOMER, outcome, newId));
+    }
+
+    @Override
+    public void Update(Event event) throws SQLException, ClassNotFoundException {
+        if (event.getAction() == Event.Action.VALIDATE && event.getContents() instanceof List list) {
+            checkCustomer((List<String>) list);
+        } else if (event.getAction() == Event.Action.CREATE_ACCOUNT && event.getContents() instanceof List list) {
+            addNewCustomer((List<String>) list);
+        }
+        else if (event.getAction() == Event.Action.VIEW && event.getContents() instanceof Integer){
+            getCustomerInfo((Integer) event.getContents());
+        }
+        else if (event.getAction() == Event.Action.EDIT && event.getContents() instanceof Customer customer){
+            editCustomerInfo(customer);
+        }
     }
 }

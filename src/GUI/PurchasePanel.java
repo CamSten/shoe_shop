@@ -1,8 +1,8 @@
 package GUI;
 
 import Control.Event;
-import Model.Product;
-import Model.ShoeSpecification;
+import Model.DataHandling.Product;
+import Model.DataHandling.ShoeSpecification;
 
 import javax.swing.*;
 import java.awt.*;

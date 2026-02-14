@@ -1,10 +1,9 @@
 package GUI;
 
 import Control.Event;
-import Model.OrderPost;
+import Model.DataHandling.OrderPost;
 
 import javax.swing.*;
-import java.awt.*;
 import java.util.List;
 
 public class CartPanel extends JPanel {

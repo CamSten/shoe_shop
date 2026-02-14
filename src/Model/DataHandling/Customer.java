@@ -1,4 +1,4 @@
-package Model;
+package Model.DataHandling;
 
 public class Customer {
     private int customerId;

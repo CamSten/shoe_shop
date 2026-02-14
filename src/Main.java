@@ -1,12 +1,7 @@
 import Control.ApplicationManager;
-import Control.DatabaseRelay;
 import Control.Event;
-import Model.Product;
-import Model.ProductTerm;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
 
 public class Main {
     static Control.ApplicationManager appManager = new ApplicationManager();

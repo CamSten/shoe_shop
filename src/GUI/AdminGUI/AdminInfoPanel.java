@@ -5,7 +5,7 @@ import Control.Subscriber;
 import GUI.Colors;
 import GUI.PanelDecorator;
 import GUI.MainFrame;
-import Model.OrderPost;
+import Model.DataHandling.OrderPost;
 
 import javax.swing.*;
 import java.sql.SQLException;

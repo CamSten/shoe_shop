@@ -1,9 +1,8 @@
 package GUI;
 
-import Model.Product;
 import javax.swing.*;
 import java.awt.*;
-import java.util.List;
+import Model.DataHandling.Product;
 
 public class SingleProductPanel extends JPanel {
     private PanelDecorator decorator;

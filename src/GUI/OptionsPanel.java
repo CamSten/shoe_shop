@@ -6,8 +6,8 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.List;
 import Control.Event;
-import Model.Product;
-import Model.ProductTerm;
+import Model.DataHandling.Product;
+import Model.DataHandling.ProductTerm;
 
 public class OptionsPanel extends JPanel {
     private MainFrame mainFrame;
@@ -17,7 +17,7 @@ public class OptionsPanel extends JPanel {
     private JButton categoryButton;
     private JButton brandButton;
     private JButton colorButton;
-    private List<Model.Product> shoes;
+    private List<Product> shoes;
     private JPanel displayingResult;
     private JPanel inputPanel;
     private ProductTerm currentProductTerm;

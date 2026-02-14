@@ -1,7 +1,9 @@
 package Control;
 import GUI.LoginPanel;
 import GUI.MainFrame;
-import Model.ProductTerm;
+import Model.DataHandling.ProductTerm;
+import Model.DatabaseRelay;
+
 import java.sql.*;
 import java.util.*;
 
@@ -63,13 +65,13 @@ public class ApplicationManager implements Subscriber {
             case LOGIC -> {
                 switch (event.getAction()) {
                     case VALIDATE -> {
-                        if (event.getPhase() == Event.Phase.AWAIT_INPUT && event.getSubject() == Event.Subject.NONE || (event.getSubject == Event.Subject.ADMIN && event.getOutcome == Event.Outcome.OK){
+                        if (event.getPhase() == Event.Phase.AWAIT_INPUT && event.getSubject() == Event.Subject.NONE || (event.getSubject() == Event.Subject.ADMIN && event.getOutcome() == Event.Outcome.OK)){
                             mainFrame.Update(event);
                             break;
                         }
                         switch (event.getOutcome()) {
                             case NOT_FOUND -> {
-                                if (event.getSubject == Event.Subject.ADMIN) {
+                                if (event.getSubject() == Event.Subject.ADMIN) {
 
                                 } else {
                                     promptCreateNewAccount();
@@ -143,7 +145,7 @@ public class ApplicationManager implements Subscriber {
     public void validateCustomer(String emailInput, String password) throws SQLException, ClassNotFoundException {
         System.out.println("VALIDATE USER in appManager is reached, email is: " + emailInput + " password is: " + password);
         Event.Subject subject = Event.Subject.CUSTOMER;
-        if (emailInput.equals(adminId){
+        if (emailInput.equals(adminId)){
             subject = Event.Subject.ADMIN;
         }
         List<String> userInput = new ArrayList<>();

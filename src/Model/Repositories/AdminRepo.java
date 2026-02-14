@@ -1,19 +1,23 @@
-package Model;
+package Model.Repositories;
 
-import Control.ApplicationManager;
 import Control.Event;
+import Control.Subscriber;
+import Model.DatabaseRelay;
 
 import java.sql.CallableStatement;
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AdminRepo {
+public class AdminRepo implements Subscriber {
     private DatabaseRelay databaseRelay;
+    private Connection c;
 
-    public AdminRepo (DatabaseRelay databaseRelay){
+    public AdminRepo (DatabaseRelay databaseRelay, Connection c){
         this.databaseRelay = databaseRelay;
+        this.c = c;
     }
     private void assessIfAdmin(Event event) throws SQLException, ClassNotFoundException {
         List<String> userInput = new ArrayList<>();
@@ -36,5 +40,10 @@ public class AdminRepo {
             outcome = Event.Outcome.OK;
         }
         databaseRelay.Relay(new Event(Event.Phase.COMPLETE, Event.Action.VALIDATE, Event.Subject.ADMIN, Event.Origin.LOGIC, outcome, userInput, null));
+    }
+
+    @Override
+    public void Update(Event event) throws SQLException, ClassNotFoundException {
+        assessIfAdmin(event);
     }
 }

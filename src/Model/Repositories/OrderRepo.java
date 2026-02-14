@@ -1,20 +1,22 @@
-package Model;
+package Model.Repositories;
 
-import Control.ApplicationManager;
 import Control.Event;
+import Control.Subscriber;
+import Model.DatabaseRelay;
+import Model.DataHandling.OrderPost;
 
-import java.sql.CallableStatement;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-public class OrderRepo {
-   private DatabaseRelay databaseRelay;
-    public OrderRepo(DatabaseRelay databaseRelay ){
+public class OrderRepo implements Subscriber {
+    private DatabaseRelay databaseRelay;
+    private Connection c;
+
+    public OrderRepo(DatabaseRelay databaseRelay, Connection c){
         this.databaseRelay = databaseRelay;
+        this.c = c;
     }
     private void executeOrderQuery(int customerId) throws SQLException, ClassNotFoundException {
         System.out.println("executeOrderQuery in DBR reached for customerId: " + customerId);
@@ -41,7 +43,7 @@ public class OrderRepo {
         databaseRelay.Relay(new Event(Event.Phase.DISPLAY, Event.Action.VIEW, Event.Subject.CART, Event.Origin.LOGIC, Event.Outcome.OK, orders, null
         ));
     }
-    private void callCheckInventory(int productId, int size, String color, int buyQuantity) throws SQLException {
+    protected void callCheckInventory(int productId, int size, String color, int buyQuantity) throws SQLException {
         //checkShoeInventory(IN productId int, IN size int, IN color VARCHAR(15), IN removeQuantity int, OUT doesExist boolean)
 
         System.out.println("callCheckInventory is reached in DBR");
@@ -53,5 +55,13 @@ public class OrderRepo {
         s.executeUpdate();
         boolean found = s.getBoolean(5);
         System.out.println("found is: " + found);
+    }
+
+    @Override
+    public void Update(Event event) throws SQLException, ClassNotFoundException {
+        if (event.getContents() instanceof Integer){
+            int customerId = (Integer) event.getContents();
+            executeOrderQuery(customerId);
+        }
     }
 }

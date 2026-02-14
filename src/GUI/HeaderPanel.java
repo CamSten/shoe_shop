@@ -1,7 +1,7 @@
 package GUI;
 
 import Control.Event;
-import Model.ProductTerm;
+import Model.DataHandling.ProductTerm;
 
 import javax.swing.*;
 import java.awt.*;

@@ -1,4 +1,4 @@
-package Model;
+package Model.DataHandling;
 
 public enum ProductTerm {
     Category("category"), Name("name"), Brand("brand"), Color("color"), Size("size"), None ("None");

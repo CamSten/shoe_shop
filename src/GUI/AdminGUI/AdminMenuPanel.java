@@ -1,5 +1,10 @@
 package GUI.AdminGUI;
 
+import GUI.Colors;
+import GUI.PanelDecorator;
+import GUI.MainFrame;
+import Control.Event;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;

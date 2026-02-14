@@ -1,9 +1,9 @@
-package Model;
+package Model.DataHandling;
+
+import Model.DataHandling.ShoeSpecification;
 
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 
 public class Product {
     private int productId;

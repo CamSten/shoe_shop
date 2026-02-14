@@ -3,9 +3,8 @@ import Control.ApplicationManager;
 import Control.Event;
 import Control.Subscriber;
 import GUI.AdminGUI.AdminMenuPanel;
-import Model.Customer;
-import Model.Product;
-import Model.ProductTerm;
+import Model.DataHandling.ProductTerm;
+import Model.DataHandling.Product;
 
 import javax.swing.*;
 import java.awt.*;
@@ -267,7 +266,7 @@ public class MainFrame extends JFrame implements Subscriber {
                 switch (event.getAction()) {
                     //        mainFrame.Update(new Event(Event.Phase.AWAIT_INPUT, Event.Action.VALIDATE, Event.Subject.CUSTOMER, Event.Origin.LOGIC, Event.Outcome.NOT_FOUND, null, null));
                     case VALIDATE -> {
-                        if (event.getSubject() == Subject.ADMIN && event.getOutcome == Event.Outcome.OK){
+                        if (event.getSubject() == Event.Subject.ADMIN && event.getOutcome() == Event.Outcome.OK){
                             showAdminMenu();
                         }
                         else if (event.getPhase() == Event.Phase.AWAIT_INPUT && event.getSubject() == Event.Subject.NONE){
