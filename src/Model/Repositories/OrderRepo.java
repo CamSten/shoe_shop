@@ -43,24 +43,38 @@ public class OrderRepo implements Subscriber {
         databaseRelay.Relay(new Event(Event.Phase.DISPLAY, Event.Action.VIEW, Event.Subject.CART, Event.Origin.LOGIC, Event.Outcome.OK, orders, null
         ));
     }
-    protected void callCheckInventory(int productId, int size, String color, int buyQuantity) throws SQLException {
-        //checkShoeInventory(IN productId int, IN size int, IN color VARCHAR(15), IN removeQuantity int, OUT doesExist boolean)
-
+    protected boolean callCheckInventory(int productId, int size, String color, int buyQuantity) throws SQLException {
+//create procedure checkShoeInventory(int, OUT shoeExists boolean, OUT sizeExists boolean, OUT sizeAndColorExists boolean, OUT sufficientStock boolean)
         System.out.println("callCheckInventory is reached in DBR");
-        CallableStatement s = c.prepareCall("CALL checkShoeInventory(?, ?, ?, ?, ?)");
+        CallableStatement s = c.prepareCall("CALL checkShoeInventory(?, ?, ?, ?, ?, ?, ?, ?, ?)");
         s.setInt(1, productId);
         s.setInt(2, size);
         s.setString(3, color);
         s.setInt(4, buyQuantity);
-        s.executeUpdate();
-        boolean found = s.getBoolean(5);
-        System.out.println("found is: " + found);
+        s.registerOutParameter(5, Types.BOOLEAN);
+        s.registerOutParameter(6, Types.BOOLEAN);
+        s.registerOutParameter(7, Types.BOOLEAN);
+        s.registerOutParameter(8, Types.BOOLEAN);
+        s.registerOutParameter(9, Types.INTEGER);
+        s.execute();
+        boolean shoeExists = s.getBoolean(5);
+        boolean sizeExists = s.getBoolean(6);
+        boolean sizeAndColorExists = s.getBoolean(7);
+        boolean sufficientStock = s.getBoolean(8);
+        int inventoryStock = s.getInt(9);
+        System.out.println("in OrderRepo checkInventory, shoeExists is: " + shoeExists);
+        System.out.println("in OrderRepo checkInventory, sizeExists is: " + sizeExists);
+        System.out.println("in OrderRepo checkInventory, sizeAndColorExists is: " + sizeAndColorExists);
+        System.out.println("in OrderRepo checkInventory, sufficientStock is: " + sufficientStock);
+        System.out.println("in OrderRepo checkInventory, stock is: " + inventoryStock);
+        return sufficientStock;
     }
 
     @Override
     public void Update(Event event) throws SQLException, ClassNotFoundException {
         if (event.getContents() instanceof Integer){
             int customerId = (Integer) event.getContents();
+            System.out.println("customerId:" + customerId);
             executeOrderQuery(customerId);
         }
     }

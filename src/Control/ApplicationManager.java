@@ -112,6 +112,7 @@ public class ApplicationManager implements Subscriber {
         System.out.println("saveCustomer in appManager is reached");
         if (foundId != -1) {
             this.customerId = foundId;
+            databaseRelay.setCustomerId(customerId);
             System.out.println("customerId is: " + customerId);
         }
     }

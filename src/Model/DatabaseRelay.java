@@ -56,7 +56,7 @@ public class DatabaseRelay implements Subscriber {
     public int getCustomerId(){
         return customerId;
     }
-    private void setCustomerId(int id){
+    public void setCustomerId(int id){
         this.customerId = id;
     }
 }

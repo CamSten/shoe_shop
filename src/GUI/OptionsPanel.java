@@ -202,6 +202,7 @@ public class OptionsPanel extends JPanel {
         allShoesPanel.setBackground(Colors.panel());
 
         for (Product p : products) {
+            System.out.println("SHOE IN CREATE ALL SHOE PANELS: " + p.getName());
             JPanel shoePanel = new JPanel();
             shoePanel.setLayout(new BoxLayout(shoePanel, BoxLayout.Y_AXIS));
             decorator.adjustShoeInfoPanel(shoePanel);

@@ -39,7 +39,6 @@ public class ProductRepo implements Subscriber {
             p.setString(1, choice);
             p.setInt(2, 0);
         }
-
         ResultSet r = p.executeQuery();
         while (r.next()) {
             int thisId = r.getInt("productId");
@@ -147,54 +146,79 @@ public class ProductRepo implements Subscriber {
         ShoeSpecification sc = new ShoeSpecification(size, color, quantity);
         newShoe.addSpecification(sc);
         return newShoe;
-    }
+    }// out foundOrder boolean, out foundPost boolean, out success boolean)
+
     private boolean callAddToCart(int customerId, int productId, int size, String color, int buyQuantity) throws ClassNotFoundException, SQLException {
-        System.out.println("callAddToCart is reached in DBR");
-        orderRepo.callCheckInventory(productId, size, color, buyQuantity);
-        CallableStatement s = c.prepareCall("CALL addToCart(?, ?, ?, ?, ?, ?, ?)");
-        s.setInt(1, customerId);
-        s.setInt(2, productId);
-        s.setInt(3, size);
-        s.setString(4, color);
-        s.setInt(5, buyQuantity);
-        s.executeUpdate();
-        boolean success = s.getBoolean(6);
-        boolean found = s.getBoolean(7);
-        System.out.println("found is: " + found);
-        System.out.println("success is: " + success);
+        System.out.println("callAddToCart is reached in DBR, customerId is: " + customerId + " productId is: " + productId + " size is: " + size + " color is: " + color + " buyQuantity is: " + buyQuantity);
+        boolean success = false;
+        boolean validPurchase = orderRepo.callCheckInventory(productId, size, color, buyQuantity);
+        callGetProductOrder(customerId);
+        if (validPurchase) {
+            System.out.println("purchase is valid");
+            //ustomerId int, thisProductId int, thisSize int, thisColor VARCHAR(15), thisNewQuantity int, out success boolean, out haveFound boolean)
+            CallableStatement s = c.prepareCall("CALL addToCart(?, ?, ?, ?, ?, ?, ?, ?)");
+            s.setInt(1, customerId);
+            s.setInt(2, productId);
+            s.setInt(3, size);
+            s.setString(4, color);
+            s.setInt(5, buyQuantity);
+            s.registerOutParameter(6, Types.BOOLEAN);
+            s.registerOutParameter(7, Types.BOOLEAN);
+            s.registerOutParameter(8, Types.BOOLEAN);
+            s.execute();
+            boolean foundOrder = s.getBoolean(6);
+            System.out.println("foundOrder is: " + foundOrder);
+            boolean foundPost = s.getBoolean(7);
+            System.out.println("foundPost is: " + foundPost);
+            success = s.getBoolean(8);
+            System.out.println("success is: " + success);
+        }
         return success;
     }
-
+private void callGetProductOrder(int customerId) throws SQLException {
+        System.out.println("callGetProductOrder is reached, customerId is: " + customerId);
+    CallableStatement s = c.prepareCall("CALL getProductOrder(?, ?)");
+    s.setInt(1, customerId);
+    s.execute();
+    int orderId = s.getInt(2);
+    System.out.println("in callGetProductOrder, orderId is: " + orderId);
+}
     private static List<Product> getUniqueProductValues(List<Product> allShoes) {
         List<Product> uniqueProducts = new ArrayList<>();
+
         for (Product p : allShoes) {
-            boolean exists = false;
-            if (uniqueProducts.isEmpty()) {
+            Product existingProduct = null;
+            if(uniqueProducts.isEmpty()){
                 uniqueProducts.add(p);
-            } else {
-                for (Product uProduct : uniqueProducts) {
-                    if (uProduct.getProductId() == p.getProductId()) {
-                        exists = true;
-                        List<ShoeSpecification> thisSp = p.getShoeSpecifications();
-                        List<ShoeSpecification> uSp = uProduct.getShoeSpecifications();
-                        for (ShoeSpecification sp : thisSp) {
-                            boolean same = false;
-                            for (ShoeSpecification up : uSp) {
-                                if (sp.getColor().equals(up.getColor()) && sp.getSize() == up.getSize()) {
-                                    same = true;
-                                }
-                            }
-                            if (!same) {
-                                uProduct.addSpecification(sp);
-                            }
+            }
+            for (Product u : uniqueProducts) {
+                 if (u.getName().equals(p.getName())) {
+                     System.out.println("u.name: " + u.getName() + " p.name: " + p.getName());
+                    existingProduct = u;
+                }
+            }
+            if (existingProduct == null) {
+                uniqueProducts.add(p);
+                System.out.println("ADDED SHOE: " + p.getName() + " with ID: " + p.getProductId());
+            }
+            else {
+                for (ShoeSpecification sp : p.getShoeSpecifications()) {
+                    boolean specExists = false;
+                    for (ShoeSpecification usp : existingProduct.getShoeSpecifications()) {
+                        if (usp.getSize() == sp.getSize() &&
+                                usp.getColor().equals(sp.getColor())) {
+                            specExists = true;
+                            break;
                         }
                     }
-                    if (!exists) {
-                        uniqueProducts.add(p);
+
+                    if (!specExists) {
+                        existingProduct.addSpecification(sp);
                     }
                 }
             }
         }
+
         return uniqueProducts;
     }
     private void purchaseActions(Event event) throws SQLException, ClassNotFoundException {

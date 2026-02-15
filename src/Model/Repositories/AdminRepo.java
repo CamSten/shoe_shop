@@ -64,7 +64,7 @@ public class AdminRepo implements Subscriber {
         }
         relay(Event.returnAdminInfo(event.getSubject(), outcome, allPosts));
     }
-    private void getSales() throws SQLException {
+    private void getSales() throws SQLException, ClassNotFoundException {
         List<SalesPost> topSold = new ArrayList<>();
         PreparedStatement s = c.prepareStatement("select * from get_most_sold");
         ResultSet rs = s.executeQuery();

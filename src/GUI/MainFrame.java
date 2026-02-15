@@ -173,6 +173,8 @@ public class MainFrame extends JFrame implements Subscriber {
                JPanel buttonPanel = new JPanel();
                decorator.adjustWrapperPanel(buttonPanel);
                if (addToCartButton != null){
+                   System.out.println("in adjustHeaderAndFooter, addToCartButton != null");
+                   currentEvent.setAction(Event.Action.PURCHASE);
                    addToCartButton.setText("Submit");
                    addToCartButton.setBackground(Color.WHITE);
                    addToCartButton.setBorder(BorderFactory.createLineBorder(Colors.buttonHover(), 10, true));

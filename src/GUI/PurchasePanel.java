@@ -54,10 +54,14 @@ public class PurchasePanel extends JPanel {
         List<Integer> sizes = new ArrayList<>();
         List<String> colors = new ArrayList<>();
 //        List<Integer> quantities = new ArrayList<>();
+        Set<String> colorSet = new LinkedHashSet<>();
+        Set<Integer> sizeSet = new LinkedHashSet<>();
         for (ShoeSpecification sc : p.getSizeColors()){
-            sizes.add(sc.getSize());
-            colors.add(sc.getColor());
+            sizeSet.add(sc.getSize());
+            colorSet.add(sc.getColor());
         }
+        sizes.addAll(sizeSet);
+        colors.addAll(colorSet);
         JPanel shoePanel = new JPanel(new BorderLayout());
         JPanel shoeHeader = new JPanel();
         JLabel shoeBrand = new JLabel(p.getBrand());
@@ -87,12 +91,12 @@ public class PurchasePanel extends JPanel {
         colorPanel.add(colorLabel);
         this.colorBox = new JComboBox<>();
         colorBox.addItem(colorIntro);
-        Set<String> colorSet = new LinkedHashSet<>();
-        for (String s: colors){
-            colorSet.add(s);
-        }
-        colors.clear();
-        colors.addAll(colorSet);
+//        Set<String> colorSet = new LinkedHashSet<>();
+//        for (String s: colors){
+//            colorSet.add(s);
+//        }
+//        colors.clear();
+//        colors.addAll(colorSet);
         for (String s : colors){
             colorBox.addItem(s);
         }
@@ -112,12 +116,12 @@ public class PurchasePanel extends JPanel {
         sizePanel.add(sizeLabel);
         this.sizeBox = new JComboBox<>();
         sizeBox.addItem(sizeIntro);
-        Set<Integer> sizeSet = new LinkedHashSet<>();
-        for (int s : sizes) {
-            sizeSet.add(s);
-        }
-        sizes.clear();
-        sizes.addAll(sizeSet);
+//        Set<Integer> sizeSet = new LinkedHashSet<>();
+//        for (int s : sizes) {
+//            sizeSet.add(s);
+//        }
+//        sizes.clear();
+//        sizes.addAll(sizeSet);
         for (int i : sizes){
             sizeBox.addItem(String.valueOf(i));
         }
@@ -165,14 +169,14 @@ public class PurchasePanel extends JPanel {
         JPanel submitPanel = new JPanel();
         decorator.adjustSingleResultPanel(submitPanel);
         JButton submitButton = new JButton("Add to cart");
-        submitButton.addActionListener(e -> {
-            try {
-                submitActions();
-            } catch (SQLException | ClassNotFoundException ex) {
-                throw new RuntimeException(ex);
-            }
-        });
-        submitPanel.add(submitButton);
+//        submitButton.addActionListener(e -> {
+//            try {
+//                submitActions();
+//            } catch (SQLException | ClassNotFoundException ex) {
+//                throw new RuntimeException(ex);
+//            }
+//        });
+//        submitPanel.add(submitButton);
         choicePanel.add(colorPanel);
         choicePanel.add(sizePanel);
         choicePanel.add(quantityPanel);

@@ -2,7 +2,7 @@ package Control;
 
 public class Event {
     private Phase phase;
-    private final Action action;
+    private Action action;
     private final Subject subject;
     private final Origin origin;
     private final Outcome outcome;
@@ -183,6 +183,7 @@ public class Event {
     public void setPhase(Phase phase){
         this.phase = phase;
     }
+    public void setAction(Action action){this.action = action;}
 
     @Override
     public String toString() {
