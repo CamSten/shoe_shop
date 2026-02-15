@@ -15,7 +15,7 @@ import java.util.Set;
 
 public class ProductRepo implements Subscriber {
     private static DatabaseRelay databaseRelay;
-    private Connection c;
+    private static Connection c;
     private OrderRepo orderRepo;
 
 
@@ -37,7 +37,6 @@ public class ProductRepo implements Subscriber {
         } else if (!choice.equals("")) {
             System.out.println("choice is: " + choice);
             p.setString(1, choice);
-            p.setInt(2, 0);
         }
         ResultSet r = p.executeQuery();
         while (r.next()) {
@@ -50,7 +49,7 @@ public class ProductRepo implements Subscriber {
             System.out.println("IN EXECUTE QUERY, COLOR IS: " + color);
             int size = r.getInt("size");
             System.out.println("IN EXECUTE QUERY, SIZE IS: " + size);
-            int invQuantity = r.getInt("quantity");
+            int invQuantity = r.getInt("invQuantity");
             System.out.println("IN EXECUTE QUERY, INVQUANTITY IS:" + invQuantity);
             String description = r.getString("description");
             int price = r.getInt("price");
@@ -60,6 +59,9 @@ public class ProductRepo implements Subscriber {
             outcome = Event.Outcome.FAILURE;
         } else {
             shoesToSend = getUniqueProductValues(foundShoes);
+            for (Product product : shoesToSend){
+                getProductVariations(product);
+            }
             System.out.println("shoesToSend.size: " + shoesToSend.size());
         }
         if (shoesToSend.size() == 1) {
@@ -69,7 +71,21 @@ public class ProductRepo implements Subscriber {
             databaseRelay.Relay(new Event(Event.Phase.DISPLAY, Event.Action.VIEW, Event.Subject.SHOE, Event.Origin.LOGIC, outcome, shoesToSend, thisProductTerm));
         }
     }
+    private static void getProductVariations(Product product) throws SQLException {
+        String productName = product.getName();
+        PreparedStatement s = c.prepareStatement("select * from get_product_variations WHERE name = ?");
+        s.setString(1, productName);
+        ResultSet rs =  s.executeQuery();
+        while(rs.next()){
+            String color = rs.getString("color");
+            int size = rs.getInt("size");
+            int invQuantity = rs.getInt("quantity");
+            ShoeSpecification spec = new ShoeSpecification(size, color, invQuantity);
+            product.addSpecification(spec);
+            System.out.print("\nnew specification for " + product.getName() + "\n color: " + color + "\n size: " + size + "\n quantity: " + invQuantity);
+        }
 
+    }
     public void getShoesFromDB(Event event, String choice) throws SQLException, ClassNotFoundException {
         System.out.println("GETSHOES IN DBR IS REACHED");
         Event.Outcome outcome = Event.Outcome.OK;
@@ -88,15 +104,15 @@ public class ProductRepo implements Subscriber {
             switch (productTerm) {
                 case Category -> {
                     System.out.println("case CATEGORY is reached");
-                    PreparedStatement s = c.prepareStatement("SELECT * from shoe_view where category = ? and quantity > ?");
+                    PreparedStatement s = c.prepareStatement("SELECT * from shoe_view where category = ?");
                     executeShoeQuery(productTerm, choice, -1, s);
                 }
                 case Brand -> {
-                    PreparedStatement s = c.prepareStatement("SELECT * from shoe_view where brand = ? and quantity > ?");
+                    PreparedStatement s = c.prepareStatement("SELECT * from shoe_view where brand = ?");
                     executeShoeQuery(productTerm, choice, -1, s);
                 }
                 case Color -> {
-                    PreparedStatement s = c.prepareStatement("SELECT * from shoe_view where color = ? and quantity > ?");
+                    PreparedStatement s = c.prepareStatement("SELECT * from shoe_view where color = ?");
                     executeShoeQuery(productTerm, choice, -1, s);
                 }
             }
@@ -188,7 +204,7 @@ private void callGetProductOrder(int customerId) throws SQLException {
     int orderId = s.getInt(2);
     System.out.println("in callGetProductOrder, orderId is: " + orderId);
 }
-    private static List<Product> getUniqueProductValues(List<Product> allShoes) {
+    private static List<Product> getUniqueProductValues(List<Product> allShoes) throws SQLException {
         List<Product> uniqueProducts = new ArrayList<>();
 
         for (Product p : allShoes) {
@@ -205,24 +221,26 @@ private void callGetProductOrder(int customerId) throws SQLException {
             if (existingProduct == null) {
                 uniqueProducts.add(p);
                 System.out.println("ADDED SHOE: " + p.getName() + " with ID: " + p.getProductId());
+
             }
-            else {
-                for (ShoeSpecification sp : p.getShoeSpecifications()) {
-                    boolean specExists = false;
-                    for (ShoeSpecification usp : existingProduct.getShoeSpecifications()) {
-                        if (usp.getSize() == sp.getSize() &&
-                                usp.getColor().equals(sp.getColor())) {
-                            usp.setInvQuantity(sp.getInvQuantity());
-                            specExists = true;
-                            break;
-                        }
-                    }
-                    if (!specExists) {
-                        System.out.println("added specification: " + sp.getColor() + " " + sp.getSize() + " quantity: " + sp.getInvQuantity());
-                        existingProduct.addSpecification(sp);
-                    }
-                }
-            }
+//            else {
+//
+////                for (ShoeSpecification sp : p.getShoeSpecifications()) {
+////                    boolean specExists = false;
+////                    for (ShoeSpecification usp : existingProduct.getShoeSpecifications()) {
+////                        if (usp.getSize() == sp.getSize() &&
+////                                usp.getColor().equals(sp.getColor())) {
+////                            usp.setInvQuantity(sp.getInvQuantity());
+////                            specExists = true;
+////                            break;
+////                        }
+////                    }
+////                    if (!specExists) {
+////                        System.out.println("added specification: " + sp.getColor() + " " + sp.getSize() + " quantity: " + sp.getInvQuantity());
+////                        existingProduct.addSpecification(sp);
+////                    }
+////                }
+//            }
         }
 
         return uniqueProducts;

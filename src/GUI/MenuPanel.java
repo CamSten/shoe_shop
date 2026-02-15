@@ -14,6 +14,7 @@ public class MenuPanel extends JPanel {
     private List<JButton> allOptionButtons = new ArrayList<>();
 
     public MenuPanel(MainFrame mainFrame, PanelDecorator decorator) {
+        System.out.println("showMenuPanel constructor is reached");
         this.mainFrame = mainFrame;
 //        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         setLayout(new BorderLayout());

@@ -19,6 +19,7 @@ public class AdminMenuPanel extends JPanel{
     private List<JButton> allOptionButtons = new ArrayList<>();
 
     public AdminMenuPanel( MainFrame mainFrame, PanelDecorator decorator) {
+        System.out.println("AdminMenuPanel constructor is reached");
         this.mainFrame = mainFrame;
         this.decorator = decorator;
         setLayout(new BorderLayout());
@@ -74,6 +75,7 @@ public class AdminMenuPanel extends JPanel{
     }
 
     private void getButtons() {
+        System.out.println("in AMP, GETBUTTONS IS REACHED");
         JButton optionSeeOrders = new JButton("See order history");
         allOptionButtons.add(optionSeeOrders);
         optionSeeOrders.addActionListener(new ActionListener() {

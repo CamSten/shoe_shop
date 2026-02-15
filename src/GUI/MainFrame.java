@@ -284,10 +284,12 @@ public class MainFrame extends JFrame implements Subscriber {
                             showLoginPanel();
                             break;
                         }
-                        switch (event.getOutcome()) {
-                            case NOT_FOUND -> loginPanel.promptNoSuchUser();
-                            case INVALID_INPUT -> loginPanel.promptWrongPassword();
-                            case OK -> showMenuPanel();
+                        else {
+                            switch (event.getOutcome()) {
+                                case NOT_FOUND -> loginPanel.promptNoSuchUser();
+                                case INVALID_INPUT -> loginPanel.promptWrongPassword();
+                                case OK -> showMenuPanel();
+                            }
                         }
                     }
                     case CREATE_ACCOUNT -> {

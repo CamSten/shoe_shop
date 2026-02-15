@@ -44,7 +44,6 @@ public class CustomerRepo implements Subscriber {
     public static void checkCustomer(List<String> userInput) throws ClassNotFoundException, SQLException {
         String email = userInput.get(0).trim();
         String userPassword = userInput.get(1).trim();
-
         boolean exists;
         boolean validLogin;
         int foundId;
@@ -54,6 +53,9 @@ public class CustomerRepo implements Subscriber {
         s.setInt(1, -1);
         s.setString(2, email);
         s.setString(3, userPassword);
+        s.registerOutParameter(4, Types.BOOLEAN);
+        s.registerOutParameter(5, Types.BOOLEAN);
+        s.registerOutParameter(6, Types.INTEGER);
         s.execute();
 
         exists = s.getBoolean(4);
