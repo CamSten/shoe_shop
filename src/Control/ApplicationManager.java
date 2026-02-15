@@ -1,4 +1,6 @@
 package Control;
+import GUI.AdminGUI.AdminInfoPanel;
+import GUI.AdminGUI.AdminMenuPanel;
 import GUI.LoginPanel;
 import GUI.MainFrame;
 import Model.DataHandling.ProductTerm;
@@ -91,7 +93,7 @@ public class ApplicationManager implements Subscriber {
                         mainFrame.Update(event);
                     }
                     case VIEW -> {
-                       // if (event.getPhase() == Event.Phase.DISPLAY && event.getSubject() == Event.Subject.SHOE) {
+                            // if (event.getPhase() == Event.Phase.DISPLAY && event.getSubject() == Event.Subject.SHOE) {
                             mainFrame.Update(event);
 //                        } else if (event.getPhase() == Event.Phase.COMPLETE && event.getSubject() == Event.Subject.CART) {
 //                            mainFrame.Update(event);

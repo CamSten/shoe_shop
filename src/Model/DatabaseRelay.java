@@ -28,6 +28,7 @@ public class DatabaseRelay implements Subscriber {
     }
 
     public void Relay(Event event) throws SQLException, ClassNotFoundException {
+        event.setExtraContents(Event.Subject.ADMIN);
         applicationManager.Update(event);
     }
 

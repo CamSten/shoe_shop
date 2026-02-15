@@ -2,6 +2,7 @@ package GUI;
 import Control.ApplicationManager;
 import Control.Event;
 import Control.Subscriber;
+import GUI.AdminGUI.AdminInfoPanel;
 import GUI.AdminGUI.AdminMenuPanel;
 import Model.DataHandling.ProductTerm;
 import Model.DataHandling.Product;
@@ -26,6 +27,7 @@ public class MainFrame extends JFrame implements Subscriber {
     private SingleProductPanel singlePanel;
     private PurchasePanel purchasePanel;
     private AdminMenuPanel adminMenu;
+    private AdminInfoPanel adminInfoPanel;
     private JButton backToMenu;
     private final Color backgroundColor = Colors.bg();
     private JButton addToCartButton;
@@ -213,6 +215,14 @@ public class MainFrame extends JFrame implements Subscriber {
         revalidate();
         repaint();
     }
+    private void showAdminInfoPanel(){
+        adjustHeaderAndFooter("Choose what you would like to do: ", true, false, false);
+        centerPanel.removeAll();
+        this.adminInfoPanel = new AdminInfoPanel(this, decorator, currentEvent);
+        centerPanel.add(adminInfoPanel);
+        revalidate();
+        repaint();
+    }
 
     public void Update(Event event) throws SQLException, ClassNotFoundException {
         this.currentEvent = event;
@@ -289,7 +299,10 @@ public class MainFrame extends JFrame implements Subscriber {
                     }
                     case VIEW -> {
                         System.out.println("case VIEW is reached");
-                        if (event.getPhase() == Event.Phase.DISPLAY && event.getSubject() == Event.Subject.SHOE) {
+                        if (event.getExtraContents() != null && event.getExtraContents() instanceof Event.Subject) {
+                            showAdminInfoPanel();
+                        }
+                        else if (event.getPhase() == Event.Phase.DISPLAY && event.getSubject() == Event.Subject.SHOE) {
                             showOptionsPanel(event);
                         } else if (event.getSubject() == Event.Subject.CART) {
                             showCartPanel(event);

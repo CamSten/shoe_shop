@@ -3,6 +3,8 @@ package Model.Repositories;
 import Control.Event;
 import Control.Subscriber;
 import Model.DataHandling.InventoryPost;
+import Model.DataHandling.OrderPost;
+import Model.DataHandling.SalesPost;
 import Model.DatabaseRelay;
 
 import java.sql.*;
@@ -14,14 +16,14 @@ public class AdminRepo implements Subscriber {
     private DatabaseRelay databaseRelay;
     private Connection c;
     private Event event;
-    Event.Outcome outcome = Outcome.OK;
+    Event.Outcome outcome = Event.Outcome.OK;
 
     public AdminRepo (DatabaseRelay databaseRelay, Connection c){
         this.databaseRelay = databaseRelay;
         this.c = c;
     }
 
-    private void getOrders(){
+    private void getOrders() throws SQLException, ClassNotFoundException {
         List<OrderPost> allPosts = new ArrayList<>();
         PreparedStatement s = c.prepareStatement("select * from order_Inventory");
         ResultSet rs = s.executeQuery();
@@ -38,18 +40,11 @@ public class AdminRepo implements Subscriber {
             allPosts.add(post);
         }
         if (allPosts.isEmpty()){
-            outcome = Outcome.NOT_FOUND;
+            outcome = Event.Outcome.NOT_FOUND;
         }
         relay(Event.returnAdminInfo(event.getSubject(), outcome, allPosts));
-        //    public OrderPost(int customerId, String brand, String name, String color, int size, int quantity, int price, LocalDateTime time) {
-        //'customerId', customer.firstName, customer.surname, product.name as 'product', product.brand as 'brand', shoeInventory.size AS 'size', orderPost.orderedQuantity as 'buyQuantity', shoeInventory.color as 'color', product.price, orderingDate as 'date' from productOrder
-        //inner join customer on productOrder.customerId = customer.id and productOrder.status = 'Active'
-        //inner join orderPost on orderPost.productOrderId = productOrder.id
-        //inner join product on orderPost.productId = product.id
-        //inner join shoeInventory on product.id = shoeInventory.productId and orderPost.color = shoeInventory.color and orderPost.size = shoeInventory.size
-        //order by customer.surname asc;
     }
-    private void getInventory() throws SQLException {
+    private void getInventory() throws SQLException, ClassNotFoundException {
         List<InventoryPost> allPosts = new ArrayList<>();
         PreparedStatement s = c.prepareStatement("select * from shoe_view");
         ResultSet rs = s.executeQuery();
@@ -65,11 +60,11 @@ public class AdminRepo implements Subscriber {
             allPosts.add(post);
         }
         if (allPosts.isEmpty()){
-            outcome = Outcome.NOT_FOUND;
+            outcome = Event.Outcome.NOT_FOUND;
         }
         relay(Event.returnAdminInfo(event.getSubject(), outcome, allPosts));
     }
-    private void getSales(){
+    private void getSales() throws SQLException {
         List<SalesPost> topSold = new ArrayList<>();
         PreparedStatement s = c.prepareStatement("select * from get_most_sold");
         ResultSet rs = s.executeQuery();
@@ -80,7 +75,6 @@ public class AdminRepo implements Subscriber {
             SalesPost post = new SalesPost(brand, name, quantity);
             topSold.add(post);
         }
-        //create view get_most_sold as SELECT product.name as 'Product', product.brand as 'Brand', sum(orderedQuantity) as 'Quantity' from productOrder
     }
     private void assessIfAdmin(Event event) throws SQLException, ClassNotFoundException {
         List<String> userInput = new ArrayList<>();
@@ -102,11 +96,11 @@ public class AdminRepo implements Subscriber {
         if (isAdmin){
             outcome = Event.Outcome.OK;
         }
-        databaseRelay.Relay(new Event(Event.Phase.COMPLETE, Event.Action.VALIDATE, Event.Subject.ADMIN, Event.Origin.LOGIC, outcome, userInput, null));
+        relay(new Event(Event.Phase.COMPLETE, Event.Action.VALIDATE, Event.Subject.ADMIN, Event.Origin.LOGIC, outcome, userInput, null));
     }
 
     private void relay(Event event) throws SQLException, ClassNotFoundException {
-        databaseRelay.Relay();
+        databaseRelay.Relay(event);
     }
     @Override
     public void Update(Event event) throws SQLException, ClassNotFoundException {
