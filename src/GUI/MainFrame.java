@@ -139,10 +139,8 @@ public class MainFrame extends JFrame implements Subscriber {
         System.out.println("headerText: " + headerText + " showBackToMenu: " + showBackToMenu + " showReturn: " + showReturn + " showAdd: " + showAdd);
         bottomPanel.removeAll();
         removeHeader();
-        if (headerText != null && !headerText.isEmpty()) {
             this.headerPanel = new HeaderPanel(decorator, headerText);
             add(headerPanel, BorderLayout.NORTH);
-        }
         if(showBackToMenu) {
                 JPanel buttonPanel = new JPanel();
                 backToMenu = new JButton("Return to menu");
@@ -208,6 +206,7 @@ public class MainFrame extends JFrame implements Subscriber {
     }
 
     private void showAdminMenu(){
+        System.out.println("showAdminMenu is reached in MainFrame");
         adjustHeaderAndFooter("Choose what you would like to do: ", false, false, false);
         centerPanel.removeAll();
         this.adminMenu = new AdminMenuPanel(this, decorator);

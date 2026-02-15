@@ -20,6 +20,7 @@ public class DatabaseRelay implements Subscriber {
 
     public DatabaseRelay(ApplicationManager applicationManager) throws SQLException {
         this.applicationManager = applicationManager;
+        System.out.println("connection:  url:" + PropertyRetriever.getUrl() +" user: " + PropertyRetriever.getUser() + " pass: "+ PropertyRetriever.getPassword());
         this.c = DriverManager.getConnection(PropertyRetriever.getUrl(), PropertyRetriever.getUser(), PropertyRetriever.getPassword());
         this.adminRepo = new AdminRepo(this, c);
         this.customerRepo = new CustomerRepo(this, c);
@@ -28,7 +29,7 @@ public class DatabaseRelay implements Subscriber {
     }
 
     public void Relay(Event event) throws SQLException, ClassNotFoundException {
-        event.setExtraContents(Event.Subject.ADMIN);
+
         applicationManager.Update(event);
     }
 

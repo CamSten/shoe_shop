@@ -81,6 +81,7 @@ public class ApplicationManager implements Subscriber {
                             }
                             case INVALID_INPUT -> promptWrongPassword();
                             case OK -> {
+                                System.out.println("in AppManager: case VALIDATE, OK, is reached");
                                 saveCustomer((Integer) event.getExtraContents());
                                 mainFrame.Update(event);
                             }

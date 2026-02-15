@@ -64,6 +64,7 @@ public class CustomerRepo implements Subscriber {
 
         if (!exists) outcome = Event.Outcome.NOT_FOUND;
         else if (!validLogin) outcome = Event.Outcome.INVALID_INPUT;
+        System.out.println("found id in customerRepo is: " + foundId);
 
         databaseRelay.Relay(new Event(Event.Phase.COMPLETE, Event.Action.VALIDATE, Event.Subject.CUSTOMER, Event.Origin.LOGIC, outcome, results, foundId));
     }
@@ -99,12 +100,12 @@ public class CustomerRepo implements Subscriber {
         if (newId == -1 || alreadyExists) {
             outcome = Event.Outcome.ALREADY_EXISTS;
         }
-
         databaseRelay.Relay(Event.confirmComplete(Event.Action.CREATE_ACCOUNT, Event.Subject.CUSTOMER, outcome, newId));
     }
 
     @Override
     public void Update(Event event) throws SQLException, ClassNotFoundException {
+        System.out.println("CustomerRepo is reached, event is: " + event.getAction());
         if (event.getAction() == Event.Action.VALIDATE && event.getContents() instanceof List list) {
             checkCustomer((List<String>) list);
         } else if (event.getAction() == Event.Action.CREATE_ACCOUNT && event.getContents() instanceof List list) {

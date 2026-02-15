@@ -75,6 +75,10 @@ public class AdminRepo implements Subscriber {
             SalesPost post = new SalesPost(brand, name, quantity);
             topSold.add(post);
         }
+        if (topSold.isEmpty()){
+            outcome = Event.Outcome.NOT_FOUND;
+        }
+        relay(Event.returnAdminInfo(event.getSubject(), outcome, topSold));
     }
     private void assessIfAdmin(Event event) throws SQLException, ClassNotFoundException {
         List<String> userInput = new ArrayList<>();
@@ -100,6 +104,7 @@ public class AdminRepo implements Subscriber {
     }
 
     private void relay(Event event) throws SQLException, ClassNotFoundException {
+        event.setExtraContents(Event.Subject.ADMIN);
         databaseRelay.Relay(event);
     }
     @Override
