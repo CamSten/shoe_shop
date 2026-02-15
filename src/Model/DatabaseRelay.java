@@ -52,7 +52,7 @@ public class DatabaseRelay implements Subscriber {
         }
     }
 
-    int getCustomerId(){
+    public int getCustomerId(){
         return customerId;
     }
     private void setCustomerId(int id){

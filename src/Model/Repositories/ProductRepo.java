@@ -3,7 +3,8 @@ package Model.Repositories;
 import Control.Event;
 import Control.Subscriber;
 import Model.DatabaseRelay;
-import Model.ProductTerm;
+import Model.DataHandling.ProductTerm;
+import Model.DataHandling.Product;
 import Model.DataHandling.ShoeSpecification;
 
 import java.sql.*;
