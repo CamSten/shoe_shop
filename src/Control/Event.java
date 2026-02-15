@@ -136,6 +136,17 @@ public class Event {
                 null
         );
     }
+    public static Event returnAdminInfo(Subject subject, Outcome outcome, Object data) {
+        return new Event(
+                Phase.COMPLETE,
+                Action.VIEW,
+                subject,
+                Origin.LOGIC,
+                outcome,
+                data,
+                null
+        );
+    }
 
     public Phase getPhase() {
         return phase;
