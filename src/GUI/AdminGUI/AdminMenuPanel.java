@@ -80,7 +80,7 @@ public class AdminMenuPanel extends JPanel{
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    System.out.println("");
+                    System.out.println("--- IN ADMIN MENU PANEL, SEE ORDER HISTORY IS CHOSEN");
                     Update(Event.select(Event.Subject.SHOE));
                 } catch (SQLException | ClassNotFoundException ex) {
                     throw new RuntimeException(ex);
@@ -93,7 +93,7 @@ public class AdminMenuPanel extends JPanel{
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    System.out.println("--- IN MENU PANEL, SEE CART IS CHOSEN");
+                    System.out.println("--- IN ADMIN MENU PANEL, SEE SALES IS CHOSEN");
                     Update(Event.select(Event.Subject.CART));
                 } catch (SQLException | ClassNotFoundException ex) {
                     throw new RuntimeException(ex);
@@ -106,7 +106,7 @@ public class AdminMenuPanel extends JPanel{
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    System.out.println("--- IN MENU PANEL, ACCOUNT DETAILS IS CHOSEN");
+                    System.out.println("--- IN ADMIN MENU PANEL, SEE INV IS CHOSEN");
                     Update(new Event(Event.Phase.SELECT, Event.Action.VIEW, Event.Subject.CUSTOMER, Event.Origin.GUI, Event.Outcome.PENDING, null, null));
                 } catch (SQLException | ClassNotFoundException ex) {
                     throw new RuntimeException(ex);

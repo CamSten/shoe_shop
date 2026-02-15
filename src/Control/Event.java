@@ -40,6 +40,8 @@ public class Event {
         CUSTOMER,
         CART,
         ADMIN,
+        SALES,
+        STOCK,
         NONE
     }
     public enum Origin {
