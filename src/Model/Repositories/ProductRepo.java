@@ -44,13 +44,17 @@ public class ProductRepo implements Subscriber {
             int thisId = r.getInt("productId");
             System.out.println("productId: " + thisId);
             String name = r.getString("productName");
+            System.out.println("IN EXECUTE QUERY, NAME IS: " + name);
             String brand = r.getString("brand");
             String color = r.getString("color");
+            System.out.println("IN EXECUTE QUERY, COLOR IS: " + color);
             int size = r.getInt("size");
-            int quantity = r.getInt("quantity");
+            System.out.println("IN EXECUTE QUERY, SIZE IS: " + size);
+            int invQuantity = r.getInt("quantity");
+            System.out.println("IN EXECUTE QUERY, INVQUANTITY IS:" + invQuantity);
             String description = r.getString("description");
             int price = r.getInt("price");
-            foundShoes.add(createShoe(thisId, name, brand, color, description, size, quantity, price));
+            foundShoes.add(createShoe(thisId, name, brand, color, description, size, invQuantity, price));
         }
         if (foundShoes.isEmpty()) {
             outcome = Event.Outcome.FAILURE;
@@ -148,29 +152,30 @@ public class ProductRepo implements Subscriber {
         return newShoe;
     }// out foundOrder boolean, out foundPost boolean, out success boolean)
 
-    private boolean callAddToCart(int customerId, int productId, int size, String color, int buyQuantity) throws ClassNotFoundException, SQLException {
+    private boolean callAddToCart(int customerId, String productName, int productId, int size, String color, int buyQuantity) throws ClassNotFoundException, SQLException {
         System.out.println("callAddToCart is reached in DBR, customerId is: " + customerId + " productId is: " + productId + " size is: " + size + " color is: " + color + " buyQuantity is: " + buyQuantity);
         boolean success = false;
-        boolean validPurchase = orderRepo.callCheckInventory(productId, size, color, buyQuantity);
+        boolean validPurchase = orderRepo.callCheckInventory(productName, size, color, buyQuantity);
         callGetProductOrder(customerId);
         if (validPurchase) {
             System.out.println("purchase is valid");
-            //ustomerId int, thisProductId int, thisSize int, thisColor VARCHAR(15), thisNewQuantity int, out success boolean, out haveFound boolean)
-            CallableStatement s = c.prepareCall("CALL addToCart(?, ?, ?, ?, ?, ?, ?, ?)");
+// (thisCustomerId int 1, thisProductName VARCHAR(30) 2, thisProductId int 3, thisSize int 4, thisColor VARCHAR(15) 5, thisNewQuantity int 6, out foundOrder boolean, out foundPost boolean, out success boolean)
+            CallableStatement s = c.prepareCall("CALL addToCart(?, ?, ?, ?, ?, ?, ?, ?, ?)");
             s.setInt(1, customerId);
-            s.setInt(2, productId);
-            s.setInt(3, size);
-            s.setString(4, color);
-            s.setInt(5, buyQuantity);
-            s.registerOutParameter(6, Types.BOOLEAN);
+            s.setString(2, productName);
+            s.setInt(3, productId);
+            s.setInt(4, size);
+            s.setString(5, color);
+            s.setInt(6, buyQuantity);
             s.registerOutParameter(7, Types.BOOLEAN);
             s.registerOutParameter(8, Types.BOOLEAN);
+            s.registerOutParameter(9, Types.BOOLEAN);
             s.execute();
-            boolean foundOrder = s.getBoolean(6);
+            boolean foundOrder = s.getBoolean(7);
             System.out.println("foundOrder is: " + foundOrder);
-            boolean foundPost = s.getBoolean(7);
+            boolean foundPost = s.getBoolean(8);
             System.out.println("foundPost is: " + foundPost);
-            success = s.getBoolean(8);
+            success = s.getBoolean(9);
             System.out.println("success is: " + success);
         }
         return success;
@@ -207,12 +212,13 @@ private void callGetProductOrder(int customerId) throws SQLException {
                     for (ShoeSpecification usp : existingProduct.getShoeSpecifications()) {
                         if (usp.getSize() == sp.getSize() &&
                                 usp.getColor().equals(sp.getColor())) {
+                            usp.setInvQuantity(sp.getInvQuantity());
                             specExists = true;
                             break;
                         }
                     }
-
                     if (!specExists) {
+                        System.out.println("added specification: " + sp.getColor() + " " + sp.getSize() + " quantity: " + sp.getInvQuantity());
                         existingProduct.addSpecification(sp);
                     }
                 }
@@ -246,7 +252,7 @@ private void callGetProductOrder(int customerId) throws SQLException {
                 quantity = product.getBuyQuantity();
                 color = product.getColor();
             }
-            boolean result = callAddToCart(customerId, productId, size, color, quantity);
+            boolean result = callAddToCart(customerId, product.getName(), productId, size, color, quantity);
             if (!result)
                 outcome = Event.Outcome.FAILURE;
         }

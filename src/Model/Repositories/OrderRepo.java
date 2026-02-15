@@ -43,11 +43,11 @@ public class OrderRepo implements Subscriber {
         databaseRelay.Relay(new Event(Event.Phase.DISPLAY, Event.Action.VIEW, Event.Subject.CART, Event.Origin.LOGIC, Event.Outcome.OK, orders, null
         ));
     }
-    protected boolean callCheckInventory(int productId, int size, String color, int buyQuantity) throws SQLException {
+    protected boolean callCheckInventory(String productName, int size, String color, int buyQuantity) throws SQLException {
 //create procedure checkShoeInventory(int, OUT shoeExists boolean, OUT sizeExists boolean, OUT sizeAndColorExists boolean, OUT sufficientStock boolean)
         System.out.println("callCheckInventory is reached in DBR");
         CallableStatement s = c.prepareCall("CALL checkShoeInventory(?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        s.setInt(1, productId);
+        s.setString(1, productName);
         s.setInt(2, size);
         s.setString(3, color);
         s.setInt(4, buyQuantity);
