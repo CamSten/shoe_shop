@@ -1,6 +1,7 @@
 package GUI;
 
 import Control.Event;
+import Model.DataHandling.OrderPost;
 import Model.DataHandling.Product;
 import Model.DataHandling.ShoeSpecification;
 
@@ -8,6 +9,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -53,10 +55,9 @@ public class PurchasePanel extends JPanel {
         mainFrame.adjustHeaderAndFooter("Choose color and size:", true, true, true);
         List<Integer> sizes = new ArrayList<>();
         List<String> colors = new ArrayList<>();
-//        List<Integer> quantities = new ArrayList<>();
         Set<String> colorSet = new LinkedHashSet<>();
         Set<Integer> sizeSet = new LinkedHashSet<>();
-        for (ShoeSpecification sc : p.getSizeColors()){
+        for (ShoeSpecification sc : p.getShoeSpecifications()){
             sizeSet.add(sc.getSize());
             colorSet.add(sc.getColor());
         }
@@ -77,11 +78,7 @@ public class PurchasePanel extends JPanel {
         shoePanel.add(shoeHeader, BorderLayout.NORTH);
         shoePanel.add(shoeFooter, BorderLayout.SOUTH);
         decorator.adjustShoeInfoPanel(shoePanel);
-
         JPanel choicePanel = new JPanel();
-//        choicePanel.setPreferredSize(new Dimension(300, 400));
-//        choicePanel.setMinimumSize(new Dimension(300, 400));
-//        choicePanel.setMinimumSize(new Dimension(300, 400));
         choicePanel.setLayout(new BoxLayout(choicePanel, BoxLayout.Y_AXIS));
         choicePanel.setBackground(Colors.panel());
         JPanel colorPanel = new JPanel(new GridLayout(2, 1));
@@ -91,12 +88,6 @@ public class PurchasePanel extends JPanel {
         colorPanel.add(colorLabel);
         this.colorBox = new JComboBox<>();
         colorBox.addItem(colorIntro);
-//        Set<String> colorSet = new LinkedHashSet<>();
-//        for (String s: colors){
-//            colorSet.add(s);
-//        }
-//        colors.clear();
-//        colors.addAll(colorSet);
         for (String s : colors){
             colorBox.addItem(s);
         }
@@ -116,12 +107,6 @@ public class PurchasePanel extends JPanel {
         sizePanel.add(sizeLabel);
         this.sizeBox = new JComboBox<>();
         sizeBox.addItem(sizeIntro);
-//        Set<Integer> sizeSet = new LinkedHashSet<>();
-//        for (int s : sizes) {
-//            sizeSet.add(s);
-//        }
-//        sizes.clear();
-//        sizes.addAll(sizeSet);
         for (int i : sizes){
             sizeBox.addItem(String.valueOf(i));
         }
@@ -139,13 +124,10 @@ public class PurchasePanel extends JPanel {
         };
         sizeBox.addActionListener(sizeListener);
         sizePanel.add(sizeBox);
-
         JPanel quantityPanel = new JPanel();
         quantityPanel.setLayout(new BoxLayout(quantityPanel, BoxLayout.Y_AXIS));
         decorator.adjustWrapperPanel(quantityPanel);
-
         JPanel qAvailablePanel = new JPanel(new GridLayout(2, 1));
-        //decorator.adjustSingleResultPanel(qAvailablePanel);
         JLabel quantityAvailableLabel = new JLabel("In stock:");
         decorator.adjustLabel(quantityAvailableLabel);
         qAvailablePanel.add(quantityAvailableLabel);
@@ -154,7 +136,6 @@ public class PurchasePanel extends JPanel {
         qAvailablePanel.add(quantityAvailabilityLabel);
 
         JPanel qChosenPanel = new JPanel(new GridLayout(2, 1));
-        //decorator.adjustSingleResultPanel(qChosenPanel);
         JLabel quantityChosenLabel = new JLabel("Select quantity:");
         decorator.adjustLabel(quantityChosenLabel);
         this.quantityChosenArea = new JTextArea();
@@ -165,23 +146,12 @@ public class PurchasePanel extends JPanel {
         qChosenPanel.add(quantityChosenArea);
         quantityPanel.add(qAvailablePanel);
         quantityPanel.add(qChosenPanel);
-
         JPanel submitPanel = new JPanel();
         decorator.adjustSingleResultPanel(submitPanel);
-        JButton submitButton = new JButton("Add to cart");
-//        submitButton.addActionListener(e -> {
-//            try {
-//                submitActions();
-//            } catch (SQLException | ClassNotFoundException ex) {
-//                throw new RuntimeException(ex);
-//            }
-//        });
-//        submitPanel.add(submitButton);
         choicePanel.add(colorPanel);
         choicePanel.add(sizePanel);
         choicePanel.add(quantityPanel);
         choicePanel.add(submitPanel);
-
         cartPanel.add(shoePanel);
         cartPanel.add(choicePanel);
         return cartPanel;
@@ -202,7 +172,6 @@ public class PurchasePanel extends JPanel {
             }
         }
         mainFrame.adjustHeaderAndFooter(confText, true, false, false);
-
         String brandValue = "";
         String nameValue = "";
         String colorValue = "";
@@ -219,20 +188,17 @@ public class PurchasePanel extends JPanel {
         descriptions.add("Size:");
         descriptions.add("Quantity:");
 
-        if(event.getContents() instanceof Product p){
-            product = p;
-            brandValue = product.getBrand();
-            nameValue = product.getName();
-            ShoeSpecification buySpecification = p.getBoughtSpecification();
-
-            colorValue = buySpecification.getColor();
-            sizeValue = buySpecification.getSize();
-            quantityValue = buySpecification.getBuyQuantity();
-            stringValues.add(brandValue);
-            stringValues.add(nameValue);
-            stringValues.add(colorValue);
-            intValues.add(sizeValue);
-            intValues.add(quantityValue);
+        if(event.getContents() instanceof OrderPost p) {
+            brandValue = p.getBrand();
+            nameValue = p.getName();
+                colorValue = p.getColor();
+                sizeValue = p.getSize();
+                quantityValue = p.getQuantity();
+                stringValues.add(brandValue);
+                stringValues.add(nameValue);
+                stringValues.add(colorValue);
+                intValues.add(sizeValue);
+                intValues.add(quantityValue);
         }
         List<JLabel> intValueLabels = new ArrayList<>();
         for (int i = 0; i < stringValues.size(); i++) {
@@ -245,7 +211,6 @@ public class PurchasePanel extends JPanel {
         }
         infoLabels.addAll(intValueLabels);
         JPanel infoPanel = new JPanel();
-//        JPanel infoPanel = new JPanel(new GridLayout(infoLabels.size(), 1));
         decorator.adjustWrapperPanel(infoPanel);
         for (int i = 0; i < infoLabels.size(); i++){
             JPanel singleValuePanel = new JPanel(new GridLayout(1, 2));
@@ -274,15 +239,9 @@ public class PurchasePanel extends JPanel {
                 System.out.println("buyQuantity is: " + buyQuantity);
                 String color = (String) colorBox.getSelectedItem();
                 try {
-                    int invQuantity = Integer.parseInt(quantityAvailabilityLabel.getText());
                     int size = Integer.parseInt(sizeBox.getSelectedItem().toString());
-                    ShoeSpecification sc = new ShoeSpecification(size, color, invQuantity);
-                    sc.setBuyQuantity(buyQuantity);
-//                        p.setColor(color);
-//                        p.setSize(size);
-//                        p.setBuyQuantity(buyQuantity);
-                    p.addSpecification(sc);
-                    mainFrame.Update(new Event(Event.Phase.SUBMIT, Event.Action.PURCHASE, Event.Subject.SHOE, Event.Origin.GUI, Event.Outcome.OK, p, sc));
+                    OrderPost orderPost = new OrderPost(-1, p.getProductId(), p.getBrand(), p.getName(), color, size, buyQuantity, p.getPrice(), LocalDateTime.now());
+                    mainFrame.Update(new Event(Event.Phase.SUBMIT, Event.Action.PURCHASE, Event.Subject.CART, Event.Origin.GUI, Event.Outcome.OK, orderPost, null));
                 } catch (NumberFormatException e) {}
             } else {
                 JOptionPane.showMessageDialog(this, "You must submit your choices before you can add to cart.");
@@ -308,78 +267,77 @@ public class PurchasePanel extends JPanel {
         return quantity;
     }
     private void setAvailableQuantity(Product product){
-
         String selectedColor = (String) colorBox.getSelectedItem();
         String selectedSize = (String) sizeBox.getSelectedItem();
         System.out.println("SET AVAILABLE QUANTITY is reached in PurchasePanel. Color: " + selectedColor + " Size: " + selectedSize);
-        if (selectedColor!= null && !selectedColor.equals(colorIntro)) {
-            //&& (selectedSize!= null && !selectedSize.equals(sizeIntro))
+        if (selectedColor!= null && !selectedColor.equals(colorIntro) && selectedSize!= null && !selectedSize.equals(sizeIntro)) {
             try {
                 System.out.println("tryParse is reached in setAvailableQuantity");
                 int thisSize = Integer.parseInt(selectedSize);
-                int q = getInventoryFor(selectedColor, thisSize);
+                int q = getCurrentInventoryFor(selectedColor, thisSize);
                 System.out.println("---- \n size is: " + thisSize + "\ncolor is: " + selectedColor +  "\nq is: " + q);
                 quantityAvailabilityLabel.setText(String.valueOf(q));
-//                for (ShoeSpecification sc : product.getSizeColors()) {
-//                    if (sc.getColor().equals(selectedColor) && sc.getSize() == thisSize) {
-//                        quantityAvailabilityLabel.setText(String.valueOf(sc.getInvQuantity()));
-//                    }
-//                }
             } catch (NumberFormatException e) {
             }
         }
     }
-    private void getSizes(Product product, String sValue) {
-        System.out.println("getSizes is reached, value is: " + sValue);
+    private void getSizes(Product product, String color) {
+        System.out.println("getSizes is reached, value is: " + color);
         String thisSize = (String) sizeBox.getSelectedItem();
         List<Integer> newSizes = new ArrayList<>();
-        if (!sValue.equals("")) {
+        if (!color.equals(colorIntro)) {
             sizeBox.removeActionListener(sizeListener);
             sizeBox.removeAllItems();
-            System.out.println("sc.size: " + product.getSizeColors().size());
+            sizeBox.addItem(sizeIntro);
+            System.out.println("sc.size: " + product.getShoeSpecifications().size());
             Set<Integer> sizeSet = new LinkedHashSet<>();
-            for (ShoeSpecification sc : product.getSizeColors()) {
-                if (sc.getColor().equals(sValue)) {
+            for (ShoeSpecification sc : product.getShoeSpecifications()) {
+                if (sc.getColor().equals(color)) {
                     sizeSet.add(sc.getSize());
                 }
             }
-           // sizeBox.addItem(sizeIntro);
             newSizes.addAll(sizeSet);
             for (int i : newSizes) {
                 System.out.println("newSize: " + i);
                 sizeBox.addItem(String.valueOf(i));
                 if (String.valueOf(i).equals(thisSize)){
-                    sizeBox.setSelectedItem(i);
+                    sizeBox.setSelectedItem(String.valueOf(i));
                 }
+            }
+            if (!thisSize.equals(sizeBox.getSelectedItem())){
+                sizeBox.setSelectedItem(sizeIntro);
             }
             sizeBox.addActionListener(sizeListener);
             repaint();
             revalidate();
         }
     }
-    private void getColors(Product product, int iValue) {
+    private void getColors(Product product, int sizeValue) {
         String thisColor = (String) colorBox.getSelectedItem();
         colorBox.removeActionListener(colorListener);
         colorBox.removeAllItems();
+        colorBox.addItem(colorIntro);
         List<String> newColors = new ArrayList<>();
         Set<String> colorSet = new LinkedHashSet<>();
-        for (ShoeSpecification sc : product.getSizeColors()) {
-            if (sc.getSize() == iValue) {
+        for (ShoeSpecification sc : product.getShoeSpecifications()) {
+            if (sc.getSize() == sizeValue) {
                 colorSet.add(sc.getColor());
             }
         }
         newColors.addAll(colorSet);
-       // colorBox.addItem(colorIntro);
         for (String s : newColors) {
             colorBox.addItem(s);
             if (s.equals(thisColor)){
                 colorBox.setSelectedItem(s);
             }
         }
+        if (thisColor == null || !thisColor.equals(colorBox.getSelectedItem())){
+            colorBox.setSelectedItem(colorIntro);
+        }
         colorBox.addActionListener(colorListener);
     }
 
-    public int getInventoryFor(String color, int size) {
+    public int getCurrentInventoryFor(String color, int size) {
         System.out.println("getInventoryFor is reached. Color: " + color + " size: " + size);
         for (ShoeSpecification sc : p.getShoeSpecifications()) {
             if (sc.getColor().equals(color) && sc.getSize() == size) {

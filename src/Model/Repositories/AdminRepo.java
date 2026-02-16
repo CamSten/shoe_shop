@@ -29,6 +29,7 @@ public class AdminRepo implements Subscriber {
         ResultSet rs = s.executeQuery();
         while (rs.next()){
             int customerId = rs.getInt("customerId");
+            int productId = rs.getInt("productId");
             String brand = rs.getString("brand");
             String name  = rs.getString("name");
             String color = rs.getString("color");
@@ -36,7 +37,7 @@ public class AdminRepo implements Subscriber {
             int buyQuantity = rs.getInt("buyQuantity");
             int price = rs.getInt("price");
             LocalDateTime date = rs.getTimestamp("date").toLocalDateTime();
-            OrderPost post = new OrderPost(customerId, brand, name, color, size, buyQuantity, price, date);
+            OrderPost post = new OrderPost(customerId, productId, brand, name, color, size, buyQuantity, price, date);
             allPosts.add(post);
         }
         if (allPosts.isEmpty()){

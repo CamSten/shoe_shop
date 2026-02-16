@@ -26,7 +26,7 @@ public class DatabaseRelay implements Subscriber {
         this.adminRepo = new AdminRepo(this, c);
         this.customerRepo = new CustomerRepo(this, c);
         this.orderRepo = new OrderRepo(this, c);
-        this.productRepo = new ProductRepo(this, c, orderRepo);
+        this.productRepo = new ProductRepo(this, c);
     }
 
     public void Relay(Event event) throws SQLException, ClassNotFoundException {
@@ -63,7 +63,6 @@ public class DatabaseRelay implements Subscriber {
             }
         }
     }
-
     public int getCustomerId(){
         return customerId;
     }

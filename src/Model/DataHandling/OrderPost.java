@@ -5,6 +5,7 @@ import java.time.format.DateTimeFormatter;
 
 public class OrderPost {
     private int customerId;
+    private int productId;
     private String brand;
     private String name;
     private String color;
@@ -15,8 +16,9 @@ public class OrderPost {
 
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d MMMM yyyy HH:mm");
 
-    public OrderPost(int customerId, String brand, String name, String color, int size, int quantity, int price, LocalDateTime time) {
+    public OrderPost(int customerId, int productId, String brand, String name, String color, int size, int quantity, int price, LocalDateTime time) {
         this.customerId = customerId;
+        this.productId = productId;
         this.brand = brand;
         this.name = name;
         this.color = color;
@@ -24,6 +26,14 @@ public class OrderPost {
         this.quantity = quantity;
         this.price = price;
         this.time = time;
+    }
+
+    public int getProductId() {
+        return productId;
+    }
+
+    public void setProductId(int productId) {
+        this.productId = productId;
     }
 
     public int getSize() {

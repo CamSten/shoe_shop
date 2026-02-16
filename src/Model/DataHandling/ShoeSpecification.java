@@ -11,11 +11,6 @@ public class ShoeSpecification {
         this.color = color;
         this.invQuantity = invQuantity;
     }
-    public ShoeSpecification(int buyQuantity, int size, String color){
-        this.size = size;
-        this.color = color;
-        this.buyQuantity = buyQuantity;
-    }
 
     public int getBuyQuantity() {
         return buyQuantity;

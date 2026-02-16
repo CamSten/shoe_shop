@@ -48,9 +48,6 @@ public class Product {
     }
 
 
-    public List<ShoeSpecification> getSizeColors() {
-        return shoeSpecifications;
-    }
 
     public void addSpecification(ShoeSpecification specification){
         shoeSpecifications.add(specification);

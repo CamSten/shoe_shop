@@ -348,7 +348,7 @@ public class MainFrame extends JFrame implements Subscriber {
                             }
                         }
                         case PURCHASE -> {
-                            if (event.getPhase() == Event.Phase.COMPLETE) {
+                            if (event.getPhase() == Event.Phase.COMPLETE || event.getOutcome() == Event.Outcome.FAILURE || event.getOutcome() == Event.Outcome.OK) {
                                 purchasePanel.getConfirmationPanel(event);
                                 remove(addToCartButton);
                             } else {

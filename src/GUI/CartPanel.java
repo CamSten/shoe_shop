@@ -44,6 +44,15 @@ public class CartPanel extends JPanel {
                 wrapper.add(totalPriceLabel);
             }
         }
+        else {
+            JPanel nullDisplay = new JPanel();
+            JLabel nullConf = new JLabel("No result was found.");
+            nullConf.setFont(Fonts.getSemiHeaderFont());
+            nullConf.setForeground(Colors.textMuted());
+            nullDisplay.add(nullConf);
+            decorator.adjustSingleResultLine(nullDisplay);
+            wrapper.add(nullDisplay);
+        }
         return wrapper;
     }
 
