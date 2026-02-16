@@ -17,6 +17,7 @@ public class DatabaseRelay implements Subscriber {
     private static ProductRepo productRepo;
     private static OrderRepo orderRepo;
     private int customerId;
+    private boolean admin;
 
     public DatabaseRelay(ApplicationManager applicationManager) throws SQLException {
         this.applicationManager = applicationManager;
@@ -29,16 +30,26 @@ public class DatabaseRelay implements Subscriber {
     }
 
     public void Relay(Event event) throws SQLException, ClassNotFoundException {
-
+        if(admin){
+            event.setExtraContents(Event.Subject.ADMIN);
+        }
         applicationManager.Update(event);
     }
 
     @Override
     public void Update(Event event) throws SQLException, ClassNotFoundException {
-        System.out.println("UPDATE IN DBR IS REACHED");
+        admin = false;
+        System.out.println("UPDATE IN DBR IS REACHED.  Action=" + event.getAction() +
+                ", Phase=" + event.getPhase() +
+                ", Subject=" + event.getSubject() +
+                ", Outcome=" + event.getOutcome() +
+                ", Origin=" + event.getOrigin());
+        if (event.getExtraContents() instanceof Event.Subject subject && subject == Event.Subject.ADMIN) {
+            admin = true;
+        }
 
         switch(event.getSubject()){
-            case ADMIN -> {
+            case ADMIN, SALES, STOCK -> {
                 adminRepo.Update(event);
             }
             case CUSTOMER -> {

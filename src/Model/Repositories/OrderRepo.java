@@ -19,14 +19,24 @@ public class OrderRepo implements Subscriber {
         this.databaseRelay = databaseRelay;
         this.c = c;
     }
-    private void executeOrderQuery(int customerId) throws SQLException, ClassNotFoundException {
+    private void executeOrderQuery(int customerId, boolean admin) throws SQLException, ClassNotFoundException {
         System.out.println("executeOrderQuery in DBR reached for customerId: " + customerId);
         List<OrderPost> orders = new ArrayList<>();
-        PreparedStatement s = c.prepareStatement("SELECT * FROM order_inventory WHERE customerId = ?");
-        s.setInt(1, customerId);
+        ResultSet rs = null;
+        if (admin){
+            PreparedStatement s = c.prepareStatement("SELECT * FROM order_inventory");
+            rs = s.executeQuery();
+        }
+        else {
+            PreparedStatement s = c.prepareStatement("SELECT * FROM order_inventory WHERE customerId = ?");
+            s.setInt(1, customerId);
+            rs = s.executeQuery();
+        }
 //customer.id AS 'customerId', customer.firstName, customer.surname, product.name as 'product', product.brand as 'brand', shoeInventory.size AS 'size', orderPost.orderedQuantity as 'buyQuantity', shoeInventory.color as 'color', product.price, orderingDate as 'date'
-        ResultSet rs = s.executeQuery();
         while (rs.next()) {
+            if (admin){
+                customerId = rs.getInt("customerId");
+            }
             String productName = rs.getString("product");
             String brand = rs.getString("brand");
             String color = rs.getString("color");
@@ -71,10 +81,15 @@ public class OrderRepo implements Subscriber {
 
     @Override
     public void Update(Event event) throws SQLException, ClassNotFoundException {
-        if (event.getContents() instanceof Integer){
-            int customerId = (Integer) event.getContents();
+        boolean admin = false;
+        int customerId = -1;
+        if (event.getExtraContents() instanceof Event.Subject subject && subject == Event.Subject.ADMIN) {
+            admin = true;
+        }
+        else if (event.getContents() instanceof Integer) {
+            customerId = (Integer) event.getContents();
             System.out.println("customerId:" + customerId);
-            executeOrderQuery(customerId);
+        }
+            executeOrderQuery(customerId, admin);
         }
     }
-}

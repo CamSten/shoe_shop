@@ -49,14 +49,14 @@ public class AdminRepo implements Subscriber {
         PreparedStatement s = c.prepareStatement("select * from shoe_view");
         ResultSet rs = s.executeQuery();
         while (rs.next()){
-            String category = rs.getString("category");
+//            String category = rs.getString("category");
             String brand = rs.getString("brand");
             String name  = rs.getString("productName");
             String color = rs.getString("color");
             int size = rs.getInt("size");
-            int invQuantity = rs.getInt("quantity");
+            int invQuantity = rs.getInt("invQuantity");
             int price = rs.getInt("price");
-            InventoryPost post = new InventoryPost(category, brand, name, color, size, price, invQuantity);
+            InventoryPost post = new InventoryPost(brand, name, color, size, price, invQuantity);
             allPosts.add(post);
         }
         if (allPosts.isEmpty()){
@@ -65,6 +65,7 @@ public class AdminRepo implements Subscriber {
         relay(Event.returnAdminInfo(event.getSubject(), outcome, allPosts));
     }
     private void getSales() throws SQLException, ClassNotFoundException {
+        System.out.println("getSales is reached in adminRepo");
         List<SalesPost> topSold = new ArrayList<>();
         PreparedStatement s = c.prepareStatement("select * from get_most_sold");
         ResultSet rs = s.executeQuery();

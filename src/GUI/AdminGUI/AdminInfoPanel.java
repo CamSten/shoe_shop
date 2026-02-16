@@ -20,7 +20,7 @@ public class AdminInfoPanel extends JPanel implements Subscriber {
     private Event event;
     private JPanel centerPanel;
     private JPanel infoPanel;
-    private JLabel totalPriceLabel;
+//    private JLabel totalPriceLabel;
     private List<String> titles;
     private List<JLabel> columnHeaders;
     private List<List<JLabel>> dataEntries;
@@ -55,10 +55,35 @@ public class AdminInfoPanel extends JPanel implements Subscriber {
                     }
                 }
             }
+            getColumnHeaders();
+            getInfoPanel();
             adjustPanel();
         }
     }
+    private void getInfoPanel() {
+        this.infoPanel = new JPanel();
+        infoPanel.setLayout(new BoxLayout(infoPanel, BoxLayout.X_AXIS));
+        for (int i = 0; i < columnHeaders.size(); i++) {
+            JPanel wrapper = new JPanel();
+            decorator.adjustWrapperPanel(wrapper);
+            JPanel column = new JPanel();
+            decorator.adjustInputPanel(column);
+            column.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+            System.out.println("columnHeaders.get(i): " + columnHeaders.get(i).getText());
+            column.add(columnHeaders.get(i));
+            for (List<JLabel> labelList : dataEntries) {
+                System.out.println("dataEntries.get(i).get(j): " + labelList.get(i).getText());
+                column.add(labelList.get(i));
+            }
+
+            wrapper.add(column);
+            infoPanel.add(Box.createHorizontalGlue());
+            infoPanel.add(wrapper);
+            infoPanel.add(Box.createHorizontalGlue());
+        }
+    }
     private void getSalesPanel(List<SalesPost> allPosts){
+        System.out.println("getSalesPanel is reached in adminInfoPanel");
         this.titles = new ArrayList<>();
         titles.add("Brand:");
         titles.add("Name:");
@@ -74,8 +99,9 @@ public class AdminInfoPanel extends JPanel implements Subscriber {
         }
     }
     private void getInventoryPanel(List<InventoryPost> allStock){
+        System.out.println("getInventoryPanel is reached in AdminInfoPanel");
         this.titles = new ArrayList<>();
-        titles.add("Category:");
+//        titles.add("Category:");
         titles.add("Brand:");
         titles.add("Name:");
         titles.add("Color:");
@@ -86,9 +112,10 @@ public class AdminInfoPanel extends JPanel implements Subscriber {
         this.dataEntries = new ArrayList<>();
         for (InventoryPost post : allStock){
             List<JLabel> row = new ArrayList<>();
-            row.add(getCellLabel(post.getCategory()));
+//            row.add(getCellLabel(post.getCategory()));
             row.add(getCellLabel(post.getProductBrand()));
             row.add(getCellLabel(post.getProductName()));
+            row.add(getCellLabel(post.getProductColor()));
             row.add(getCellLabel(String.valueOf(post.getProductSize())));
             row.add(getCellLabel(String.valueOf(post.getPrice())));
             row.add(getCellLabel(String.valueOf(post.getStockQuantity())));
@@ -96,7 +123,9 @@ public class AdminInfoPanel extends JPanel implements Subscriber {
         }
     }
     private void getOrdersPanel(List<OrderPost> allPosts){
+        System.out.println("getOrdersPanel is reached in AdminInfoPanel");
         this.titles = new ArrayList<>();
+        titles.add("Customer ID:");
         titles.add("Brand");
         titles.add("Name");
         titles.add("Color");
@@ -108,6 +137,7 @@ public class AdminInfoPanel extends JPanel implements Subscriber {
         int total = 0;
         for (OrderPost op : allPosts) {
             List<JLabel> row = new ArrayList<>();
+            row.add(getCellLabel(String.valueOf(op.getCustomerId())));
             row.add(getCellLabel(op.getBrand()));
             row.add(getCellLabel(op.getName()));
             row.add(getCellLabel(op.getColor()));
@@ -115,8 +145,8 @@ public class AdminInfoPanel extends JPanel implements Subscriber {
             row.add(getCellLabel(String.valueOf(op.getQuantity())));
             row.add(getCellLabel(op.getFormattedDate()));
             dataEntries.add(row);
-            total += op.getPrice() * op.getQuantity();
-            totalPriceLabel.setText("Total price: " + total + " SEK");
+//            total += op.getPrice() * op.getQuantity();
+//            totalPriceLabel.setText("Total price: " + total + " SEK");
         }
     }
 
@@ -229,16 +259,16 @@ public class AdminInfoPanel extends JPanel implements Subscriber {
         else {
             centerPanel.removeAll();
         }
-        this.infoPanel = new JPanel();
-        for (int i = 0; i < columnHeaders.size(); i++){
-            infoPanel.add(columnHeaders.get(i));
-            for (int j = 0; j < dataEntries.size(); j++){
-                infoPanel.add(dataEntries.get(i).get(j));
-            }
-        }
-        if (totalPriceLabel != null){
-            infoPanel.add(totalPriceLabel);
-        }
+//        this.infoPanel = new JPanel();
+//        for (int i = 0; i < columnHeaders.size(); i++){
+//            infoPanel.add(columnHeaders.get(i));
+//            for (int j = 0; j < dataEntries.size(); j++){
+//                infoPanel.add(dataEntries.get(i).get(j));
+//            }
+//        }
+//        if (totalPriceLabel != null){
+//            infoPanel.add(totalPriceLabel);
+//        }
         centerPanel.add(infoPanel);
         repaint();
         revalidate();

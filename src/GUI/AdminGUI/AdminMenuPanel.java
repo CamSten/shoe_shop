@@ -83,7 +83,7 @@ public class AdminMenuPanel extends JPanel{
             public void actionPerformed(ActionEvent e) {
                 try {
                     System.out.println("--- IN ADMIN MENU PANEL, SEE ORDER HISTORY IS CHOSEN");
-                    Update(Event.returnAdminInfo(Event.Subject.CART, Event.Outcome.PENDING, null));
+                    Update(Event.requestAdminInfo(Event.Subject.CART));
                 } catch (SQLException | ClassNotFoundException ex) {
                     throw new RuntimeException(ex);
                 }
@@ -96,7 +96,7 @@ public class AdminMenuPanel extends JPanel{
             public void actionPerformed(ActionEvent e) {
                 try {
                     System.out.println("--- IN ADMIN MENU PANEL, SEE SALES IS CHOSEN");
-                    Update(Event.returnAdminInfo(Event.Subject.SALES, Event.Outcome.PENDING, null));
+                    Update(Event.requestAdminInfo(Event.Subject.SALES));
                 } catch (SQLException | ClassNotFoundException ex) {
                     throw new RuntimeException(ex);
                 }
@@ -109,7 +109,8 @@ public class AdminMenuPanel extends JPanel{
             public void actionPerformed(ActionEvent e) {
                 try {
                     System.out.println("--- IN ADMIN MENU PANEL, SEE INV IS CHOSEN");
-                    Update(Event.returnAdminInfo(Event.Subject.STOCK, Event.Outcome.PENDING, null));                } catch (SQLException | ClassNotFoundException ex) {
+                    Update(Event.requestAdminInfo(Event.Subject.STOCK));
+                } catch (SQLException | ClassNotFoundException ex) {
                     throw new RuntimeException(ex);
                 }
             }
@@ -117,6 +118,7 @@ public class AdminMenuPanel extends JPanel{
     }
     public void Update(Event event ) throws SQLException, ClassNotFoundException {
         System.out.println("UPDATE IN MENUPANEL IS REACHED, event.Subject is: " + event.getSubject());
+        event.setExtraContents(Event.Subject.ADMIN);
         mainFrame.Update(event);
     }
 }

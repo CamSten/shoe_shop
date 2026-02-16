@@ -148,7 +148,7 @@ public class MainFrame extends JFrame implements Subscriber {
                 buttonPanel.add(backToMenu);
                 decorator.adjustButton(backToMenu);
                 backToMenu.setBorder(BorderFactory.createLineBorder(Colors.bg(), 10, true));
-                backToMenu.addActionListener(_ -> showMenuPanel());
+                backToMenu.addActionListener(_ -> showMenu());
                 buttonPanel.add(backToMenu);
                 bottomPanel.add(buttonPanel, BorderLayout.WEST);
                 bottomPanel.setVisible(true);
@@ -207,6 +207,14 @@ public class MainFrame extends JFrame implements Subscriber {
             pack();
     }
 
+    private void showMenu(){
+        if (currentEvent.getExtraContents() != null && currentEvent.getExtraContents() instanceof Event.Subject subject && subject == Event.Subject.ADMIN){
+            showAdminMenu();
+        }
+        else {
+            showMenuPanel();
+        }
+    }
     private void showAdminMenu(){
         System.out.println("showAdminMenu is reached in MainFrame");
         adjustHeaderAndFooter("Choose what you would like to do: ", false, false, false);
@@ -217,25 +225,43 @@ public class MainFrame extends JFrame implements Subscriber {
         repaint();
     }
     private void showAdminInfoPanel(){
-        adjustHeaderAndFooter("Choose what you would like to do: ", true, false, false);
+        String headerText = "";
+        switch (currentEvent.getSubject()){
+            case SALES -> {
+               headerText = "Top 5 most sold products:";
+            }
+            case CART -> {
+                headerText = "Active orders:";
+            }
+            case STOCK ->{
+                headerText = "Current inventory:";
+            }
+        }
+        adjustHeaderAndFooter(headerText, true, false, false);
         centerPanel.removeAll();
         this.adminInfoPanel = new AdminInfoPanel(this, decorator, currentEvent);
         centerPanel.add(adminInfoPanel);
         revalidate();
         repaint();
     }
-    private void adminActions(Event event) {
-        switch (event.getOrigin) {
+    private void adminActions(Event event) throws SQLException, ClassNotFoundException {
+        System.out.println("adminActions in MainFrame is reached");
+        switch (event.getOrigin()) {
             case GUI -> {
                 manager.Update(event);
             }
             case LOGIC -> {
-                adminMenu.Update(event);
+                if (event.getSubject() == Event.Subject.ADMIN && event.getOutcome() == Event.Outcome.OK) {
+                    showAdminMenu();
+                } else {
+                   showAdminInfoPanel();
+                }
             }
         }
     }
     public void Update(Event event) throws SQLException, ClassNotFoundException {
         this.currentEvent = event;
+        boolean admin = false;
         System.out.println("in MainFrame.UPDATE: Action=" + event.getAction() +
                 ", Phase=" + event.getPhase() +
                 ", Subject=" + event.getSubject() +
@@ -250,85 +276,81 @@ public class MainFrame extends JFrame implements Subscriber {
             if (event.getExtraContents() instanceof ProductTerm pt) {
                 System.out.println("ProductTerm: " + pt);
             }
-            if (event.getExtraContents() instanceof of Event.Subject subject && subject == Event.Subject.ADMIN){
+            if (event.getExtraContents() instanceof Event.Subject subject && subject == Event.Subject.ADMIN) {
+                admin = true;
                 adminActions(event);
             }
         }
         Event.Origin origin = event.getOrigin();
-
-        switch (origin) {
-            case GUI -> {
-                //(Event.Phase.SUBMIT, Event.Action.CHOOSE_TYPE, Event.Subject.SHOE, Event.Origin.GUI, Event.Outcome.PENDING, p, null
-                switch (event.getAction()) {
-                    case CREATE_ACCOUNT -> showLoginPanel();
-                    case VIEW -> {
-                        if (event.getOutcome() == Event.Outcome.PENDING && event.getPhase() == Event.Phase.SELECT || event.getSubject() == Event.Subject.CART) {
-                            manager.Update(event);
-                        } else {
-                            showOptionsPanel(event);
-                        }
-                    }
-                    case CHOOSE_TYPE -> {
-                        if (event.getContents() instanceof Product) {
-                            showPurchasePanel(event);
-                        }
-                        else if (event.getContents() instanceof ProductTerm){
-                            manager.Update(event);
-                        }
-                    }
-                    case PURCHASE -> {
-                        manager.Update(event);
-                        //showPurchasePanel(event);
-                        //if (event.getOutcome == Event.Outcome.PENDING){
-                        //                            showSingleProductPanel(event);
-                        //                        }
-                    }
-                }
-            }
-            case LOGIC -> {
-                switch (event.getAction()) {
-                    //        mainFrame.Update(new Event(Event.Phase.AWAIT_INPUT, Event.Action.VALIDATE, Event.Subject.CUSTOMER, Event.Origin.LOGIC, Event.Outcome.NOT_FOUND, null, null));
-                    case VALIDATE -> {
-                        if (event.getSubject() == Event.Subject.ADMIN && event.getOutcome() == Event.Outcome.OK){
-                            showAdminMenu();
-                        }
-                        else if (event.getPhase() == Event.Phase.AWAIT_INPUT && event.getSubject() == Event.Subject.NONE){
-                            showLoginPanel();
-                            break;
-                        }
-                        else {
-                            switch (event.getOutcome()) {
-                                case NOT_FOUND -> loginPanel.promptNoSuchUser();
-                                case INVALID_INPUT -> loginPanel.promptWrongPassword();
-                                case OK -> showMenuPanel();
+        if (!admin) {
+            switch (origin) {
+                case GUI -> {
+                    //(Event.Phase.SUBMIT, Event.Action.CHOOSE_TYPE, Event.Subject.SHOE, Event.Origin.GUI, Event.Outcome.PENDING, p, null
+                    switch (event.getAction()) {
+                        case CREATE_ACCOUNT -> showLoginPanel();
+                        case VIEW -> {
+                            if (event.getOutcome() == Event.Outcome.PENDING && event.getPhase() == Event.Phase.SELECT || event.getSubject() == Event.Subject.CART) {
+                                manager.Update(event);
+                            } else {
+                                showOptionsPanel(event);
                             }
                         }
-                    }
-                    case CREATE_ACCOUNT -> {
-                        if (event.getOutcome() == Event.Outcome.OK) {
-                            showMenuPanel();
+                        case CHOOSE_TYPE -> {
+                            if (event.getContents() instanceof Product) {
+                                showPurchasePanel(event);
+                            } else if (event.getContents() instanceof ProductTerm) {
+                                manager.Update(event);
+                            }
                         }
-                        else if (event.getPhase() == Event.Phase.AWAIT_INPUT){
-                            loginPanel.showCreateAccountPanel();
-                        }
-                    }
-                    case VIEW -> {
-                        System.out.println("case VIEW is reached");
-                        if (event.getExtraContents() != null && event.getExtraContents() instanceof Event.Subject) {
-                            showAdminInfoPanel();
-                        }
-                        else if (event.getPhase() == Event.Phase.DISPLAY && event.getSubject() == Event.Subject.SHOE) {
-                            showOptionsPanel(event);
-                        } else if (event.getSubject() == Event.Subject.CART) {
-                            showCartPanel(event);
+                        case PURCHASE -> {
+                            manager.Update(event);
+                            //showPurchasePanel(event);
+                            //if (event.getOutcome == Event.Outcome.PENDING){
+                            //                            showSingleProductPanel(event);
+                            //                        }
                         }
                     }
-                    case PURCHASE -> {
-                        if (event.getPhase() == Event.Phase.COMPLETE) {
-                            purchasePanel.getConfirmationPanel(event);
-                            remove(addToCartButton);
-                        } else {
-                            showPurchasePanel(event);
+                }
+                case LOGIC -> {
+                    switch (event.getAction()) {
+                        //        mainFrame.Update(new Event(Event.Phase.AWAIT_INPUT, Event.Action.VALIDATE, Event.Subject.CUSTOMER, Event.Origin.LOGIC, Event.Outcome.NOT_FOUND, null, null));
+                        case VALIDATE -> {
+
+                            if (event.getPhase() == Event.Phase.AWAIT_INPUT && event.getSubject() == Event.Subject.NONE) {
+                                showLoginPanel();
+                                break;
+                            } else {
+                                switch (event.getOutcome()) {
+                                    case NOT_FOUND -> loginPanel.promptNoSuchUser();
+                                    case INVALID_INPUT -> loginPanel.promptWrongPassword();
+                                    case OK -> showMenuPanel();
+                                }
+                            }
+                        }
+                        case CREATE_ACCOUNT -> {
+                            if (event.getOutcome() == Event.Outcome.OK) {
+                                showMenuPanel();
+                            } else if (event.getPhase() == Event.Phase.AWAIT_INPUT) {
+                                loginPanel.showCreateAccountPanel();
+                            }
+                        }
+                        case VIEW -> {
+                            System.out.println("case VIEW is reached");
+                            if (event.getExtraContents() != null && event.getExtraContents() instanceof Event.Subject) {
+                                showAdminInfoPanel();
+                            } else if (event.getPhase() == Event.Phase.DISPLAY && event.getSubject() == Event.Subject.SHOE) {
+                                showOptionsPanel(event);
+                            } else if (event.getSubject() == Event.Subject.CART) {
+                                showCartPanel(event);
+                            }
+                        }
+                        case PURCHASE -> {
+                            if (event.getPhase() == Event.Phase.COMPLETE) {
+                                purchasePanel.getConfirmationPanel(event);
+                                remove(addToCartButton);
+                            } else {
+                                showPurchasePanel(event);
+                            }
                         }
                     }
                 }

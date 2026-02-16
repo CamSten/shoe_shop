@@ -15,6 +15,7 @@ public class ApplicationManager implements Subscriber {
     private DatabaseRelay databaseRelay;
     private int customerId;
     private String adminId = "admin";
+    private boolean admin;
 
     public enum Action {
         select("select "), insert("insert into "), update("update ");
@@ -39,6 +40,7 @@ public class ApplicationManager implements Subscriber {
     }
 
     public void Update(Event event) throws SQLException, ClassNotFoundException {
+        admin = false;
         System.out.println("in APPMANAGER UPDATE event.Action is: " + event.getAction() + " Phase is: " + event.getPhase() + " subject is: " + event.getSubject() + " outcome is: " + event.getOutcome() + " origin is: " + event.getOrigin());
         if (event.getContents() != null) {
             System.out.println("contents instance of: " + event.getContents().getClass());
@@ -47,6 +49,9 @@ public class ApplicationManager implements Subscriber {
             System.out.println("extra contents instance of: " + event.getExtraContents().getClass());
             if (event.getExtraContents() instanceof ProductTerm pt) {
                 System.out.println("productTerm in AppManager.update is: " + pt);
+            }
+            if (event.getExtraContents() instanceof Event.Subject subject && subject == Event.Subject.ADMIN) {
+                admin = true;
             }
         }
         Event.Origin origin = event.getOrigin();

@@ -144,7 +144,18 @@ public class Event {
                 Origin.LOGIC,
                 outcome,
                 data,
-                null
+                Subject.ADMIN
+        );
+    }
+    public static Event requestAdminInfo(Subject subject) {
+        return new Event(
+                Phase.SUBMIT,
+                Action.VIEW,
+                subject,
+                Origin.GUI,
+                Outcome.PENDING,
+                null,
+                Subject.ADMIN
         );
     }
 

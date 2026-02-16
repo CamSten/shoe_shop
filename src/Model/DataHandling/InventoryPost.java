@@ -1,7 +1,7 @@
 package Model.DataHandling;
 
 public class InventoryPost {
-    private String category;
+//    private String category;
     private String productBrand;
     private String productName;
     private String productColor;
@@ -9,8 +9,8 @@ public class InventoryPost {
     private int price;
     private int stockQuantity;
 
-    public InventoryPost(String category, String productBrand, String productName, String productColor, int productSize, int price, int stockQuantity) {
-        this.category = category;
+    public InventoryPost( String productBrand, String productName, String productColor, int productSize, int price, int stockQuantity) {
+//        this.category = category;
         this.productBrand = productBrand;
         this.productName = productName;
         this.productColor = productColor;
@@ -26,14 +26,14 @@ public class InventoryPost {
     public void setPrice(int price) {
         this.price = price;
     }
-
-    public String getCategory() {
-        return category;
-    }
-
-    public void setCategory(String category) {
-        this.category = category;
-    }
+//
+//    public String getCategory() {
+//        return category;
+//    }
+//
+//    public void setCategory(String category) {
+//        this.category = category;
+//    }
 
     public int getStockQuantity() {
         return stockQuantity;
