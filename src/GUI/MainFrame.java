@@ -24,7 +24,6 @@ public class MainFrame extends JFrame implements Subscriber {
     private MenuPanel menuPanel;
     private OptionsPanel optionsPanel;
     private CartPanel cartPanel;
-    private SingleProductPanel singlePanel;
     private PurchasePanel purchasePanel;
     private AdminMenuPanel adminMenu;
     private AdminInfoPanel adminInfoPanel;
@@ -41,6 +40,7 @@ public class MainFrame extends JFrame implements Subscriber {
         this.decorator = new PanelDecorator();
         setLayout(new BorderLayout());
         setMinimumSize(new Dimension(800, 750));
+        setMaximumSize(new Dimension(900, 800));
         setBackground(backgroundColor);
         centerPanel = new JPanel(new BorderLayout());
         centerPanel.setBackground(backgroundColor);
@@ -68,19 +68,19 @@ public class MainFrame extends JFrame implements Subscriber {
         pack();
     }
 
-    private void showSingleProductPanel(Event event) {
-        if (event.getContents() instanceof Product) {
-            Product product = (Product) event.getContents();
-            adjustHeaderAndFooter("Available options:", true, false ,true);
-
-            this.currentProduct = (Product) event.getContents();
-            centerPanel.removeAll();
-            this.singlePanel = new SingleProductPanel(this, currentProduct, decorator);
-            centerPanel.add(singlePanel, BorderLayout.CENTER);
-            revalidate();
-            repaint();
-        }
-    }
+//    private void showSingleProductPanel(Event event) {
+//        if (event.getContents() instanceof Product) {
+//            Product product = (Product) event.getContents();
+//            adjustHeaderAndFooter("Available options:", true, false ,true);
+//
+//            this.currentProduct = (Product) event.getContents();
+//            centerPanel.removeAll();
+//            this.singlePanel = new SingleProductPanel(this, currentProduct, decorator);
+//            centerPanel.add(singlePanel, BorderLayout.CENTER);
+//            revalidate();
+//            repaint();
+//        }
+//    }
 
     private void showLoginPanel() {
             removeHeader();
@@ -224,7 +224,16 @@ public class MainFrame extends JFrame implements Subscriber {
         revalidate();
         repaint();
     }
-
+    private void adminActions(Event event) {
+        switch (event.getOrigin) {
+            case GUI -> {
+                manager.Update(event);
+            }
+            case LOGIC -> {
+                adminMenu.Update(event);
+            }
+        }
+    }
     public void Update(Event event) throws SQLException, ClassNotFoundException {
         this.currentEvent = event;
         System.out.println("in MainFrame.UPDATE: Action=" + event.getAction() +
@@ -240,6 +249,9 @@ public class MainFrame extends JFrame implements Subscriber {
             System.out.println("ExtraContents instance of: " + event.getExtraContents().getClass());
             if (event.getExtraContents() instanceof ProductTerm pt) {
                 System.out.println("ProductTerm: " + pt);
+            }
+            if (event.getExtraContents() instanceof of Event.Subject subject && subject == Event.Subject.ADMIN){
+                adminActions(event);
             }
         }
         Event.Origin origin = event.getOrigin();
@@ -258,7 +270,7 @@ public class MainFrame extends JFrame implements Subscriber {
                     }
                     case CHOOSE_TYPE -> {
                         if (event.getContents() instanceof Product) {
-                            showSingleProductPanel(event);
+                            showPurchasePanel(event);
                         }
                         else if (event.getContents() instanceof ProductTerm){
                             manager.Update(event);

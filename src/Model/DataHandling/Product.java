@@ -10,15 +10,11 @@ public class Product {
     private String name;
     private String brand;
     private String description;
-    private List<String> colors;
-    private List<Integer> sizes;
-    private List<Integer> invQuantities;
-    private String color;
-    private int size;
-    private int invQuantity;
+    private int price;
     private int buyQuantity;
     private List<ShoeSpecification> shoeSpecifications;
-    private int price;
+    private ShoeSpecification boughtSpecification;
+
 
 
     public Product(int productId, String name, String brand, String description, int price) {
@@ -27,10 +23,17 @@ public class Product {
         this.brand = brand;
         this.description = description;
         this.price = price;
-        this.colors = new ArrayList<>();
-        this.sizes = new ArrayList<>();
         this.shoeSpecifications = new ArrayList<>();
     }
+
+    public ShoeSpecification getBoughtSpecification() {
+        return boughtSpecification;
+    }
+
+    public void setBoughtSpecification(ShoeSpecification boughtSpecification) {
+        this.boughtSpecification = boughtSpecification;
+    }
+
     public int getBuyQuantity() {
         return buyQuantity;
     }
@@ -40,37 +43,10 @@ public class Product {
     }
 
 
-    public void setInvQuantities(List<Integer> invQuantities) {
-        this.invQuantities = invQuantities;
-    }
-
     public List<ShoeSpecification> getShoeSpecifications() {
         return shoeSpecifications;
     }
 
-    public int getSize() {
-        return size;
-    }
-
-    public void setSize(int size) {
-        this.size = size;
-    }
-
-    public int getInvQuantity() {
-        return invQuantity;
-    }
-
-    public void setInvQuantity(int quantity) {
-        this.invQuantity = quantity;
-    }
-
-    public String getColor() {
-        return color;
-    }
-
-    public void setColor(String color) {
-        this.color = color;
-    }
 
     public List<ShoeSpecification> getSizeColors() {
         return shoeSpecifications;
@@ -83,38 +59,6 @@ public class Product {
         this.shoeSpecifications = shoeSpecifications;
     }
 
-    public List<String> getColors() {
-//        Set<String> everyColor = new LinkedHashSet<>();
-//        if (!shoeSpecifications.isEmpty()){
-//            for (ShoeSpecification sc : shoeSpecifications){
-//                everyColor.add(sc.getColor());
-//            }
-//        }
-//        System.out.println("In product.getColors, size is: " + colors.size());
-//        colors.clear();
-//        colors.addAll(everyColor);
-        return colors;
-    }
-
-    public void setColors(List<String> colors) {
-        this.colors = colors;
-    }
-
-    public List<Integer> getSizes() {
-//        Set<Integer> everySize = new LinkedHashSet<>();
-//        if (!shoeSpecifications.isEmpty()){
-//            for (int i = 0; i < shoeSpecifications.size(); i++){
-//                everySize.add(shoeSpecifications.get(i).getSize());
-//            }
-//        }
-//        sizes.clear();
-//        sizes.addAll(everySize);
-        return sizes;
-    }
-
-    public void setSizes(List<Integer> sizes) {
-        this.sizes = sizes;
-    }
 
     public int getPrice() {
         return price;
@@ -156,17 +100,5 @@ public class Product {
         this.description = description;
     }
 
-//    public List<Integer> getInvQuantities() {
-//        Set<Integer> everyQuantity = new LinkedHashSet<>();
-//        if (!shoeSpecifications.isEmpty()){
-//            for (int i = 0; i < shoeSpecifications.size(); i++){
-//                everyQuantity.add(shoeSpecifications.get(i).getQuantity());
-//            }
-//        }
-//        invQuantities.clear();
-//        invQuantities.addAll(everyQuantity);
-//
-//        return invQuantities;
-//    }
 
 }

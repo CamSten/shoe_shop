@@ -19,154 +19,112 @@ public class ProductRepo implements Subscriber {
     private OrderRepo orderRepo;
 
 
-    public ProductRepo(DatabaseRelay databaseRelay, Connection c,  OrderRepo orderRepo){
+    public ProductRepo(DatabaseRelay databaseRelay, Connection c, OrderRepo orderRepo) {
         this.orderRepo = orderRepo;
         this.c = c;
         this.databaseRelay = databaseRelay;
     }
 
-    private void executeShoeQuery(ProductTerm productTerm, String choice, int id, PreparedStatement p) throws SQLException, ClassNotFoundException {
-        System.out.println("executeShoeQuery in DBR is reached, choice is: " + choice);
+    public void getShoesFromDB(Event event, String choice) throws SQLException, ClassNotFoundException {
+        ProductTerm productTerm = null;
+        if (event.getContents() instanceof ProductTerm p && p != null) {
+            productTerm = (ProductTerm) event.getContents();
+        } else {
+            productTerm = ProductTerm.Category;
+        }
+        switch (productTerm) {
+            case Category -> DBRetrievalOnCategory(productTerm, choice);
+            case Brand -> DBRetrievalOnBrand(productTerm, choice);
+            case Color -> DBRetrievalOnColor(productTerm, choice);
+        }
+    }
+    private List<Product> executeShoeQuery(ProductTerm productTerm, String choice, int id, PreparedStatement p)
+            throws SQLException, ClassNotFoundException {
+
         List<Product> foundShoes = new ArrayList<>();
-        List<Product> shoesToSend = new ArrayList<>();
-        Event.Outcome outcome = Event.Outcome.OK;
-        ProductTerm thisProductTerm = productTerm;
 
         if (productTerm == null) {
-            thisProductTerm = ProductTerm.Name;
+            productTerm = ProductTerm.Name;
         } else if (!choice.equals("")) {
-            System.out.println("choice is: " + choice);
             p.setString(1, choice);
+        } else {
+            p.setInt(1, id);
         }
+
         ResultSet r = p.executeQuery();
         while (r.next()) {
             int thisId = r.getInt("productId");
-            System.out.println("productId: " + thisId);
             String name = r.getString("productName");
-            System.out.println("IN EXECUTE QUERY, NAME IS: " + name);
             String brand = r.getString("brand");
             String color = r.getString("color");
-            System.out.println("IN EXECUTE QUERY, COLOR IS: " + color);
             int size = r.getInt("size");
-            System.out.println("IN EXECUTE QUERY, SIZE IS: " + size);
             int invQuantity = r.getInt("invQuantity");
-            System.out.println("IN EXECUTE QUERY, INVQUANTITY IS:" + invQuantity);
             String description = r.getString("description");
             int price = r.getInt("price");
-            foundShoes.add(createShoe(thisId, name, brand, color, description, size, invQuantity, price));
+
+            getUniqueProductValues(foundShoes,
+                    createShoe(thisId, name, brand, color, description, size, invQuantity, price));
         }
-        if (foundShoes.isEmpty()) {
-            outcome = Event.Outcome.FAILURE;
-        } else {
-            shoesToSend = getUniqueProductValues(foundShoes);
-            for (Product product : shoesToSend){
-                getProductVariations(product);
-            }
-            System.out.println("shoesToSend.size: " + shoesToSend.size());
-        }
-        if (shoesToSend.size() == 1) {
-            Product shoe = shoesToSend.get(0);
-            databaseRelay.Relay(new Event(Event.Phase.DISPLAY, Event.Action.VIEW, Event.Subject.SHOE, Event.Origin.LOGIC, outcome, shoe, thisProductTerm));
-        } else {
-            databaseRelay.Relay(new Event(Event.Phase.DISPLAY, Event.Action.VIEW, Event.Subject.SHOE, Event.Origin.LOGIC, outcome, shoesToSend, thisProductTerm));
-        }
+
+        return foundShoes;
     }
-    private static void getProductVariations(Product product) throws SQLException {
-        String productName = product.getName();
-        PreparedStatement s = c.prepareStatement("select * from get_product_variations WHERE name = ?");
-        s.setString(1, productName);
-        ResultSet rs =  s.executeQuery();
-        while(rs.next()){
-            String color = rs.getString("color");
-            int size = rs.getInt("size");
-            int invQuantity = rs.getInt("quantity");
-            ShoeSpecification spec = new ShoeSpecification(size, color, invQuantity);
-            product.addSpecification(spec);
-            System.out.print("\nnew specification for " + product.getName() + "\n color: " + color + "\n size: " + size + "\n quantity: " + invQuantity);
-        }
 
-    }
-    public void getShoesFromDB(Event event, String choice) throws SQLException, ClassNotFoundException {
-        System.out.println("GETSHOES IN DBR IS REACHED");
-        Event.Outcome outcome = Event.Outcome.OK;
-        List<String> outputList = new ArrayList<>();
-        Set<String> results = new LinkedHashSet<>();
-        ProductTerm productTerm = null;
-
-        if (event.getContents() instanceof ProductTerm) {
-            productTerm = (ProductTerm) event.getContents();
-        }
-
-        if (event.getContents() instanceof ProductTerm && choice != "") {
-
-            productTerm = (ProductTerm) event.getContents();
-            System.out.println(" in GETSHOES, productTerm is: " + productTerm);
-            switch (productTerm) {
-                case Category -> {
-                    System.out.println("case CATEGORY is reached");
-                    PreparedStatement s = c.prepareStatement("SELECT * from shoe_view where category = ?");
-                    executeShoeQuery(productTerm, choice, -1, s);
-                }
-                case Brand -> {
-                    PreparedStatement s = c.prepareStatement("SELECT * from shoe_view where brand = ?");
-                    executeShoeQuery(productTerm, choice, -1, s);
-                }
-                case Color -> {
-                    PreparedStatement s = c.prepareStatement("SELECT * from shoe_view where color = ?");
-                    executeShoeQuery(productTerm, choice, -1, s);
-                }
-            }
-        } else if (event.getContents() instanceof Product) {
-            Product product = (Product) event.getContents();
-            System.out.println("contents instance of integer");
-            PreparedStatement p = c.prepareStatement("SELECT * from shoe_view where productId = ? and quantity > ?");
-            executeShoeQuery(null, "", product.getProductId(), p);
-        } else if (choice.equals("")) {
-            if (productTerm == null) {
-                productTerm = ProductTerm.Category;
-            }
-            System.out.println("choice is empty");
-            String term = productTerm.toString();
-            System.out.println("term: " + term);
-            Statement s = c.createStatement();
-            ResultSet r = s.executeQuery("SELECT * from shoe_view");
-            while (r.next()) {
-                String output = r.getString(term);
-                results.add(output);
-            }
-            outputList.addAll(results);
-            System.out.println("outputList.size: " + outputList.size());
-            if (outputList.isEmpty()) {
-                outcome = Event.Outcome.FAILURE;
-            }
-
-            databaseRelay.Relay(new Event(Event.Phase.DISPLAY, Event.Action.VIEW, Event.Subject.SHOE, Event.Origin.LOGIC, outcome, outputList, productTerm)
-            );
-        } else if (productTerm != null) {
-            switch (productTerm) {
-                case Category -> {
-                    System.out.println("CATEGORY is reached");
-                    PreparedStatement s = c.prepareStatement("SELECT * from shoe_view where category = ?");
-                    executeShoeQuery(productTerm, choice, -1, s);
-                }
-                case Brand -> {
-                    PreparedStatement s = c.prepareStatement("SELECT * from shoe_view where brand = ?");
-                    executeShoeQuery(productTerm, choice, -1, s);
-                }
-                case Color -> {
-                    PreparedStatement s = c.prepareStatement("SELECT * from shoe_view where color = ?");
-                    executeShoeQuery(productTerm, choice, -1, s);
-                }
-            }
-        }
-    }
+//    private List<Product> executeShoeQuery(ProductTerm productTerm, String choice, int id, PreparedStatement p) throws SQLException, ClassNotFoundException {
+//        System.out.println("executeShoeQuery in DBR is reached, choice is: " + choice);
+//        List<Integer> productIds = new ArrayList<>();
+//        List<Product> foundShoes = new ArrayList<>();
+//        List<Product> shoesToSend = new ArrayList<>();
+//        Event.Outcome outcome = Event.Outcome.OK;
+//        ProductTerm thisProductTerm = productTerm;
+//
+//        if (productTerm == null) {
+//            thisProductTerm = ProductTerm.Name;
+//        } else if (!choice.equals("")) {
+//            System.out.println("choice is: " + choice);
+//            p.setString(1, choice);
+//            System.out.println(p.toString());
+//        } else {
+//            p.setInt(1, id);
+//        }
+//        ResultSet r = p.executeQuery();
+//        while (r.next()) {
+//            int thisId = r.getInt("productId");
+//            System.out.println("productId: " + thisId);
+//            String name = r.getString("productName");
+//            System.out.println("IN EXECUTE QUERY, NAME IS: " + name);
+//            String brand = r.getString("brand");
+//            String color = r.getString("color");
+//            System.out.println("IN EXECUTE QUERY, COLOR IS: " + color);
+//            int size = r.getInt("size");
+//            System.out.println("IN EXECUTE QUERY, SIZE IS: " + size);
+//            int invQuantity = r.getInt("invQuantity");
+//            System.out.println("IN EXECUTE QUERY, INVQUANTITY IS:" + invQuantity);
+//            String description = r.getString("description");
+//            int price = r.getInt("price");
+//            getUniqueProductValues(foundShoes, createShoe(thisId, name, brand, color, description, size, invQuantity, price));
+//
+//        }
+//        if (foundShoes.isEmpty()) {
+//            outcome = Event.Outcome.FAILURE;
+//        } else {
+//            shoesToSend = foundShoes;
+//
+//            System.out.println("shoesToSend.size: " + shoesToSend.size());
+//        }
+//        if (shoesToSend.size() == 1) {
+//            Product shoe = shoesToSend.get(0);
+//            databaseRelay.Relay(new Event(Event.Phase.DISPLAY, Event.Action.VIEW, Event.Subject.SHOE, Event.Origin.LOGIC, outcome, shoe, thisProductTerm));
+//        } else {
+//            databaseRelay.Relay(new Event(Event.Phase.DISPLAY, Event.Action.VIEW, Event.Subject.SHOE, Event.Origin.LOGIC, outcome, shoesToSend, thisProductTerm));
+//        }
+//    }
 
     private static Product createShoe(int id, String name, String brand, String color, String description, int size, int quantity, int price) {
         Product newShoe = new Product(id, name, brand, description, price);
         ShoeSpecification sc = new ShoeSpecification(size, color, quantity);
         newShoe.addSpecification(sc);
         return newShoe;
-    }// out foundOrder boolean, out foundPost boolean, out success boolean)
+    }
 
     private boolean callAddToCart(int customerId, String productName, int productId, int size, String color, int buyQuantity) throws ClassNotFoundException, SQLException {
         System.out.println("callAddToCart is reached in DBR, customerId is: " + customerId + " productId is: " + productId + " size is: " + size + " color is: " + color + " buyQuantity is: " + buyQuantity);
@@ -196,55 +154,109 @@ public class ProductRepo implements Subscriber {
         }
         return success;
     }
-private void callGetProductOrder(int customerId) throws SQLException {
-        System.out.println("callGetProductOrder is reached, customerId is: " + customerId);
-    CallableStatement s = c.prepareCall("CALL getProductOrder(?, ?)");
-    s.setInt(1, customerId);
-    s.execute();
-    int orderId = s.getInt(2);
-    System.out.println("in callGetProductOrder, orderId is: " + orderId);
-}
-    private static List<Product> getUniqueProductValues(List<Product> allShoes) throws SQLException {
-        List<Product> uniqueProducts = new ArrayList<>();
 
-        for (Product p : allShoes) {
-            Product existingProduct = null;
-            if(uniqueProducts.isEmpty()){
-                uniqueProducts.add(p);
-            }
-            for (Product u : uniqueProducts) {
-                 if (u.getName().equals(p.getName())) {
-                     System.out.println("u.name: " + u.getName() + " p.name: " + p.getName());
+    private void callGetProductOrder(int customerId) throws SQLException {
+        System.out.println("callGetProductOrder is reached, customerId is: " + customerId);
+        CallableStatement s = c.prepareCall("CALL getProductOrder(?, ?)");
+        s.setInt(1, customerId);
+        s.registerOutParameter(2, Types.INTEGER);
+        s.execute();
+        int orderId = s.getInt(2);
+        System.out.println("in callGetProductOrder, orderId is: " + orderId);
+    }
+
+    private void getUniqueProductValues(List<Product> allShoes, Product p) throws SQLException {
+        Product existingProduct = null;
+        if (allShoes.isEmpty()) {
+            allShoes.add(p);
+        } else {
+            for (Product u : allShoes) {
+                if (u.getProductId() == p.getProductId()) {
+                    System.out.println("u.Id: " + u.getProductId() + " p.name: " + p.getProductId());
                     existingProduct = u;
+                    break;
                 }
             }
             if (existingProduct == null) {
-                uniqueProducts.add(p);
-                System.out.println("ADDED SHOE: " + p.getName() + " with ID: " + p.getProductId());
-
+                allShoes.add(p);
+                System.out.println("ADDED SHOE: " + p.getProductId());
+            } else {
+                for (ShoeSpecification spec : p.getShoeSpecifications()) {
+                    boolean exists = false;
+                    for (ShoeSpecification s : existingProduct.getShoeSpecifications()) {
+                        if (s.getSize() == spec.getSize() &&
+                                s.getColor().equals(spec.getColor())) {
+                            exists = true;
+                            s.setInvQuantity(spec.getInvQuantity());
+                            break;
+                        }
+                    }
+                    if (!exists) {
+                        existingProduct.addSpecification(spec);
+                    }
+                }
             }
-//            else {
-//
-////                for (ShoeSpecification sp : p.getShoeSpecifications()) {
-////                    boolean specExists = false;
-////                    for (ShoeSpecification usp : existingProduct.getShoeSpecifications()) {
-////                        if (usp.getSize() == sp.getSize() &&
-////                                usp.getColor().equals(sp.getColor())) {
-////                            usp.setInvQuantity(sp.getInvQuantity());
-////                            specExists = true;
-////                            break;
-////                        }
-////                    }
-////                    if (!specExists) {
-////                        System.out.println("added specification: " + sp.getColor() + " " + sp.getSize() + " quantity: " + sp.getInvQuantity());
-////                        existingProduct.addSpecification(sp);
-////                    }
-////                }
-//            }
-        }
 
-        return uniqueProducts;
+        }
     }
+
+    private void DBRetrievalOnCategory(ProductTerm productTerm, String choice) throws SQLException, ClassNotFoundException {
+        Event.Outcome outcome = Event.Outcome.OK;
+        if (!choice.equals("")) {
+            List<Integer> productIds = new ArrayList<>();
+            List<Product> allProducts = new ArrayList<>();
+            PreparedStatement s = c.prepareStatement("SELECT * from category_view where category = ?");
+            s.setString(1, choice);
+            ResultSet r = s.executeQuery();
+
+            while (r.next()) {
+                productIds.add(r.getInt("id"));
+            }
+            for (int i : productIds) {
+                PreparedStatement p = c.prepareStatement("SELECT * from shoe_view where productId = ?");
+                List<Product> productsFromQuery = executeShoeQuery(productTerm, "", i, p);
+                allProducts.addAll(productsFromQuery);
+            }
+            if (allProducts.isEmpty()) {
+                outcome = Event.Outcome.FAILURE;
+            }
+            databaseRelay.Relay(new Event(Event.Phase.DISPLAY, Event.Action.VIEW, Event.Subject.SHOE, Event.Origin.LOGIC, outcome, allProducts, productTerm));
+
+        } else {
+            List<String> outputList = new ArrayList<>();
+            Set<String> results = new LinkedHashSet<>();
+            Statement s = c.createStatement();
+            ResultSet r = s.executeQuery("SELECT category from category_view");
+            while (r.next()) {
+                results.add(r.getString("category"));
+            }
+            outputList.addAll(results);
+            if (outputList.isEmpty()) {
+                outcome = Event.Outcome.FAILURE;
+            }
+            databaseRelay.Relay(new Event(Event.Phase.DISPLAY, Event.Action.VIEW, Event.Subject.SHOE, Event.Origin.LOGIC, outcome, outputList, productTerm));
+        }
+    }
+    private void DBRetrievalOnBrand(ProductTerm productTerm, String choice) throws SQLException, ClassNotFoundException {
+        Event.Outcome outcome = Event.Outcome.OK;
+        PreparedStatement s = c.prepareStatement("SELECT * from shoe_view where brand = ?");
+        List<Product> allProducts = executeShoeQuery(productTerm, choice, -1, s);
+        if(allProducts.isEmpty()){
+            outcome = Event.Outcome.FAILURE;
+        }
+        databaseRelay.Relay(new Event(Event.Phase.DISPLAY, Event.Action.VIEW, Event.Subject.SHOE, Event.Origin.LOGIC, outcome, allProducts, productTerm));
+    }
+
+    private void DBRetrievalOnColor(ProductTerm productTerm, String choice) throws SQLException, ClassNotFoundException {
+        Event.Outcome outcome = Event.Outcome.OK;
+        PreparedStatement s = c.prepareStatement("SELECT * from shoe_view where color = ?");
+        List<Product> allProducts = executeShoeQuery(productTerm, choice, -1, s);
+        if(allProducts.isEmpty()){
+            outcome = Event.Outcome.FAILURE;
+        }
+        databaseRelay.Relay(new Event(Event.Phase.DISPLAY, Event.Action.VIEW, Event.Subject.SHOE, Event.Origin.LOGIC, outcome, allProducts, productTerm));
+    }
+
     private void purchaseActions(Event event) throws SQLException, ClassNotFoundException {
         System.out.println("PurchaseActions in DBR was reached");
         Product product = null;
@@ -266,13 +278,17 @@ private void callGetProductOrder(int customerId) throws SQLException {
                 quantity = sc.getBuyQuantity();
                 color = sc.getColor();
             } else {
-                size = product.getSize();
-                quantity = product.getBuyQuantity();
-                color = product.getColor();
+//                size = product.getSize();
+//                quantity = product.getBuyQuantity();
+//                color = product.getColor();
             }
             boolean result = callAddToCart(customerId, product.getName(), productId, size, color, quantity);
-            if (!result)
+            if (!result) {
                 outcome = Event.Outcome.FAILURE;
+            }
+            else {
+                product.setBoughtSpecification(new ShoeSpecification(quantity, size, color));
+            }
         }
         databaseRelay.Relay(Event.confirmComplete(Event.Action.PURCHASE, Event.Subject.SHOE, outcome, product));
     }
@@ -288,3 +304,116 @@ private void callGetProductOrder(int customerId) throws SQLException {
         }
     }
 }
+
+//    private static void getProductVariations(Product product) throws SQLException {
+//        String productName = product.getName();
+//        PreparedStatement s = c.prepareStatement("select * from get_product_variations WHERE name = ?");
+//        s.setString(1, productName);
+//        ResultSet rs =  s.executeQuery();
+//        while(rs.next()){
+//            String color = rs.getString("color");
+//            int size = rs.getInt("size");
+//            int invQuantity = rs.getInt("quantity");
+//            ShoeSpecification spec = new ShoeSpecification(size, color, invQuantity);
+//            product.addSpecification(spec);
+//            System.out.print("\nnew specification for " + product.getName() + "\n color: " + color + "\n size: " + size + "\n quantity: " + invQuantity);
+//        }
+//
+//    }
+//
+
+//        System.out.println("GETSHOES IN DBR IS REACHED");
+//        Event.Outcome outcome = Event.Outcome.OK;
+//        List<String> outputList = new ArrayList<>();
+//        Set<String> results = new LinkedHashSet<>();
+//        ProductTerm productTerm = null;
+//
+//        if (event.getContents() instanceof ProductTerm) {
+//            productTerm = (ProductTerm) event.getContents();
+//        }
+//
+//        if (event.getContents() instanceof ProductTerm && choice != "") {
+//            productTerm = (ProductTerm) event.getContents();
+//            System.out.println(" in GETSHOES, productTerm is: " + productTerm);
+//            switch (productTerm) {
+//                case Category -> {
+//                    System.out.println("case CATEGORY is reached");
+//
+//                    List<Integer> productIds = new ArrayList<>();
+//                    PreparedStatement s = c.prepareStatement("SELECT * from category_view where category = ?");
+//                    System.out.println("choice is: " + choice);
+//                    s.setString(1, choice);
+//                    ResultSet r = s.executeQuery();
+//                    while (r.next()) {
+//                        System.out.println("while loop is reached");
+//                        productIds.add(r.getInt("id"));
+//                    }
+//                    for (int i : productIds) {
+//                        PreparedStatement p = c.prepareStatement("SELECT * from shoe_view where productId = ?");
+//                        executeShoeQuery(productTerm, "", i, p);
+//                    }
+//                }
+//                case Brand -> {
+//                    PreparedStatement s = c.prepareStatement("SELECT * from shoe_view where brand = ?");
+//                    executeShoeQuery(productTerm, choice, -1, s);
+//                }
+//                case Color -> {
+//                    PreparedStatement s = c.prepareStatement("SELECT * from shoe_view where color = ?");
+//                    executeShoeQuery(productTerm, choice, -1, s);
+//                }
+//            }
+//        } else if (event.getContents() instanceof Product) {
+//            Product product = (Product) event.getContents();
+//            System.out.println("contents instance of integer");
+//            PreparedStatement p = c.prepareStatement("SELECT * from shoe_view where productId = ? ");
+//            executeShoeQuery(null, "", product.getProductId(), p);
+//        } else if (choice.equals("")) {
+//            if (productTerm == null) {
+//                productTerm = ProductTerm.Category;
+//            }
+//            System.out.println("productTerm is: " + productTerm);
+//            String term = productTerm.toString();
+//            Statement s = c.createStatement();
+//
+//            if (productTerm == ProductTerm.Category) {
+//                ResultSet r = s.executeQuery("SELECT category from category_view");
+//                while (r.next()) {
+//                    String output = r.getString("category");
+//                    results.add(output);
+//                }
+//            } else {
+//                ResultSet r = s.executeQuery("SELECT * from shoe_view");
+//                System.out.println("choice is empty");
+//                System.out.println("term: " + term);
+//                while (r.next()) {
+//                    String output = r.getString(term);
+//                    results.add(output);
+//                }
+//            }
+//
+//            outputList.addAll(results);
+//            System.out.println("outputList.size: " + outputList.size());
+//            if (outputList.isEmpty()) {
+//                outcome = Event.Outcome.FAILURE;
+//            }
+//
+//            databaseRelay.Relay(new Event(Event.Phase.DISPLAY, Event.Action.VIEW, Event.Subject.SHOE, Event.Origin.LOGIC, outcome, outputList, productTerm)
+//            );
+//        } else if (productTerm != null) {
+//            switch (productTerm) {
+//                case Category -> {
+//                    System.out.println("CATEGORY is reached");
+//                    PreparedStatement s = c.prepareStatement("SELECT * from category_view where category = ?");
+//                    executeShoeQuery(productTerm, choice, -1, s);
+//                }
+//                case Brand -> {
+//                    PreparedStatement s = c.prepareStatement("SELECT * from shoe_view where brand = ?");
+//                    executeShoeQuery(productTerm, choice, -1, s);
+//                }
+//                case Color -> {
+//                    PreparedStatement s = c.prepareStatement("SELECT * from shoe_view where color = ?");
+//                    executeShoeQuery(productTerm, choice, -1, s);
+//                }
+//            }
+//        }
+//    }

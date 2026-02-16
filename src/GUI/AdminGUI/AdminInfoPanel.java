@@ -26,24 +26,29 @@ public class AdminInfoPanel extends JPanel implements Subscriber {
     private List<List<JLabel>> dataEntries;
 
     public AdminInfoPanel(MainFrame mainFrame, PanelDecorator decorator, Event event) {
+        System.out.println("adminInfoPanel is reached");
         this.mainframe = mainFrame;
         this.decorator = decorator;
         this.event = event;
         if (event.getContents() instanceof List list) {
             switch (event.getSubject()) {
                 case SALES -> {
+                    System.out.println("in adminInfoPanel, case SALES is reached");
                     if (list.getFirst() instanceof SalesPost){
                         List<SalesPost> allPosts = (List<SalesPost>) list;
                         getSalesPanel(allPosts);
                     }
                 }
                 case STOCK -> {
+                    System.out.println("in adminInfoPanel, case STOCK is reached");
                     if (list.getFirst() instanceof InventoryPost ) {
+
                         List<InventoryPost> allStock = (List<InventoryPost>) list;
                         getInventoryPanel(allStock);
                     }
                 }
                 case CART -> {
+                    System.out.println("in adminInfoPanel, case CART is reached");
                     if (list.getFirst() instanceof OrderPost) {
                         List<OrderPost> allPosts = (List<OrderPost>) list;
                         getOrdersPanel(allPosts);

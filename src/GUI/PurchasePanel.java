@@ -223,9 +223,11 @@ public class PurchasePanel extends JPanel {
             product = p;
             brandValue = product.getBrand();
             nameValue = product.getName();
-            colorValue = product.getColor();
-            sizeValue = product.getSize();
-            quantityValue = product.getBuyQuantity();
+            ShoeSpecification buySpecification = p.getBoughtSpecification();
+
+            colorValue = buySpecification.getColor();
+            sizeValue = buySpecification.getSize();
+            quantityValue = buySpecification.getBuyQuantity();
             stringValues.add(brandValue);
             stringValues.add(nameValue);
             stringValues.add(colorValue);
@@ -258,7 +260,7 @@ public class PurchasePanel extends JPanel {
             infoPanel.add(singleValuePanel);
         }
         confirmationPanel.add(infoPanel, BorderLayout.CENTER);
-       confirmationPanel.setBorder(BorderFactory.createLineBorder(Colors.bg(), 10, true));
+        confirmationPanel.setBorder(BorderFactory.createLineBorder(Colors.bg(), 10, true));
         cartPanel.add(confirmationPanel);
         repaint();
         revalidate();
@@ -275,11 +277,12 @@ public class PurchasePanel extends JPanel {
                     int invQuantity = Integer.parseInt(quantityAvailabilityLabel.getText());
                     int size = Integer.parseInt(sizeBox.getSelectedItem().toString());
                     ShoeSpecification sc = new ShoeSpecification(size, color, invQuantity);
-                        sc.setBuyQuantity(buyQuantity);
-                        p.setColor(color);
-                        p.setSize(size);
-                        p.setBuyQuantity(buyQuantity);
-                        mainFrame.Update(new Event(Event.Phase.SUBMIT, Event.Action.PURCHASE, Event.Subject.SHOE, Event.Origin.GUI, Event.Outcome.OK, p, sc));
+                    sc.setBuyQuantity(buyQuantity);
+//                        p.setColor(color);
+//                        p.setSize(size);
+//                        p.setBuyQuantity(buyQuantity);
+                    p.addSpecification(sc);
+                    mainFrame.Update(new Event(Event.Phase.SUBMIT, Event.Action.PURCHASE, Event.Subject.SHOE, Event.Origin.GUI, Event.Outcome.OK, p, sc));
                 } catch (NumberFormatException e) {}
             } else {
                 JOptionPane.showMessageDialog(this, "You must submit your choices before you can add to cart.");
@@ -305,22 +308,30 @@ public class PurchasePanel extends JPanel {
         return quantity;
     }
     private void setAvailableQuantity(Product product){
+
         String selectedColor = (String) colorBox.getSelectedItem();
         String selectedSize = (String) sizeBox.getSelectedItem();
-        if ((selectedColor!= null && !selectedColor.equals(colorIntro)) && (selectedSize!= null && !selectedSize.equals(sizeIntro))) {
+        System.out.println("SET AVAILABLE QUANTITY is reached in PurchasePanel. Color: " + selectedColor + " Size: " + selectedSize);
+        if (selectedColor!= null && !selectedColor.equals(colorIntro)) {
+            //&& (selectedSize!= null && !selectedSize.equals(sizeIntro))
             try {
+                System.out.println("tryParse is reached in setAvailableQuantity");
                 int thisSize = Integer.parseInt(selectedSize);
-                for (ShoeSpecification sc : product.getSizeColors()) {
-                    if (sc.getColor().equals(selectedColor) && sc.getSize() == thisSize) {
-                        quantityAvailabilityLabel.setText(String.valueOf(sc.getInvQuantity()));
-                    }
-                }
+                int q = getInventoryFor(selectedColor, thisSize);
+                System.out.println("---- \n size is: " + thisSize + "\ncolor is: " + selectedColor +  "\nq is: " + q);
+                quantityAvailabilityLabel.setText(String.valueOf(q));
+//                for (ShoeSpecification sc : product.getSizeColors()) {
+//                    if (sc.getColor().equals(selectedColor) && sc.getSize() == thisSize) {
+//                        quantityAvailabilityLabel.setText(String.valueOf(sc.getInvQuantity()));
+//                    }
+//                }
             } catch (NumberFormatException e) {
             }
         }
     }
     private void getSizes(Product product, String sValue) {
         System.out.println("getSizes is reached, value is: " + sValue);
+        String thisSize = (String) sizeBox.getSelectedItem();
         List<Integer> newSizes = new ArrayList<>();
         if (!sValue.equals("")) {
             sizeBox.removeActionListener(sizeListener);
@@ -332,10 +343,14 @@ public class PurchasePanel extends JPanel {
                     sizeSet.add(sc.getSize());
                 }
             }
+           // sizeBox.addItem(sizeIntro);
             newSizes.addAll(sizeSet);
             for (int i : newSizes) {
                 System.out.println("newSize: " + i);
                 sizeBox.addItem(String.valueOf(i));
+                if (String.valueOf(i).equals(thisSize)){
+                    sizeBox.setSelectedItem(i);
+                }
             }
             sizeBox.addActionListener(sizeListener);
             repaint();
@@ -343,6 +358,7 @@ public class PurchasePanel extends JPanel {
         }
     }
     private void getColors(Product product, int iValue) {
+        String thisColor = (String) colorBox.getSelectedItem();
         colorBox.removeActionListener(colorListener);
         colorBox.removeAllItems();
         List<String> newColors = new ArrayList<>();
@@ -353,9 +369,24 @@ public class PurchasePanel extends JPanel {
             }
         }
         newColors.addAll(colorSet);
+       // colorBox.addItem(colorIntro);
         for (String s : newColors) {
             colorBox.addItem(s);
+            if (s.equals(thisColor)){
+                colorBox.setSelectedItem(s);
+            }
         }
         colorBox.addActionListener(colorListener);
+    }
+
+    public int getInventoryFor(String color, int size) {
+        System.out.println("getInventoryFor is reached. Color: " + color + " size: " + size);
+        for (ShoeSpecification sc : p.getShoeSpecifications()) {
+            if (sc.getColor().equals(color) && sc.getSize() == size) {
+                System.out.println("invQuantity is: " + sc.getInvQuantity());
+                return sc.getInvQuantity();
+            }
+        }
+        return -1;
     }
 }

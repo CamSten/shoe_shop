@@ -4,6 +4,8 @@ import Control.Event;
 import Model.DataHandling.OrderPost;
 
 import javax.swing.*;
+import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class CartPanel extends JPanel {
@@ -12,6 +14,9 @@ public class CartPanel extends JPanel {
     private Event event;
     private JPanel orderPanel;
     private JLabel totalPriceLabel;
+    private List<String> titles;
+    private List<JLabel> columnHeaders;
+    private List<List<JLabel>> dataEntries;
 
     public CartPanel(MainFrame mainFrame, Event event, PanelDecorator decorator) {
         this.mainFrame = mainFrame;
@@ -25,19 +30,82 @@ public class CartPanel extends JPanel {
 
     private JPanel getCartPanel() {
         JPanel wrapper = new JPanel();
+        wrapper.setLayout(new BoxLayout(wrapper, BoxLayout.Y_AXIS));
         decorator.adjustWrapperPanel(wrapper);
-        wrapper.add(getColumnHeaderPanel());
         this.orderPanel = new JPanel();
-        orderPanel.setLayout(new BoxLayout(orderPanel, BoxLayout.Y_AXIS));
         orderPanel.setBackground(Colors.bg());
         totalPriceLabel = new JLabel("Total price: 0 SEK");
-        decorator.adjustLabel(totalPriceLabel);
-        wrapper.add(totalPriceLabel);
+        decorator.adjustBrandLabel(totalPriceLabel);
+        totalPriceLabel.setBorder(BorderFactory.createLineBorder(Colors.bg(), 5, true));
         orderPanel.add(wrapper);
         if (event.getContents() instanceof List<?> list && !list.isEmpty() && list.get(0) instanceof OrderPost) {
-            populateOrders((List<OrderPost>) list);
+            wrapper.add(getOrdersPanel((List<OrderPost>) list));
+            if (totalPriceLabel != null){
+                wrapper.add(totalPriceLabel);
+            }
         }
         return wrapper;
+    }
+
+    private JPanel getOrdersPanel(List<OrderPost> allPosts){
+        this.titles = new ArrayList<>();
+        titles.add("Brand");
+        titles.add("Name");
+        titles.add("Color");
+        titles.add("Size");
+        titles.add("Quantity");
+        titles.add("Added");
+
+        this.dataEntries = new ArrayList<>();
+        getColumnHeaders();
+        int total = 0;
+        for (OrderPost op : allPosts) {
+            List<JLabel> row = new ArrayList<>();
+            row.add(getCellLabel(op.getBrand()));
+            row.add(getCellLabel(op.getName()));
+            row.add(getCellLabel(op.getColor()));
+            row.add(getCellLabel(String.valueOf(op.getPrice())));
+            row.add(getCellLabel(String.valueOf(op.getQuantity())));
+            row.add(getCellLabel(op.getFormattedDate()));
+            dataEntries.add(row);
+            total += op.getPrice() * op.getQuantity();
+            totalPriceLabel.setText("Total price: " + total + " SEK");
+        }
+
+        JPanel infoPanel = new JPanel();
+        infoPanel.setLayout(new BoxLayout(infoPanel, BoxLayout.X_AXIS));
+        for (int i = 0; i < columnHeaders.size(); i++){
+            JPanel wrapper = new JPanel();
+            decorator.adjustWrapperPanel(wrapper);
+            JPanel column = new JPanel();
+            decorator.adjustInputPanel(column);
+            column.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+            System.out.println("columnHeaders.get(i): " + columnHeaders.get(i).getText());
+            column.add(columnHeaders.get(i));
+            for (List<JLabel> labelList : dataEntries){
+                System.out.println("dataEntries.get(i).get(j): " + labelList.get(i).getText());
+                column.add(labelList.get(i));
+            }
+
+            wrapper.add(column);
+            infoPanel.add(Box.createHorizontalGlue());
+            infoPanel.add(wrapper);
+            infoPanel.add(Box.createHorizontalGlue());
+        }
+        infoPanel.setBorder(BorderFactory.createLineBorder(Colors.border(), 10, true));
+        return infoPanel;
+    }
+
+    private void getColumnHeaders() {
+        this.columnHeaders = new ArrayList<>();
+        for (String t : titles) {
+            System.out.println("title in getColumnHeaderPanel: " + t);
+            JLabel label = new JLabel(t);
+            decorator.adjustBrandLabel(label);
+            label.setBorder(BorderFactory.createLineBorder(Colors.border(), 5, true));
+//            label.setOpaque(true);
+            columnHeaders.add(label);
+        }
     }
     private JPanel getColumnHeaderPanel() {
         JPanel wrapperPanel = new JPanel();
@@ -57,18 +125,20 @@ public class CartPanel extends JPanel {
         return wrapperPanel;
     }
 
-    private void populateOrders(List<OrderPost> orders) {
+    private void populateOrders(JPanel wrapperPanel, List<OrderPost> orders) {
         orderPanel.removeAll();
-        JPanel wrapperPanel = new JPanel();
+       JPanel subWrapper = new JPanel();
+       subWrapper.setLayout(new GridLayout(orders.size(), 1));
         int total = 0;
         for (OrderPost op : orders) {
+            JPanel rowWrapper = new JPanel();
             JPanel row = getOrderRowPanel(op);
-            wrapperPanel.add(row);
+            rowWrapper.add(row);
+            subWrapper.add(rowWrapper);
             total += op.getPrice() * op.getQuantity();
         }
-        orderPanel.add(wrapperPanel);
+        wrapperPanel.add(subWrapper, BorderLayout.CENTER);
         totalPriceLabel.setText("Total price: " + total + " SEK");
-
         orderPanel.repaint();
         orderPanel.revalidate();
     }
@@ -91,8 +161,7 @@ public class CartPanel extends JPanel {
 
     private JLabel getCellLabel(String text) {
         JLabel label = new JLabel(text);
-        decorator.adjustSmallLabel(label);
-        label.setOpaque(true);
+        decorator.adjustLabel(label);
         return label;
     }
 }

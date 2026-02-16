@@ -21,9 +21,7 @@ public class OrderRepo implements Subscriber {
     }
     private void executeOrderQuery(int customerId) throws SQLException, ClassNotFoundException {
         System.out.println("executeOrderQuery in DBR reached for customerId: " + customerId);
-
         List<OrderPost> orders = new ArrayList<>();
-
         PreparedStatement s = c.prepareStatement("SELECT * FROM order_inventory WHERE customerId = ?");
         s.setInt(1, customerId);
 //customer.id AS 'customerId', customer.firstName, customer.surname, product.name as 'product', product.brand as 'brand', shoeInventory.size AS 'size', orderPost.orderedQuantity as 'buyQuantity', shoeInventory.color as 'color', product.price, orderingDate as 'date'

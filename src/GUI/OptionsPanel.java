@@ -8,6 +8,7 @@ import java.util.List;
 import Control.Event;
 import Model.DataHandling.Product;
 import Model.DataHandling.ProductTerm;
+import Model.DataHandling.ShoeSpecification;
 
 public class OptionsPanel extends JPanel {
     private MainFrame mainFrame;
@@ -184,7 +185,7 @@ public class OptionsPanel extends JPanel {
 
             JPanel singleShoe = new JPanel();
             singleShoe.setBackground(Colors.panel());
-            singleShoe.setLayout(new BoxLayout(singleShoe, BoxLayout.Y_AXIS));
+//            singleShoe.setLayout(new BoxLayout(singleShoe, BoxLayout.Y_AXIS));
             singleShoe.add(getShoeInfoPanel(product));
             resultPanel.add(singleShoe);
 
@@ -204,7 +205,7 @@ public class OptionsPanel extends JPanel {
         for (Product p : products) {
             System.out.println("SHOE IN CREATE ALL SHOE PANELS: " + p.getName());
             JPanel shoePanel = new JPanel();
-            shoePanel.setLayout(new BoxLayout(shoePanel, BoxLayout.Y_AXIS));
+//            shoePanel.setLayout(new BoxLayout(shoePanel, BoxLayout.Y_AXIS));
             decorator.adjustShoeInfoPanel(shoePanel);
 
             JLabel shoeBrand = new JLabel(p.getBrand());
@@ -285,39 +286,47 @@ public class OptionsPanel extends JPanel {
         shoeInfo.add(header, BorderLayout.NORTH);
         shoeInfo.add(shoeFooter, BorderLayout.SOUTH);
 
-        JPanel colorInfoPanel = new JPanel();
+        JPanel colorInfoPanel = new JPanel(new BorderLayout());
         colorInfoPanel.setBackground(Colors.card());
         JLabel colorLabel = new JLabel("Available colors:");
         decorator.adjustCardLabel(colorLabel);
 
         JPanel colorPanel = new JPanel();
         colorPanel.setBackground(Colors.button());
-        colorLabel.setLayout(new BoxLayout(colorPanel, BoxLayout.X_AXIS));
-        colorInfoPanel.add(colorLabel);
-        for (String s : p.getColors()) {
-            JLabel color = new JLabel();
-            color.setPreferredSize(new Dimension(30, 30));
+//        colorLabel.setLayout(new BoxLayout(colorPanel, BoxLayout.X_AXIS));
+        colorInfoPanel.add(colorLabel, BorderLayout.NORTH);
+        Set<String> colorSet = new LinkedHashSet<>();
+        Set<Integer> sizeSet = new LinkedHashSet<>();
+        for (ShoeSpecification sp : p.getShoeSpecifications()) {
+            colorSet.add(sp.getColor());
+
+            sizeSet.add(sp.getSize());
+        }
+        for (String s : colorSet) {
+            System.out.println("color in OptionsPanel: " + s);
+            JLabel color = new JLabel(s);
+            color.setPreferredSize(new Dimension(50, 30));
             colorPanel.add(color);
         }
-        colorInfoPanel.add(colorPanel);
-        JPanel sizeInfoPanel = new JPanel();
-        JPanel sizeFields = new JPanel();
-        sizeFields.setLayout(new BoxLayout(sizeFields, BoxLayout.X_AXIS));
+        colorInfoPanel.add(colorPanel, BorderLayout.CENTER);
+        JPanel sizeInfoPanel = new JPanel(new BorderLayout());
+        JPanel sizePanel = new JPanel();
+//        sizeFields.setLayout(new BoxLayout(sizeFields, BoxLayout.X_AXIS));
         JLabel sizeLabel = new JLabel("Available sizes");
         decorator.adjustCardLabel(sizeLabel);
 
-        for (int i : p.getSizes()){
-            JTextField sizeField = new JTextField(String.valueOf(i));
-            sizeField.setPreferredSize(new Dimension(30, 30));
-            sizeField.setMaximumSize(new Dimension(30, 30));
-            sizeField.setMinimumSize(new Dimension(30, 30));
-            sizeFields.add(sizeField);
+        for (int i : sizeSet){
+            JLabel thisSize = new JLabel(String.valueOf(i));
+            thisSize.setPreferredSize(new Dimension(30, 30));
+                thisSize.setMaximumSize(new Dimension(30, 30));
+            thisSize.setMinimumSize(new Dimension(30, 30));
+            sizePanel.add(thisSize);
         }
-        sizeInfoPanel.add(sizeLabel);
-        sizeInfoPanel.add(sizeFields);
+        sizeInfoPanel.add(sizeLabel, BorderLayout.NORTH);
+        sizeInfoPanel.add(sizePanel, BorderLayout.CENTER);
         JPanel specificsPanel = new JPanel(new GridLayout(2, 1));
         decorator.adjustSingleResultPanel(specificsPanel);
-        specificsPanel.add(specificsPanel);
+        specificsPanel.add(sizeInfoPanel);
         specificsPanel.add(colorInfoPanel);
 
         shoeInfo.add(specificsPanel);
