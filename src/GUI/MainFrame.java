@@ -29,7 +29,7 @@ public class MainFrame extends JFrame implements Subscriber {
     private AdminInfoPanel adminInfoPanel;
     private JButton backToMenu;
     private final Color backgroundColor = Colors.bg();
-    private JButton addToCartButton;
+    private final JButton addToCartButton;
     private JButton returnButton;
     private Product currentProduct;
     private Event currentEvent;
@@ -38,6 +38,8 @@ public class MainFrame extends JFrame implements Subscriber {
     public MainFrame(ApplicationManager manager) {
         this.manager = manager;
         this.decorator = new PanelDecorator();
+        this.addToCartButton = new JButton("Add to Cart");
+        decorator.adjustButton(addToCartButton);
         setLayout(new BorderLayout());
         setMinimumSize(new Dimension(800, 750));
         setMaximumSize(new Dimension(900, 800));
@@ -57,6 +59,20 @@ public class MainFrame extends JFrame implements Subscriber {
                     manager.assessQuit(0);
                 } catch (SQLException | ClassNotFoundException ex) {
                     throw new RuntimeException(ex);
+                }
+            }
+        });
+        addToCartButton.setBorder(BorderFactory.createLineBorder(Colors.bg(), 10, true));
+        addToCartButton.addActionListener(e -> {
+            if (currentEvent != null) {
+                if (purchasePanel != null) {
+                    try {
+                        purchasePanel.submitActions();
+                    } catch (Exception ex) {
+                        throw new RuntimeException(ex);
+                    }
+                } else if (currentEvent.getAction() == Event.Action.CHOOSE_TYPE) {
+                    showPurchasePanel(currentEvent);
                 }
             }
         });
@@ -169,37 +185,43 @@ public class MainFrame extends JFrame implements Subscriber {
             buttonPanel.add(returnButton);
             bottomPanel.add(buttonPanel, BorderLayout.EAST);
         }
-           if (showAdd) {
+           if (showAdd) {if (showAdd) {
                JPanel buttonPanel = new JPanel();
                decorator.adjustWrapperPanel(buttonPanel);
-               if (addToCartButton != null){
-                   System.out.println("in adjustHeaderAndFooter, addToCartButton != null");
-                   currentEvent.setAction(Event.Action.PURCHASE);
-                   addToCartButton.setText("Submit");
-                   addToCartButton.setBackground(Color.WHITE);
-                   addToCartButton.setBorder(BorderFactory.createLineBorder(Colors.buttonHover(), 10, true));
-               }
-               else {
-                   this.addToCartButton = new JButton("Add to Cart");
-                   addToCartButton.setBorder(BorderFactory.createLineBorder(Colors.bg(), 10, true));
-                   decorator.adjustButton(addToCartButton);
-                   addToCartButton.setBorder(BorderFactory.createLineBorder(Colors.bg(), 10, true));
-               }
-
-               addToCartButton.addActionListener(e -> {
-                   if (currentEvent.getAction() == Event.Action.CHOOSE_TYPE) {
-                       showPurchasePanel(currentEvent);
-                   }
-                   else{
-                       try {
-                           purchasePanel.submitActions();
-                       } catch (Exception ex) {
-                           throw new RuntimeException(ex);
-                       }
-                   }
-               });
+               // Knappen finns redan som fält, lägg bara till den i panelen
                buttonPanel.add(addToCartButton);
                bottomPanel.add(buttonPanel, BorderLayout.CENTER);
+           }
+//               JPanel buttonPanel = new JPanel();
+//               decorator.adjustWrapperPanel(buttonPanel);
+//               if (addToCartButton != null){
+//                   System.out.println("in adjustHeaderAndFooter, addToCartButton != null");
+//                   currentEvent.setAction(Event.Action.PURCHASE);
+//                   addToCartButton.setText("Submit");
+//                   addToCartButton.setBackground(Color.WHITE);
+//                   addToCartButton.setBorder(BorderFactory.createLineBorder(Colors.buttonHover(), 10, true));
+//               }
+//               else {
+//                   this.addToCartButton = new JButton("Add to Cart");
+//                   addToCartButton.setBorder(BorderFactory.createLineBorder(Colors.bg(), 10, true));
+//                   decorator.adjustButton(addToCartButton);
+//                   addToCartButton.setBorder(BorderFactory.createLineBorder(Colors.bg(), 10, true));
+//               }
+//
+//               addToCartButton.addActionListener(e -> {
+//                   if (currentEvent.getAction() == Event.Action.CHOOSE_TYPE) {
+//                       showPurchasePanel(currentEvent);
+//                   }
+//                   else{
+//                       try {
+//                           purchasePanel.submitActions();
+//                       } catch (Exception ex) {
+//                           throw new RuntimeException(ex);
+//                       }
+//                   }
+//               });
+//               buttonPanel.add(addToCartButton);
+//               bottomPanel.add(buttonPanel, BorderLayout.CENTER);
            }
             bottomPanel.setVisible(true);
             revalidate();

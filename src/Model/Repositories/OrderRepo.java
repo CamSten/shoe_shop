@@ -109,10 +109,8 @@ public class OrderRepo implements Subscriber {
 
     private boolean callAddToCart(int customerId, String productName, int productId, int size, String color, int buyQuantity) throws ClassNotFoundException, SQLException {
         System.out.println("callAddToCart is reached in DBR, customerId is: " + customerId + " productId is: " + productId + " size is: " + size + " color is: " + color + " buyQuantity is: " + buyQuantity);
-//        callGetProductOrder(customerId);
 
-        System.out.println("purchase is valid");
-        CallableStatement s = c.prepareCall("CALL addToCart(?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        CallableStatement s = c.prepareCall("CALL addToCart(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         s.setInt(1, customerId);
         s.setString(2, productName);
         s.setInt(3, productId);
@@ -122,6 +120,7 @@ public class OrderRepo implements Subscriber {
         s.registerOutParameter(7, Types.BOOLEAN);
         s.registerOutParameter(8, Types.BOOLEAN);
         s.registerOutParameter(9, Types.BOOLEAN);
+        s.registerOutParameter(10, Types.INTEGER);
         s.execute();
         boolean foundOrder = s.getBoolean(7);
         System.out.println("foundOrder is: " + foundOrder);
@@ -129,7 +128,16 @@ public class OrderRepo implements Subscriber {
         System.out.println("foundPost is: " + foundPost);
         boolean success = s.getBoolean(9);
         System.out.println("success is: " + success);
+        int updatedStock = s.getInt(10);
+        System.out.println("updated stock: " + updatedStock);
+        checkUpdatedStock(updatedStock);
         return success;
+    }
+
+    private void checkUpdatedStock(int updatedStock){
+        if(updatedStock < 1){
+
+        }
     }
     @Override
     public void Update(Event event) throws SQLException, ClassNotFoundException {

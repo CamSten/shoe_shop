@@ -17,6 +17,7 @@ public class CartPanel extends JPanel {
     private List<String> titles;
     private List<JLabel> columnHeaders;
     private List<List<JLabel>> dataEntries;
+    private JPanel cartPanel;
 
     public CartPanel(MainFrame mainFrame, Event event, PanelDecorator decorator) {
         this.mainFrame = mainFrame;
@@ -52,6 +53,7 @@ public class CartPanel extends JPanel {
             nullDisplay.add(nullConf);
             decorator.adjustSingleResultLine(nullDisplay);
             wrapper.add(nullDisplay);
+            this.cartPanel = wrapper;
         }
         return wrapper;
     }
@@ -133,7 +135,19 @@ public class CartPanel extends JPanel {
         wrapperPanel.add(columnPanel);
         return wrapperPanel;
     }
-
+private void getEmptyStockMsg(){
+        JPanel wrapper = new JPanel(new GridLayout(2, 1));
+        JLabel msg = new JLabel("You've bought the last pair!");
+        decorator.adjustBrandLabel(msg);
+        JLabel stockInfo = new JLabel("Stock is now empty for this size and color.");
+        decorator.adjustLabel(stockInfo);
+        wrapper.add(msg);
+        wrapper.add(stockInfo);
+        decorator.adjustWrapperPanel(wrapper);
+        JPanel stockMsgPanel = new JPanel();
+        stockMsgPanel.add(wrapper);
+        cartPanel.add(stockMsgPanel);
+}
     private void populateOrders(JPanel wrapperPanel, List<OrderPost> orders) {
         orderPanel.removeAll();
        JPanel subWrapper = new JPanel();
