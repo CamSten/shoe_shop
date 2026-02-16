@@ -42,6 +42,7 @@ public class Event {
         ADMIN,
         SALES,
         STOCK,
+        NON_STOCK,
         NONE
     }
     public enum Origin {

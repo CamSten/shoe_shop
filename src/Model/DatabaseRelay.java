@@ -49,7 +49,7 @@ public class DatabaseRelay implements Subscriber {
         }
 
         switch(event.getSubject()){
-            case ADMIN, SALES, STOCK -> {
+            case ADMIN, SALES, STOCK, NON_STOCK -> {
                 adminRepo.Update(event);
             }
             case CUSTOMER -> {

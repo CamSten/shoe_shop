@@ -236,6 +236,9 @@ public class MainFrame extends JFrame implements Subscriber {
             case STOCK ->{
                 headerText = "Current inventory:";
             }
+            case NON_STOCK -> {
+                headerText = "Current products out of stock:";
+            }
         }
         adjustHeaderAndFooter(headerText, true, false, false);
         centerPanel.removeAll();

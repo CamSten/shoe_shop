@@ -3,6 +3,7 @@ package GUI.AdminGUI;
 import Control.Event;
 import Control.Subscriber;
 import GUI.Colors;
+import GUI.Fonts;
 import GUI.PanelDecorator;
 import GUI.MainFrame;
 import Model.DataHandling.InventoryPost;
@@ -30,28 +31,37 @@ public class AdminInfoPanel extends JPanel implements Subscriber {
         this.mainframe = mainFrame;
         this.decorator = decorator;
         this.event = event;
-        if (event.getContents() instanceof List list) {
+        if (event.getContents() instanceof List list && list.isEmpty()) {
+            showNoResult();
+            adjustPanel();
+        }
+        else {
             switch (event.getSubject()) {
                 case SALES -> {
                     System.out.println("in adminInfoPanel, case SALES is reached");
-                    if (list.getFirst() instanceof SalesPost){
+                    if (event.getContents() instanceof List list && list.getFirst() instanceof SalesPost){
                         List<SalesPost> allPosts = (List<SalesPost>) list;
                         getSalesPanel(allPosts);
                     }
                 }
                 case STOCK -> {
                     System.out.println("in adminInfoPanel, case STOCK is reached");
-                    if (list.getFirst() instanceof InventoryPost ) {
-
+                    if (event.getContents() instanceof List list && list.getFirst() instanceof InventoryPost ) {
                         List<InventoryPost> allStock = (List<InventoryPost>) list;
                         getInventoryPanel(allStock);
                     }
                 }
                 case CART -> {
                     System.out.println("in adminInfoPanel, case CART is reached");
-                    if (list.getFirst() instanceof OrderPost) {
+                    if (event.getContents() instanceof List list && list.getFirst() instanceof OrderPost) {
                         List<OrderPost> allPosts = (List<OrderPost>) list;
                         getOrdersPanel(allPosts);
+                    }
+                }
+                case NON_STOCK ->{
+                    if (event.getContents() instanceof List list && list.getFirst() instanceof InventoryPost ) {
+                        List<InventoryPost> allStock = (List<InventoryPost>) list;
+                        getOutOfStockpanel(allStock);
                     }
                 }
             }
@@ -59,6 +69,14 @@ public class AdminInfoPanel extends JPanel implements Subscriber {
             getInfoPanel();
             adjustPanel();
         }
+    }
+    private void showNoResult(){
+         this.infoPanel = new JPanel();
+         JLabel nullConf = new JLabel("No result was found.");
+         nullConf.setFont(Fonts.getSemiHeaderFont());
+         nullConf.setForeground(Colors.textMuted());
+         infoPanel.add(nullConf);
+         decorator.adjustSingleResultLine(infoPanel);
     }
     private void getInfoPanel() {
         this.infoPanel = new JPanel();
@@ -97,6 +115,26 @@ public class AdminInfoPanel extends JPanel implements Subscriber {
             row.add(getCellLabel(String.valueOf(post.getSoldQuantity())));
             dataEntries.add(row);
         }
+    }
+    private void getOutOfStockpanel(List<InventoryPost> allStock){
+        this.titles = new ArrayList<>();
+        titles.add("Brand:");
+        titles.add("Name:");
+        titles.add("Color:");
+        titles.add("Size:");
+        titles.add("Price:");
+
+        this.dataEntries = new ArrayList<>();
+        for (InventoryPost post : allStock) {
+            List<JLabel> row = new ArrayList<>();
+            row.add(getCellLabel(post.getProductBrand()));
+            row.add(getCellLabel(post.getProductName()));
+            row.add(getCellLabel(post.getProductColor()));
+            row.add(getCellLabel(String.valueOf(post.getProductSize())));
+            row.add(getCellLabel(String.valueOf(post.getPrice())));
+            dataEntries.add(row);
+        }
+
     }
     private void getInventoryPanel(List<InventoryPost> allStock){
         System.out.println("getInventoryPanel is reached in AdminInfoPanel");
