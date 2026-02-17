@@ -33,7 +33,8 @@ public class Event {
         SEARCH,
         PURCHASE,
         EDIT,
-        VIEW
+        VIEW,
+        LOG_OUT
     }
     public enum Subject {
         SHOE,

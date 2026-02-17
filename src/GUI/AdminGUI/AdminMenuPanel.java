@@ -116,20 +116,34 @@ public class AdminMenuPanel extends JPanel{
             }
         });
 
-    JButton optionSeeOutOfStock = new JButton("See products out of stock: ");
+        JButton optionSeeOutOfStock = new JButton("See products out of stock: ");
         allOptionButtons.add(optionSeeOutOfStock);
         optionSeeOutOfStock.addActionListener(new ActionListener() {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            try {
-                System.out.println("--- IN ADMIN MENU PANEL, SEE OUT OF STOCK IS CHOSEN");
-                Update(Event.requestAdminInfo(Event.Subject.NON_STOCK));
-            } catch (SQLException | ClassNotFoundException ex) {
-                throw new RuntimeException(ex);
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    System.out.println("--- IN ADMIN MENU PANEL, SEE OUT OF STOCK IS CHOSEN");
+                    Update(Event.requestAdminInfo(Event.Subject.NON_STOCK));
+                } catch (SQLException | ClassNotFoundException ex) {
+                    throw new RuntimeException(ex);
+                }
             }
-        }
-    });
-}
+        });
+
+        JButton optionLogOut = new JButton("Log out");
+        allOptionButtons.add(optionLogOut);
+        optionLogOut.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    System.out.println("--- IN MENU PANEL, LOG OUT IS CHOSEN");
+                    Update(new Event(Event.Phase.SELECT, Event.Action.LOG_OUT, Event.Subject.ADMIN, Event.Origin.GUI, Event.Outcome.PENDING, null, null));
+                } catch (SQLException | ClassNotFoundException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
+        });
+    }
     public void Update(Event event ) throws SQLException, ClassNotFoundException {
         System.out.println("UPDATE IN MENUPANEL IS REACHED, event.Subject is: " + event.getSubject());
         event.setExtraContents(Event.Subject.ADMIN);

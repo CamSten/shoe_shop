@@ -6,6 +6,7 @@ import Model.DataHandling.Product;
 import Model.DataHandling.ShoeSpecification;
 
 import javax.swing.*;
+import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.sql.SQLException;
@@ -20,15 +21,20 @@ public class PurchasePanel extends JPanel {
     private Event event;
     private PanelDecorator decorator;
     private JPanel cartPanel;
+    private JPanel confirmationPanel;
     private JComboBox<String> colorBox;
     private JComboBox<String> sizeBox;
-    private JLabel quantityAvailabilityLabel;
+    private JTextArea quantityAvailabilityArea;
     private JTextArea quantityChosenArea;
     private ActionListener sizeListener;
     private ActionListener colorListener;
     private String colorIntro = "Color:";
     private String sizeIntro = "Size:";
+    private Set<String> colorSet;
+    private Set<Integer> sizeSet;
     private Product p;
+    private final String startOfHTML = "<html><div style='text-align: center; padding: 20px;'>";
+    private final String endOfHTML = "</div></html>";
 
     public PurchasePanel(MainFrame mainFrame, Event event, PanelDecorator decorator){
         System.out.println("purchasePanel constructor is reached");
@@ -55,29 +61,15 @@ public class PurchasePanel extends JPanel {
         mainFrame.adjustHeaderAndFooter("Choose color and size:", true, true, true);
         List<Integer> sizes = new ArrayList<>();
         List<String> colors = new ArrayList<>();
-        Set<String> colorSet = new LinkedHashSet<>();
-        Set<Integer> sizeSet = new LinkedHashSet<>();
+        this.colorSet = new LinkedHashSet<>();
+        this.sizeSet = new LinkedHashSet<>();
         for (ShoeSpecification sc : p.getShoeSpecifications()){
             sizeSet.add(sc.getSize());
             colorSet.add(sc.getColor());
         }
         sizes.addAll(sizeSet);
         colors.addAll(colorSet);
-        JPanel shoePanel = new JPanel(new BorderLayout());
-        JPanel shoeHeader = new JPanel();
-        JLabel shoeBrand = new JLabel(p.getBrand());
-        JLabel shoeName = new JLabel(p.getName());
-        shoeHeader.add(shoeBrand);
-        shoeHeader.add(shoeName);
-        JPanel shoeFooter = new JPanel();
-        JLabel priceLabel = new JLabel(String.valueOf(p.getPrice()));
-        JTextArea description = new JTextArea(p.getDescription());
-        description.setEditable(false);
-        shoeFooter.add(description);
-        shoeFooter.add(priceLabel);
-        shoePanel.add(shoeHeader, BorderLayout.NORTH);
-        shoePanel.add(shoeFooter, BorderLayout.SOUTH);
-        decorator.adjustShoeInfoPanel(shoePanel);
+        JPanel shoePanel = createShoeInfoPanel(p);
         JPanel choicePanel = new JPanel();
         choicePanel.setLayout(new BoxLayout(choicePanel, BoxLayout.Y_AXIS));
         choicePanel.setBackground(Colors.panel());
@@ -126,16 +118,20 @@ public class PurchasePanel extends JPanel {
         sizePanel.add(sizeBox);
         JPanel quantityPanel = new JPanel();
         quantityPanel.setLayout(new BoxLayout(quantityPanel, BoxLayout.Y_AXIS));
-        decorator.adjustWrapperPanel(quantityPanel);
+        decorator.adjustSingleResultPanel(quantityPanel);
         JPanel qAvailablePanel = new JPanel(new GridLayout(2, 1));
+        decorator.adjustSingleResultPanel(qAvailablePanel);
         JLabel quantityAvailableLabel = new JLabel("In stock:");
         decorator.adjustLabel(quantityAvailableLabel);
         qAvailablePanel.add(quantityAvailableLabel);
-        this.quantityAvailabilityLabel= new JLabel();
-        decorator.adjustLabel(quantityAvailabilityLabel);
-        qAvailablePanel.add(quantityAvailabilityLabel);
+        this.quantityAvailabilityArea = new JTextArea();
+        decorator.adjustTextArea(quantityAvailabilityArea);
+        quantityAvailabilityArea.setBackground(Color.WHITE);
+        quantityAvailabilityArea.setEditable(false);
+        qAvailablePanel.add(quantityAvailabilityArea);
 
         JPanel qChosenPanel = new JPanel(new GridLayout(2, 1));
+        decorator.adjustSingleResultPanel(qChosenPanel);
         JLabel quantityChosenLabel = new JLabel("Select quantity:");
         decorator.adjustLabel(quantityChosenLabel);
         this.quantityChosenArea = new JTextArea();
@@ -146,12 +142,9 @@ public class PurchasePanel extends JPanel {
         qChosenPanel.add(quantityChosenArea);
         quantityPanel.add(qAvailablePanel);
         quantityPanel.add(qChosenPanel);
-        JPanel submitPanel = new JPanel();
-        decorator.adjustSingleResultPanel(submitPanel);
         choicePanel.add(colorPanel);
         choicePanel.add(sizePanel);
         choicePanel.add(quantityPanel);
-        choicePanel.add(submitPanel);
         cartPanel.add(shoePanel);
         cartPanel.add(choicePanel);
         return cartPanel;
@@ -159,7 +152,7 @@ public class PurchasePanel extends JPanel {
     public void getConfirmationPanel(Event event){
         System.out.println("getConfirmationPanel is reached in PurchasePanel");
         cartPanel.removeAll();
-        JPanel confirmationPanel = new JPanel(new BorderLayout());
+        this.confirmationPanel = new JPanel(new BorderLayout());
         decorator.adjustWrapperPanel(confirmationPanel);
         Product product = null;
         String confText = "";
@@ -226,9 +219,120 @@ public class PurchasePanel extends JPanel {
         }
         confirmationPanel.add(infoPanel, BorderLayout.CENTER);
         confirmationPanel.setBorder(BorderFactory.createLineBorder(Colors.bg(), 10, true));
+        checkExtraContents(event);
         cartPanel.add(confirmationPanel);
         repaint();
         revalidate();
+    }
+    private void checkExtraContents(Event event){
+        if (event.getExtraContents() != null && event.getExtraContents() instanceof Boolean lastInStock){
+            if (lastInStock){
+                getEmptyStockMsg();
+            }
+        }
+    }
+
+    private JPanel createShoeInfoPanel(Product p) {
+        JPanel wrapperPanel = new JPanel(new BorderLayout());
+        decorator.adjustWrapperPanel(wrapperPanel);
+//        wrapperPanel.setBorder(BorderFactory.createCompoundBorder(
+//                new LineBorder(Colors.border(), 7, true),
+//                BorderFactory.createEmptyBorder(12,12,12,12)
+//        ));
+        JPanel singleShoePanel = new JPanel();
+        JPanel shoeInfo = new JPanel();
+        shoeInfo.setLayout(new BoxLayout(shoeInfo, BoxLayout.Y_AXIS));
+        decorator.adjustWrapperPanel(shoeInfo);
+        decorator.adjustWrapperPanel(singleShoePanel);
+
+        JPanel header = new JPanel();
+        header.setBackground(Colors.border());
+        JLabel brandLabel = new JLabel(p.getBrand());
+        JLabel nameLabel = new JLabel(p.getName());
+        decorator.adjustBrandLabel(brandLabel);
+        decorator.adjustLabel(nameLabel);
+        header.add(brandLabel);
+        header.add(nameLabel);
+
+        JPanel footer = new JPanel();
+        footer.setBackground(Colors.border());
+        footer.setLayout(new BoxLayout(footer, BoxLayout.Y_AXIS));
+        JLabel priceLabel = new JLabel(String.valueOf(p.getPrice()) + " SEK");
+        priceLabel.setFont(Fonts.getTinyFont());
+        priceLabel.setForeground(Color.WHITE);
+        priceLabel.setBackground(Colors.buttonHover());
+        priceLabel.setOpaque(true);
+        priceLabel.setBorder(BorderFactory.createEmptyBorder(4,8,4,8));
+        priceLabel.setAlignmentX(Component.RIGHT_ALIGNMENT);
+        JLabel desc = new JLabel();
+        desc.setText(startOfHTML+p.getDescription()+endOfHTML);
+        decorator.adjustSmallLabel(desc);
+        desc.setAlignmentX(Component.CENTER_ALIGNMENT);
+        footer.add(desc);
+        footer.add(priceLabel);
+
+        JPanel infoPanel = new JPanel(new GridLayout(2, 2));
+        decorator.adjustWrapperPanel(infoPanel);
+        JPanel colorPanel = new JPanel();
+        colorPanel.setLayout(new BoxLayout(colorPanel, BoxLayout.X_AXIS));
+        decorator.adjustWrapperPanel(colorPanel);
+        infoPanel.setBackground(Colors.border());
+        for (String c : colorSet) {
+            JLabel color = new JLabel(c);
+            color.setBackground(Colors.card());
+            color.setForeground(Colors.textMuted());
+            color.setFont(Fonts.getTinyFont());
+            color.setBorder(BorderFactory.createLineBorder(Colors.border(), 2, true));
+            color.setPreferredSize(new Dimension(30,30));
+            colorPanel.add(Box.createHorizontalStrut(5));
+            colorPanel.add(color);
+            colorPanel.add(Box.createHorizontalStrut(5));
+        }
+
+        JPanel sizePanel = new JPanel();
+        decorator.adjustWrapperPanel(sizePanel);
+        sizePanel.setLayout(new BoxLayout(sizePanel, BoxLayout.X_AXIS));
+        for (Integer s : sizeSet) {
+            JLabel size = new JLabel(String.valueOf(s));
+            size.setBackground(Colors.card());
+            size.setForeground(Colors.textMuted());
+            size.setFont(Fonts.getTinyFont());
+            size.setBorder(BorderFactory.createLineBorder(Colors.border(), 2, true));
+            size.setPreferredSize(new Dimension(30,30));
+            sizePanel.add(Box.createHorizontalStrut(5));
+            sizePanel.add(size);
+            sizePanel.add(Box.createHorizontalStrut(5));
+
+        }
+        JLabel colorLabel = new JLabel("Available colors:");
+        JLabel sizeLabel = new JLabel("Available sizes:");
+        decorator.adjustCardLabel(colorLabel);
+        decorator.adjustCardLabel(sizeLabel);
+        infoPanel.add(colorLabel);
+        infoPanel.add(colorPanel);
+        infoPanel.add(sizeLabel);
+        infoPanel.add(sizePanel);
+        shoeInfo.add(header, BorderLayout.NORTH);
+        shoeInfo.add(infoPanel, BorderLayout.CENTER);
+        shoeInfo.add(footer, BorderLayout.SOUTH);
+        singleShoePanel.add(shoeInfo);
+        wrapperPanel.add(singleShoePanel, BorderLayout.CENTER);
+        return wrapperPanel;
+    }
+    private void getEmptyStockMsg(){
+        System.out.println("- - - - getEmptyStockMessage is reached in CartPanel");
+        JPanel wrapper = new JPanel(new GridLayout(2, 1));
+        JLabel msg = new JLabel("These shoes are flying off the shelves!");
+        decorator.adjustBrandLabel(msg);
+        JLabel stockInfo = new JLabel("Congratulations, you've secured the last pair!");
+        decorator.adjustLabel(stockInfo);
+        wrapper.add(msg);
+        wrapper.add(stockInfo);
+        decorator.adjustWrapperPanel(wrapper);
+        JPanel stockMsgPanel = new JPanel();
+        stockMsgPanel.add(wrapper);
+        stockMsgPanel.setOpaque(false);
+        confirmationPanel.add(stockMsgPanel, BorderLayout.SOUTH);
     }
     public void submitActions() throws SQLException, ClassNotFoundException {
         System.out.println("submitActions is reached in CartPanel");
@@ -256,7 +360,7 @@ public class PurchasePanel extends JPanel {
             System.out.println("tryparse in AssessQuantity is reached");
             quantity = Integer.parseInt(qInput);
             System.out.println("quantity is: " + quantity);
-            int availableQuantity = Integer.parseInt(quantityAvailabilityLabel.getText());
+            int availableQuantity = Integer.parseInt(quantityAvailabilityArea.getText());
             if (quantity > availableQuantity){
                 System.out.println("quantity > availableQuantity");
                 quantity = -1;
@@ -276,7 +380,7 @@ public class PurchasePanel extends JPanel {
                 int thisSize = Integer.parseInt(selectedSize);
                 int q = getCurrentInventoryFor(selectedColor, thisSize);
                 System.out.println("---- \n size is: " + thisSize + "\ncolor is: " + selectedColor +  "\nq is: " + q);
-                quantityAvailabilityLabel.setText(String.valueOf(q));
+                quantityAvailabilityArea.setText(String.valueOf(q));
             } catch (NumberFormatException e) {
             }
         }

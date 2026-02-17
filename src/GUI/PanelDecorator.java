@@ -1,6 +1,7 @@
 package GUI;
 
 import javax.swing.*;
+import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -39,6 +40,12 @@ public class PanelDecorator {
             });
     }
 
+    public void adjustSmallLabel(JLabel label) {
+        label.setForeground(Colors.text());
+        label.setBackground(Colors.card()); // card, inte panel
+        label.setFont(Fonts.getTinyFont());
+        label.setOpaque(true);
+    }
     public void adjustLabel(JLabel label){
         label.setFont(Fonts.getLabelFont());
         label.setForeground(Colors.text());
@@ -46,9 +53,9 @@ public class PanelDecorator {
 //        label.setPreferredSize(new Dimension(100, 30));
     }
     public void adjustCardLabel(JLabel label){
-        label.setFont(Fonts.getTinyFont());
+        label.setFont(Fonts.getLabelFont());
         label.setForeground(Colors.text());
-        label.setBackground(Colors.border());
+        label.setBackground(Colors.panel());
         label.setOpaque(true);
     }
     public void adjustBrandLabel(JLabel label){
@@ -85,15 +92,15 @@ public void adjustCardText(JTextArea area){
     }
 
 
-    public void adjustSmallLabel(JLabel label) {
-//        label.setPreferredSize(new Dimension(110, 50));
-//        label.setMinimumSize(new Dimension(110, 50));
-//        label.setMaximumSize(new Dimension(150, 50));
-        label.setForeground(Colors.text());
-        label.setBackground(Colors.panel());
-        label.setFont(Fonts.getLabelFont());
-        label.setOpaque(true);
-    }
+//    public void adjustSmallLabel(JLabel label) {
+////        label.setPreferredSize(new Dimension(110, 50));
+////        label.setMinimumSize(new Dimension(110, 50));
+////        label.setMaximumSize(new Dimension(150, 50));
+//        label.setForeground(Colors.text());
+//        label.setBackground(Colors.panel());
+//        label.setFont(Fonts.getTinyFont());
+//        // label.setOpaque(true);
+//    }
 
     public void adjustWrapperPanel(JPanel wrapperPanel){
         wrapperPanel.setBackground(Colors.panel());
@@ -106,7 +113,7 @@ public void adjustCardText(JTextArea area){
 
     public void adjustInputPanel(JPanel inputPanel){
         inputPanel.setLayout(new BoxLayout(inputPanel, BoxLayout.Y_AXIS));
-        inputPanel.setOpaque(true);
+        inputPanel.setOpaque(false);
         inputPanel.setVisible(true);
         inputPanel.setEnabled(true);
         inputPanel.setBackground(Colors.panel());
@@ -117,6 +124,7 @@ public void adjustCardText(JTextArea area){
         inputField.setBackground(Color.WHITE);
         inputField.setForeground(Colors.text());
         inputField.setFont(Fonts.getInputFont());
+        inputField.setEditable(true);
         inputField.setBorder(
                 BorderFactory.createLineBorder(Colors.border(), 4, true));
     }
@@ -153,11 +161,13 @@ public void adjustCardText(JTextArea area){
 
     public void adjustShoeInfoPanel(JPanel shoePanel){
         shoePanel.setLayout(new BoxLayout(shoePanel, BoxLayout.Y_AXIS));
+        // shoePanel.setBorder(BorderFactory.createLineBorder(Colors.bg(), 5, true));
         shoePanel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1),
-                BorderFactory.createEmptyBorder(10,10,10,10)
+                new LineBorder(Colors.border(), 5, true),
+                BorderFactory.createEmptyBorder(12,12,12,12)
         ));
-        shoePanel.setBackground(Color.WHITE);
+        shoePanel.setBackground(Colors.border());
+       // shoePanel.setOpaque(false);
         shoePanel.setPreferredSize(new Dimension(singleShoePanelSize, singleShoePanelSize));
         shoePanel.setMinimumSize(new Dimension(singleShoePanelSize, singleShoePanelSize));
         shoePanel.setMaximumSize(new Dimension(singleShoePanelSize, singleShoePanelSize));
@@ -175,7 +185,7 @@ public void adjustCardText(JTextArea area){
 
     public void adjustSingleResultLine(JPanel singleResultPanel){
         singleResultPanel.setLayout(new BoxLayout(singleResultPanel, BoxLayout.X_AXIS));
-        singleResultPanel.setBorder(BorderFactory.createLineBorder(Colors.bg(), 5, true));
+        singleResultPanel.setBorder(BorderFactory.createLineBorder(Colors.border(), 5, true));
         singleResultPanel.setBackground(Colors.panel());
 //        singleResultPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
         singleResultPanel.setAlignmentX(Component.CENTER_ALIGNMENT);

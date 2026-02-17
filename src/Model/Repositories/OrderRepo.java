@@ -16,6 +16,7 @@ public class OrderRepo implements Subscriber {
     private Connection c;
     private Event currentEvent;
     private Event.Action action;
+    private boolean lastInStock = false;
 
     public OrderRepo(DatabaseRelay databaseRelay, Connection c){
         this.databaseRelay = databaseRelay;
@@ -95,49 +96,48 @@ public class OrderRepo implements Subscriber {
                 outcome = Event.Outcome.FAILURE;
             }
         }
-        databaseRelay.Relay(new Event(Event.Phase.COMPLETE, Event.Action.PURCHASE, Event.Subject.SHOE, Event.Origin.LOGIC, outcome, thisOrder, null));
+        databaseRelay.Relay(new Event(Event.Phase.COMPLETE, Event.Action.PURCHASE, Event.Subject.SHOE, Event.Origin.LOGIC, outcome, thisOrder, lastInStock));
     }
-    private void callGetProductOrder(int customerId) throws SQLException {
-        System.out.println("callGetProductOrder is reached, customerId is: " + customerId);
-        CallableStatement s = c.prepareCall("CALL getProductOrder(?, ?)");
-        s.setInt(1, customerId);
-        s.registerOutParameter(2, Types.INTEGER);
-        s.execute();
-        int orderId = s.getInt(2);
-        System.out.println("in callGetProductOrder, orderId is: " + orderId);
-    }
+//    private void callGetProductOrder(int customerId) throws SQLException {
+//        System.out.println("callGetProductOrder is reached, customerId is: " + customerId);
+//        CallableStatement s = c.prepareCall("CALL getProductOrder(?, ?)");
+//        s.setInt(1, customerId);
+//        s.registerOutParameter(2, Types.INTEGER);
+//        s.execute();
+//        int orderId = s.getInt(2);
+//        System.out.println("in callGetProductOrder, orderId is: " + orderId);
+//    }
 
     private boolean callAddToCart(int customerId, String productName, int productId, int size, String color, int buyQuantity) throws ClassNotFoundException, SQLException {
         System.out.println("callAddToCart is reached in DBR, customerId is: " + customerId + " productId is: " + productId + " size is: " + size + " color is: " + color + " buyQuantity is: " + buyQuantity);
-
-        CallableStatement s = c.prepareCall("CALL addToCart(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        this.lastInStock = false;
+        Timestamp t = Timestamp.valueOf(LocalDateTime.now());
+        CallableStatement s = c.prepareCall("CALL addToCart(?, ?, ?, ?, ?, ?, ?, ?, ?)");
         s.setInt(1, customerId);
         s.setString(2, productName);
         s.setInt(3, productId);
         s.setInt(4, size);
         s.setString(5, color);
         s.setInt(6, buyQuantity);
-        s.registerOutParameter(7, Types.BOOLEAN);
+        s.setTimestamp(7, t);
         s.registerOutParameter(8, Types.BOOLEAN);
-        s.registerOutParameter(9, Types.BOOLEAN);
-        s.registerOutParameter(10, Types.INTEGER);
+//        s.registerOutParameter(9, Types.BOOLEAN);
+//        s.registerOutParameter(10, Types.BOOLEAN);
+        s.registerOutParameter(9, Types.INTEGER);
         s.execute();
-        boolean foundOrder = s.getBoolean(7);
-        System.out.println("foundOrder is: " + foundOrder);
-        boolean foundPost = s.getBoolean(8);
-        System.out.println("foundPost is: " + foundPost);
-        boolean success = s.getBoolean(9);
+//        boolean foundOrder = s.getBoolean(7);
+//        System.out.println("foundOrder is: " + foundOrder);
+//        boolean foundPost = s.getBoolean(8);
+//        System.out.println("foundPost is: " + foundPost);
+        boolean success = s.getBoolean(8);
         System.out.println("success is: " + success);
-        int updatedStock = s.getInt(10);
+        int updatedStock = s.getInt(9);
         System.out.println("updated stock: " + updatedStock);
-        checkUpdatedStock(updatedStock);
-        return success;
-    }
-
-    private void checkUpdatedStock(int updatedStock){
-        if(updatedStock < 1){
-
+        if (updatedStock < 1){
+            this.lastInStock = true;
         }
+        return success;
+
     }
     @Override
     public void Update(Event event) throws SQLException, ClassNotFoundException {

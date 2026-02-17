@@ -1,12 +1,7 @@
 package GUI;
-
-import Control.Event;
-import Model.DataHandling.ProductTerm;
-
 import javax.swing.*;
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.List;
+
 public class HeaderPanel extends JPanel {
     private PanelDecorator decorator;
     private String headerText;
@@ -18,7 +13,6 @@ public class HeaderPanel extends JPanel {
         setLayout(new BorderLayout());
         add(getHeaderPanel(), BorderLayout.CENTER);
     }
-
     private JPanel getHeaderPanel() {
         JPanel headerPanel = new JPanel(new GridLayout(1,1));
         headerPanel.setBackground(Colors.bg());

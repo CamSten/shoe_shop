@@ -20,6 +20,7 @@ public class CartPanel extends JPanel {
     private JPanel cartPanel;
 
     public CartPanel(MainFrame mainFrame, Event event, PanelDecorator decorator) {
+        System.out.println("cartPanel constructor is reached");
         this.mainFrame = mainFrame;
         this.event = event;
         this.decorator = decorator;
@@ -37,7 +38,7 @@ public class CartPanel extends JPanel {
         orderPanel.setBackground(Colors.bg());
         totalPriceLabel = new JLabel("Total price: 0 SEK");
         decorator.adjustBrandLabel(totalPriceLabel);
-        totalPriceLabel.setBorder(BorderFactory.createLineBorder(Colors.bg(), 5, true));
+        totalPriceLabel.setBorder(BorderFactory.createLineBorder(Colors.panel(), 5, true));
         orderPanel.add(wrapper);
         if (event.getContents() instanceof List<?> list && !list.isEmpty() && list.get(0) instanceof OrderPost) {
             wrapper.add(getOrdersPanel((List<OrderPost>) list));
@@ -75,7 +76,7 @@ public class CartPanel extends JPanel {
             row.add(getCellLabel(op.getBrand()));
             row.add(getCellLabel(op.getName()));
             row.add(getCellLabel(op.getColor()));
-            row.add(getCellLabel(String.valueOf(op.getPrice())));
+            row.add(getCellLabel(String.valueOf(op.getSize())));
             row.add(getCellLabel(String.valueOf(op.getQuantity())));
             row.add(getCellLabel(op.getFormattedDate()));
             dataEntries.add(row);
@@ -97,7 +98,6 @@ public class CartPanel extends JPanel {
                 System.out.println("dataEntries.get(i).get(j): " + labelList.get(i).getText());
                 column.add(labelList.get(i));
             }
-
             wrapper.add(column);
             infoPanel.add(Box.createHorizontalGlue());
             infoPanel.add(wrapper);
@@ -128,30 +128,18 @@ public class CartPanel extends JPanel {
         for (String t : titles) {
             System.out.println("title in getColumnHeaderPanel: " + t);
             JLabel label = new JLabel(t);
-           decorator.adjustLabel(label);
-           label.setOpaque(true);
+            decorator.adjustLabel(label);
+            label.setOpaque(true);
             columnPanel.add(label);
         }
         wrapperPanel.add(columnPanel);
         return wrapperPanel;
     }
-private void getEmptyStockMsg(){
-        JPanel wrapper = new JPanel(new GridLayout(2, 1));
-        JLabel msg = new JLabel("You've bought the last pair!");
-        decorator.adjustBrandLabel(msg);
-        JLabel stockInfo = new JLabel("Stock is now empty for this size and color.");
-        decorator.adjustLabel(stockInfo);
-        wrapper.add(msg);
-        wrapper.add(stockInfo);
-        decorator.adjustWrapperPanel(wrapper);
-        JPanel stockMsgPanel = new JPanel();
-        stockMsgPanel.add(wrapper);
-        cartPanel.add(stockMsgPanel);
-}
+
     private void populateOrders(JPanel wrapperPanel, List<OrderPost> orders) {
         orderPanel.removeAll();
-       JPanel subWrapper = new JPanel();
-       subWrapper.setLayout(new GridLayout(orders.size(), 1));
+        JPanel subWrapper = new JPanel();
+        subWrapper.setLayout(new GridLayout(orders.size(), 1));
         int total = 0;
         for (OrderPost op : orders) {
             JPanel rowWrapper = new JPanel();
