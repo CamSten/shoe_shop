@@ -4,6 +4,7 @@ import GUI.AdminGUI.AdminMenuPanel;
 import GUI.LoginPanel;
 import GUI.MainFrame;
 import Model.DataHandling.ProductTerm;
+import Model.DataHandling.Customer;
 import Model.DatabaseRelay;
 
 import java.sql.*;
@@ -64,7 +65,7 @@ public class ApplicationManager implements Subscriber {
                     case CREATE_ACCOUNT -> {
                         createNewAccount(event);
                     }
-                    case VIEW, CHOOSE_TYPE, PURCHASE -> {
+                    case VIEW, CHOOSE_TYPE, PURCHASE, EDIT -> {
                         if (event.getAction() == Event.Action.VIEW && event.getSubject() == Event.Subject.CART){
                             event.setContents(customerId);
                         }
@@ -74,6 +75,11 @@ public class ApplicationManager implements Subscriber {
             }
             case LOGIC -> {
                 switch (event.getAction()) {
+                    case SET_CUSTOMER -> {
+                        if (event.getContents() instanceof Customer customer){
+                            mainFrame.setCurrentCustomer(customer);
+                        }
+                    }
                     case VALIDATE -> {
                         if (event.getPhase() == Event.Phase.AWAIT_INPUT && event.getSubject() == Event.Subject.NONE || (event.getSubject() == Event.Subject.ADMIN && event.getOutcome() == Event.Outcome.OK)){
                             mainFrame.Update(event);
@@ -112,6 +118,7 @@ public class ApplicationManager implements Subscriber {
         System.out.println("saveCustomer in appManager is reached");
         if (foundId != -1) {
             this.customerId = foundId;
+            mainFrame.setCustomerId(foundId);
             databaseRelay.setCustomerId(customerId);
             System.out.println("customerId is: " + customerId);
         }

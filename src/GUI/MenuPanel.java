@@ -80,7 +80,7 @@ public class MenuPanel extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 try {
                     System.out.println("--- IN MENU PANEL, ACCOUNT DETAILS IS CHOSEN");
-                    Update(new Event(Event.Phase.SELECT, Event.Action.VIEW, Event.Subject.CUSTOMER, Event.Origin.GUI, Event.Outcome.PENDING, null, null));
+                    Update(new Event(Event.Phase.SELECT, Event.Action.EDIT, Event.Subject.CUSTOMER, Event.Origin.GUI, Event.Outcome.PENDING, null, null));
                 } catch (SQLException | ClassNotFoundException ex) {
                     throw new RuntimeException(ex);
                 }

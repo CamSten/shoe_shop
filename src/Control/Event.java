@@ -34,6 +34,7 @@ public class Event {
         PURCHASE,
         EDIT,
         VIEW,
+        SET_CUSTOMER,
         LOG_OUT
     }
     public enum Subject {

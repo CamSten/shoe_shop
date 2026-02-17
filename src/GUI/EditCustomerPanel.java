@@ -5,6 +5,8 @@ import Control.Event;
 import Model.DataHandling.Customer;
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,14 +24,34 @@ public class EditCustomerPanel extends JPanel {
     private JTextField cityField;
     private JTextField emailField;
     private JPasswordField passwordField;
+    private JButton saveButton;
+    private ActionListener saver = new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            submitActions();
+        }
+    };
+    private ActionListener returner = new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            mainFrame.showMenuPanel();
+        }
+    };
 
     public EditCustomerPanel(MainFrame mainFrame, PanelDecorator decorator, Customer customer) {
         this.mainFrame = mainFrame;
         this.decorator = decorator;
         this.customer = customer;
         this.centerPanel = new JPanel(new BorderLayout());
+        setBackground(Colors.panel());
+        centerPanel.setBackground(Colors.panel());
+        getEditPanel();
+        add(centerPanel);
+        revalidate();
+        repaint();
     }
     private void getEditPanel(){
+        System.out.println("getEditPanel is reached in EditCustomerPanel");
         getPanelContents();
         List<JTextField> fields = List.of(firstnameField, surnameField, streetField, cityField, emailField, passwordField);
         for (JTextField f : fields) {
@@ -57,8 +79,6 @@ public class EditCustomerPanel extends JPanel {
         inputPanel.add(wrapperPanel);
         centerPanel.add(inputPanel, BorderLayout.CENTER);
         centerPanel.add(buttonPanel, BorderLayout.SOUTH);
-        revalidate();
-        repaint();
     }
 
     private void getPanelContents(){
@@ -72,9 +92,9 @@ public class EditCustomerPanel extends JPanel {
 
         this.buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
         buttonPanel.setBackground(Colors.bg());
-        JButton saveButton = new JButton("Submit changes");
+        this.saveButton = new JButton("Submit changes");
         decorator.adjustButton(saveButton);
-        saveButton.addActionListener(_ -> submitActions());
+        saveButton.addActionListener(saver);
         JButton cancelButton = new JButton("Cancel");
         decorator.adjustButton(cancelButton);
         cancelButton.addActionListener(_ -> mainFrame.showLoginPanel());
@@ -85,18 +105,36 @@ public class EditCustomerPanel extends JPanel {
         repaint();
     }
     private void submitActions(){
-
+        System.out.println("submitActions is reached in EditCustomerPanel");
         String firstName = firstnameField.getText().trim();
         String surname = surnameField.getText().trim();
         String street = streetField.getText().trim();
         String city = cityField.getText().trim();
         String email = emailField.getText().trim();
-        String pass = passwordField.getPassword().toString().trim();
-        Customer newCustomerInfo = new Customer(mainFrame.getCustomerId(),firstName, street,street, city, email, pass);
+        String pass = String.valueOf(passwordField.getPassword()).trim();
+        Customer newCustomerInfo = new Customer(mainFrame.getCustomerId(),firstName, surname, street, city, email, pass);
         try {
             mainFrame.Update(new Event(Event.Phase.SUBMIT, Event.Action.EDIT, Event.Subject.CUSTOMER, Event.Origin.GUI, Event.Outcome.PENDING, newCustomerInfo, null));
         } catch (SQLException | ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
+
+    }
+    void showConfirmation(){
+        saveButton.removeActionListener(saver);
+        saveButton.addActionListener(returner);
+        saveButton.setText("Return to menu");
+        System.out.println("- - - - getEmptyStockMessage is reached in CartPanel");
+        JPanel wrapper = new JPanel(new GridLayout(2, 1));
+        JLabel msg = new JLabel("Your details have been updated.");
+        decorator.adjustBrandLabel(msg);
+        wrapper.add(msg);
+        decorator.adjustWrapperPanel(wrapper);
+        JPanel stockMsgPanel = new JPanel();
+        stockMsgPanel.add(wrapper);
+        stockMsgPanel.setOpaque(false);
+        centerPanel.add(stockMsgPanel, BorderLayout.NORTH);
+        repaint();
+        revalidate();
     }
 }

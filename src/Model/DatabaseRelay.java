@@ -29,6 +29,7 @@ public class DatabaseRelay implements Subscriber {
         this.productRepo = new ProductRepo(this, c);
     }
     public void Relay(Event event) throws SQLException, ClassNotFoundException {
+        System.out.println("RELAY in D B R is reached.    Action=" + event.getAction() + ", Phase=" + event.getPhase() + ", Subject=" + event.getSubject() + ", Outcome=" + event.getOutcome() + ", Origin=" + event.getOrigin());
         if(admin){
             event.setExtraContents(Event.Subject.ADMIN);
         }

@@ -158,7 +158,7 @@ public class LoginPanel extends JPanel {
         List<String> userInput = new ArrayList<>();
         userInput.add(firstnameField.getText().trim());
         userInput.add(surnameField.getText().trim());
-        userInput.add(new String(passwordField.getPassword()).trim());
+        userInput.add(String.valueOf(passwordField.getPassword()).trim());
         userInput.add(streetField.getText().trim());
         userInput.add(cityField.getText().trim());
         userInput.add(emailField.getText().trim().toLowerCase());

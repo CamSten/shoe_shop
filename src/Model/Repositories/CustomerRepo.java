@@ -36,22 +36,31 @@ public class CustomerRepo implements Subscriber {
         if (customer == null) {
             outcome = Event.Outcome.NOT_FOUND;
         }
+        databaseRelay.Relay(new Event(Event.Phase.COMPLETE, Event.Action.SET_CUSTOMER, Event.Subject.CUSTOMER, Event.Origin.LOGIC, outcome, customer, null));
         databaseRelay.Relay(new Event(Event.Phase.COMPLETE, action, Event.Subject.CUSTOMER, Event.Origin.LOGIC, outcome, customer, null));
     }
 
     private void editCustomerInfo(Customer customer) throws ClassNotFoundException, SQLException {
+        Event.Outcome outcome = Event.Outcome.OK;
         int id = customer.getCustomerId();
-        PreparedStatement s = c.prepareStatement("UPDATE customer set firstname = ?, surname = ?, streetAddress = ?, city = ?, password = ? where id = ?");
+        System.out.println("in editCustomerInfo, id is: " + id);
+        PreparedStatement s = c.prepareStatement("UPDATE customer set firstName = ?, surname = ?, streetAddress = ?, city = ?, email = ?, password = ? where id = ?");
         s.setString(1, customer.getFirstName());
         s.setString(2, customer.getSurname());
         s.setString(3, customer.getStreetAddress());
         s.setString(4, customer.getCity());
-        s.setString(5, customer.getPassword());
-        s.setInt(6, id);
-        ResultSet rs = s.executeQuery();
+        s.setString(5, customer.getEmail());
+        s.setString(6, customer.getPassword());
+        s.setInt(7, id);
+        int result = s.executeUpdate();
+        System.out.println(" result in editCustomerInfo is: " + result);
+        if (result == 0){
+            outcome = Event.Outcome.FAILURE;
+        }
+        databaseRelay.Relay(new Event(Event.Phase.COMPLETE, Event.Action.EDIT, Event.Subject.CUSTOMER, Event.Origin.LOGIC, outcome, customer, null));
     }
 
-    public static void checkCustomer(List<String> userInput) throws ClassNotFoundException, SQLException {
+    public void checkCustomer(List<String> userInput) throws ClassNotFoundException, SQLException {
         String email = userInput.get(0).trim();
         String userPassword = userInput.get(1).trim();
         boolean exists;
@@ -75,6 +84,8 @@ public class CustomerRepo implements Subscriber {
         else if (!validLogin) outcome = Event.Outcome.INVALID_INPUT;
         System.out.println("found id in customerRepo is: " + foundId);
         databaseRelay.Relay(new Event(Event.Phase.COMPLETE, Event.Action.VALIDATE, Event.Subject.CUSTOMER, Event.Origin.LOGIC, outcome, results, foundId));
+
+        getCustomerInfo(foundId);
     }
 
     private static void addNewCustomer(List<String> userInput) throws SQLException, ClassNotFoundException {
@@ -105,14 +116,17 @@ public class CustomerRepo implements Subscriber {
         if (newId == -1 || alreadyExists) {
             outcome = Event.Outcome.ALREADY_EXISTS;
         }
+        Customer customer = new Customer(newId, firstName, surname, streetAddress, city, email, userPassword);
+        databaseRelay.Relay(new Event(Event.Phase.COMPLETE, Event.Action.SET_CUSTOMER, Event.Subject.CUSTOMER, Event.Origin.LOGIC, outcome, customer, null));
         databaseRelay.Relay(Event.confirmComplete(Event.Action.CREATE_ACCOUNT, Event.Subject.CUSTOMER, outcome, newId));
     }
 
     @Override
     public void Update(Event event) throws SQLException, ClassNotFoundException {
         Event.Action currentAction = event.getAction();
+        System.out.println("CustomerRepo is reached, event is: " + event.getAction());
         switch (currentAction) {
-            System.out.println("CustomerRepo is reached, event is: " + event.getAction());
+
             case VALIDATE -> {
                 if (event.getAction() == Event.Action.VALIDATE && event.getContents() instanceof List list) {
                     checkCustomer((List<String>) list);
@@ -125,7 +139,7 @@ public class CustomerRepo implements Subscriber {
             }
             case VIEW -> {
                 if (event.getContents() instanceof Integer) {
-                    getCustomerInfo((Integer) event.getContents(), false);
+                    getCustomerInfo((Integer) event.getContents());
                 }
             }
             case EDIT -> {
@@ -133,6 +147,10 @@ public class CustomerRepo implements Subscriber {
                     editCustomerInfo(customer);
                 }
             }
+            default -> {
+                System.out.println("no case is matching.");
+            }
         }
+
     }
 }

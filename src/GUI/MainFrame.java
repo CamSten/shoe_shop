@@ -8,6 +8,7 @@ import Model.DataHandling.ProductTerm;
 import Model.DataHandling.Product;
 import Model.DataHandling.Customer;
 
+import javax.lang.model.util.SimpleElementVisitor6;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
@@ -35,6 +36,7 @@ public class MainFrame extends JFrame implements Subscriber {
     private JButton returnButton;
     private Product currentProduct;
     private Event currentEvent;
+    private Customer currentCustomer;
     private JButton getAddToCartButton;
     int maxHeight = 700;
 
@@ -95,7 +97,7 @@ public class MainFrame extends JFrame implements Subscriber {
         revalidate();
         repaint();
     }
-    private void showMenuPanel() {
+    void showMenuPanel() {
         adjustHeaderAndFooter("Choose what you would like to do: ", false, false, false);
         centerPanel.removeAll();
         this.menuPanel = new MenuPanel(this, decorator);
@@ -190,13 +192,13 @@ public class MainFrame extends JFrame implements Subscriber {
     }
 
     private void showEditPanel(){
-        if (currentEvent.getContents() != null && currentEvent.getContents() instanceof Customer customer){
+        System.out.println("showEditPanel is reached");
+//        if (currentEvent.getContents() != null && currentEvent.getContents() instanceof Customer customer){
             centerPanel.removeAll();
-            this.editPanel = new EditCustomerPanel(this, decorator, customer);
+            this.editPanel = new EditCustomerPanel(this, decorator, currentCustomer);
             centerPanel.add(editPanel);
             revalidate();
             repaint();
-        }
     }
     private void showAdminMenu() {
         System.out.println("showAdminMenu is reached in MainFrame");
@@ -249,6 +251,16 @@ public class MainFrame extends JFrame implements Subscriber {
             }
         }
     }
+    public Customer getCurrentCustomer(){
+        return currentCustomer;
+    }
+    public void setCustomerId(int id){
+        this.customerId = id;
+    }
+    public void setCurrentCustomer(Customer c){
+        System.out.println("setCurrentCustomer is reached in MainFrame");
+        this.currentCustomer = c;
+    }
     public int getCustomerId(){
         return customerId;
     }
@@ -299,7 +311,14 @@ public class MainFrame extends JFrame implements Subscriber {
                             }
                         }
                         case EDIT -> {
-                            if (event.getOutcome() == Event.Outcome.PENDING) {
+                            //showEditPanel();
+                            if (event.getOutcome() == Event.Outcome.PENDING && event.getPhase() == Event.Phase.SELECT) {
+                                System.out.println("in mainFrame, case EDIT is reached");
+                                if (currentCustomer != null) {
+                                    showEditPanel();
+                                }
+                            }
+                            else {
                                 manager.Update(event);
                             }
                         }
@@ -311,7 +330,13 @@ public class MainFrame extends JFrame implements Subscriber {
                     case LOGIC -> {
                         switch (event.getAction()) {
                             case EDIT -> {
-                                    showEditPanel();
+                                if (event.getPhase() == Event.Phase.COMPLETE && event.getContents() instanceof Customer customer) {
+
+                                    if (event.getOutcome() == Event.Outcome.OK) {
+                                        setCurrentCustomer(customer);
+                                        editPanel.showConfirmation();
+                                    }
+                                }
                             }
                             case VALIDATE -> {
                                 if (event.getExtraContents() instanceof Integer id){
