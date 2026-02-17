@@ -23,10 +23,16 @@ public class ProductRepo implements Subscriber {
 
     public void getShoesFromDB(Event event, String choice) throws SQLException, ClassNotFoundException {
         ProductTerm productTerm = null;
+        System.out.println("getShoesFromDB is reached in ProductRepo.   Action=" + event.getAction() + ", Phase=" + event.getPhase() + ", Subject=" + event.getSubject() + ", Outcome=" + event.getOutcome() + ", Origin=" + event.getOrigin());
+
         if (event.getContents() instanceof ProductTerm p && p != null) {
             productTerm = (ProductTerm) event.getContents();
+            System.out.println("productTerm is:");
         } else {
             productTerm = ProductTerm.Category;
+        }
+        if (event.getExtraContents()!= null){
+            System.out.println("extraContents in shoeRepo instanceof: " + event.getExtraContents().getClass());
         }
         switch (productTerm) {
             case Category -> DBRetrievalOnCategory(productTerm, choice);
@@ -34,8 +40,8 @@ public class ProductRepo implements Subscriber {
             case Color -> DBRetrievalOnColor(productTerm, choice);
         }
     }
-    private List<Product> executeShoeQuery(ProductTerm productTerm, String choice, int id, PreparedStatement p)
-            throws SQLException, ClassNotFoundException {
+    private List<Product> executeShoeQuery(ProductTerm productTerm, String choice, int id, PreparedStatement p) throws SQLException, ClassNotFoundException {
+        System.out.println("executeShoeQuery is reached");
         List<Product> foundShoes = new ArrayList<>();
         if (productTerm == null) {
             productTerm = ProductTerm.Name;
@@ -100,6 +106,37 @@ public class ProductRepo implements Subscriber {
             }
         }
     }
+    private void DBRetrievalAllBrands()  throws SQLException, ClassNotFoundException {
+        System.out.println("DBRetrievalAllBrands is reached");
+        Event.Outcome outcome = Event.Outcome.OK;
+        Set<String>brandSet = new LinkedHashSet<>();
+        PreparedStatement s = c.prepareStatement("SELECT * from  shoe_view");
+        ResultSet r = s.executeQuery();
+        while (r.next()) {
+            brandSet.add(r.getString("brand"));
+        }
+        List<String> uniqueBrands = new ArrayList<>();
+        uniqueBrands.addAll(brandSet);
+        if (uniqueBrands.isEmpty()){
+            outcome = Event.Outcome.NOT_FOUND;
+        }
+        databaseRelay.Relay(new Event(Event.Phase.COMPLETE, Event.Action.VIEW, Event.Subject.SHOE, Event.Origin.LOGIC, outcome, uniqueBrands, ProductTerm.Brand));
+    }
+    private void DBRetrievalAllColors()  throws SQLException, ClassNotFoundException  {
+        Event.Outcome outcome = Event.Outcome.OK;
+        Set<String>colorSet = new LinkedHashSet<>();
+        PreparedStatement s = c.prepareStatement("SELECT * from  shoe_view");
+        ResultSet r = s.executeQuery();
+        while (r.next()) {
+            colorSet.add(r.getString("color"));
+        }
+        List<String> uniqueColors = new ArrayList<>();
+        uniqueColors.addAll(colorSet);
+        if (uniqueColors.isEmpty()){
+            outcome = Event.Outcome.NOT_FOUND;
+        }
+        databaseRelay.Relay(new Event(Event.Phase.COMPLETE, Event.Action.VIEW, Event.Subject.SHOE, Event.Origin.LOGIC, outcome, uniqueColors, ProductTerm.Color));
+    }
 
     private void DBRetrievalOnCategory(ProductTerm productTerm, String choice) throws SQLException, ClassNotFoundException {
         Event.Outcome outcome = Event.Outcome.OK;
@@ -108,6 +145,7 @@ public class ProductRepo implements Subscriber {
             List<Product> allProducts = new ArrayList<>();
             PreparedStatement s = c.prepareStatement("SELECT * from category_view where category = ?");
             s.setString(1, choice);
+
             ResultSet r = s.executeQuery();
 
             while (r.next()) {
@@ -139,8 +177,9 @@ public class ProductRepo implements Subscriber {
         }
     }
     private void DBRetrievalOnBrand(ProductTerm productTerm, String choice) throws SQLException, ClassNotFoundException {
+        System.out.println("DBRetrievalOnBrand is reached");
         Event.Outcome outcome = Event.Outcome.OK;
-        PreparedStatement s = c.prepareStatement("SELECT * from shoe_view where brand = ? and invQuantity > +");
+        PreparedStatement s = c.prepareStatement("SELECT * from shoe_view where brand = ? and invQuantity > ?");
         List<Product> allProducts = executeShoeQuery(productTerm, choice, -1, s);
         if(allProducts.isEmpty()){
             outcome = Event.Outcome.FAILURE;
@@ -160,8 +199,24 @@ public class ProductRepo implements Subscriber {
 
     @Override
     public void Update(Event event) throws SQLException, ClassNotFoundException {
-            String choice = "";
-            if (event.getExtraContents() instanceof String extra) choice = extra;
+        String choice = "";
+        if (event.getExtraContents() instanceof String extra) {
+            choice = extra;
+            System.out.println("choice is: " + choice);
             getShoesFromDB(event, choice);
+        }
+        else if (event.getContents() instanceof ProductTerm productTerm){
+            switch (productTerm){
+                case Category -> {
+                    getShoesFromDB(event, choice);
+                }
+                case Brand ->  {
+                    DBRetrievalAllBrands();
+                }
+                case Color -> {
+                    DBRetrievalAllColors();
+                }
+            }
+        }
     }
 }

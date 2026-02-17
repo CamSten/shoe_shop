@@ -190,7 +190,6 @@ public class AdminInfoPanel extends JPanel {
     public Dimension getPreferredSize() {
         int width = titles.size() * 150;
         int height = mainframe.getMaxHeight()- 50;
-       // int height = 50 + dataEntries.size() * 30;
         return new Dimension(width, height);
     }
 

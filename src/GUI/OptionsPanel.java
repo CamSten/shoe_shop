@@ -35,7 +35,6 @@ public class OptionsPanel extends JPanel {
                 System.out.println("list.getFirst instance of: " + list.getFirst().getClass());
             }
         }
-
         this.mainFrame = mainFrame;
         this.event = event;
         this.decorator = decorator;
@@ -95,19 +94,11 @@ public class OptionsPanel extends JPanel {
     public JPanel getOptionsPanel(Event event) {
         System.out.println("getOptionsPanel is reached");
         JPanel optionsPanel = new JPanel(new BorderLayout());
+        optionsPanel.setBackground(Colors.panel());
         JPanel categoryPanel = getCategoryPanel();
         optionsPanel.add(categoryPanel, BorderLayout.NORTH);
-        this.displayingResult = new JPanel();
-        displayingResult.setLayout(new BorderLayout());
-        decorator.adjustWrapperPanel(displayingResult);
-        displayingResult.setBorder(BorderFactory.createLineBorder(Colors.bg(), 10, true));
-        displayingResult.add(getResultPanel(event),BorderLayout.CENTER);
-        JPanel wrapperPanel = new JPanel();
-        wrapperPanel.setBackground(Colors.panel());
-        decorator.adjustWrapperPanel(wrapperPanel);
-        this.inputPanel = wrapperPanel;
-        addScrollBar(inputPanel, displayingResult);
-        optionsPanel.add(inputPanel);
+        JPanel results = getResultPanel(event);
+        optionsPanel.add(results, BorderLayout.CENTER);
         return optionsPanel;
     }
 
@@ -121,8 +112,9 @@ public class OptionsPanel extends JPanel {
             currentProductTerm = p;
         }
         JPanel resultPanel = new JPanel();
-        resultPanel.setLayout(new BoxLayout(resultPanel, BoxLayout.Y_AXIS));
+//        resultPanel.setLayout(new BoxLayout(resultPanel, BoxLayout.Y_AXIS));
         decorator.adjustWrapperPanel(resultPanel);
+        resultPanel.setBorder(BorderFactory.createLineBorder(Colors.bg(), 10, true));
         if (event.getContents() != null && event.getContents() instanceof List) {
             System.out.println("optionsPanel GET RESULT contents instance of: " + event.getContents().getClass());
             List<Object> list = (List<Object>) event.getContents();
@@ -130,6 +122,7 @@ public class OptionsPanel extends JPanel {
         }
         Object data = event.getContents();
         if (data instanceof List list && list.getFirst() instanceof String) {
+            resultPanel.setLayout(new BoxLayout(resultPanel, BoxLayout.Y_AXIS));
             System.out.println("data instance of String list");
             List<String> output = (List<String>) data;
             for (String s : output) {
@@ -146,15 +139,16 @@ public class OptionsPanel extends JPanel {
                         throw new RuntimeException(e);
                     }
                 });
-                resultPanel.add(Box.createVerticalGlue());
+//                resultPanel.add(Box.createVerticalGlue());
                 resultPanel.add(singleResultPanel);
-                resultPanel.add(Box.createVerticalGlue());
+//                resultPanel.add(Box.createVerticalGlue());
             }
         }
         if (data instanceof List list && list.getFirst() instanceof Product) {
             System.out.println("in OPTIONSPANEL GET RESULT, DATA INSTANCE OF PRODUCT-LIST");
             List<Product> shoes = (List<Product>) data;
-            resultPanel.add(createAllShoePanels(shoes));
+            resultPanel.setLayout(new BorderLayout());
+            resultPanel.add(createAllShoePanels(shoes), BorderLayout.CENTER);
         } else if (data instanceof Product product) {
             System.out.println("data instance of product");
             resultPanel.removeAll();
@@ -170,31 +164,37 @@ public class OptionsPanel extends JPanel {
 
     private JPanel createAllShoePanels(List<Product> products) {
         System.out.println("CreateAllShoePanels in OptionsPanel is reached");
+
         JPanel allShoesPanel = new JPanel(new GridLayout(0, 3, 20, 20));
+
         allShoesPanel.setBackground(Colors.panel());
+//        allShoesPanel.setBorder(BorderFactory.createLineBorder(Colors.bg(), 10, true));
         for (Product p : products) {
             System.out.println("SHOE IN CREATE ALL SHOE PANELS: " + p.getName());
             JPanel shoePanel = new JPanel();
             decorator.adjustShoeInfoPanel(shoePanel);
+            shoePanel.setMinimumSize(new Dimension(260, 380));
+            shoePanel.setPreferredSize(new Dimension(260, 380));
+            shoePanel.setMaximumSize(new Dimension(260, 380));
+            shoePanel.setLayout(new BoxLayout(shoePanel, BoxLayout.Y_AXIS));
+
             JLabel shoeBrand = new JLabel(p.getBrand());
             shoeBrand.setAlignmentX(Component.CENTER_ALIGNMENT);
             decorator.adjustBrandLabel(shoeBrand);
+            shoeBrand.setBackground(Colors.panel());
             shoeBrand.setOpaque(false);
             JLabel shoeName = new JLabel(p.getName());
             shoeName.setAlignmentX(Component.CENTER_ALIGNMENT);
             decorator.adjustCardLabel(shoeName);
+            shoeName.setBackground(Colors.panel());
             shoeName.setOpaque(false);
             JPanel cardTop = new JPanel();
             cardTop.setLayout(new BoxLayout(cardTop, BoxLayout.Y_AXIS));
-            cardTop.setBackground(Colors.panel());
-//            shoeBrand.setAlignmentX(Component.CENTER_ALIGNMENT);
-//            shoeName.setAlignmentX(Component.CENTER_ALIGNMENT);
-
+            cardTop.setBackground(Colors.border());
             cardTop.add(shoeBrand);
-            cardTop.add(Box.createVerticalStrut(2));
             cardTop.add(shoeName);
-
             shoePanel.add(cardTop);
+            cardTop.setAlignmentX(Component.CENTER_ALIGNMENT);
             JButton shoeButton = new JButton("See details");
             decorator.adjustShoeCardButton(shoeButton);
             shoeButton.addActionListener(_ -> {
@@ -212,7 +212,6 @@ public class OptionsPanel extends JPanel {
                     new LineBorder(Colors.bg(), 5, true),
                     BorderFactory.createEmptyBorder(12,12,12,12)
             ));
-            shoePanel.add(Box.createVerticalGlue());
             JLabel description = new JLabel();
             description.setText(startOfHTML+p.getDescription()+endOfHTML);
             decorator.adjustSmallLabel(description);
@@ -226,11 +225,19 @@ public class OptionsPanel extends JPanel {
             priceLabel.setOpaque(true);
             priceLabel.setBorder(BorderFactory.createEmptyBorder(4,8,4,8));
             shoePanel.add(priceLabel);
-            allShoesPanel.add(shoePanel);
             shoePanel.setBackground(Colors.border());
-        }
+            allShoesPanel.add(shoePanel);
 
-        return allShoesPanel;
+        }
+        JPanel wrapperPanel = new JPanel(new BorderLayout());
+        wrapperPanel.setBackground(Colors.panel());
+
+        JScrollPane scrollPane = new JScrollPane(allShoesPanel);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+
+        wrapperPanel.add(scrollPane, BorderLayout.CENTER);
+        return wrapperPanel;
     }
     private JPanel getShoeInfoPanel(Product p) {
         System.out.println("getSingleShoePanel is reached");
@@ -295,7 +302,7 @@ public class OptionsPanel extends JPanel {
         for (int i : sizeSet){
             JLabel thisSize = new JLabel(String.valueOf(i));
             thisSize.setPreferredSize(new Dimension(30, 30));
-                thisSize.setMaximumSize(new Dimension(30, 30));
+            thisSize.setMaximumSize(new Dimension(30, 30));
             thisSize.setMinimumSize(new Dimension(30, 30));
             sizePanel.add(thisSize);
         }
@@ -310,36 +317,16 @@ public class OptionsPanel extends JPanel {
         wrapperPanel.add(singleShoePanel, BorderLayout.CENTER);
         return wrapperPanel;
     }
-    public void addScrollBar(JPanel inputPanel, JPanel panel) {
-        inputPanel.removeAll();
-        JScrollPane scrollResults = new JScrollPane(panel);
-        scrollResults.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        scrollResults.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        scrollResults.setPreferredSize(new Dimension(750, 480));
-        SwingUtilities.invokeLater(() ->
-                scrollResults.getVerticalScrollBar().setValue(0)
-        );
-        inputPanel.add(scrollResults);
-    }
     private void sendUserChoice(String choice) throws SQLException, ClassNotFoundException {
         System.out.println("SEND USER CHOICE IN OPTIONS PANEL IS REACHED, choice is: " + choice);
         mainFrame.Update(new Event(
                 Event.Phase.SELECT, Event.Action.VIEW, Event.Subject.SHOE, Event.Origin.GUI, Event.Outcome.PENDING, currentProductTerm, choice
         ));
     }
-    private List<String> getSpecificationList(Product product, ProductTerm pt) {
-        List<String> specificationList = new ArrayList<>();
-        switch (pt) {
-            case Name -> specificationList.add(product.getBrand());
-            case Color -> {
-                specificationList.add(product.getBrand());
-                specificationList.add(product.getName());
-            }
-            case Size -> {
-                specificationList.add(product.getBrand());
-                specificationList.add(product.getName());
-            }
-        }
-        return specificationList;
+    @Override
+    public Dimension getPreferredSize() {
+        int width = 800;
+        int height = mainFrame.getMaxHeight()- 50;
+        return new Dimension(width, height);
     }
 }

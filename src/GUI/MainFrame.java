@@ -46,8 +46,7 @@ public class MainFrame extends JFrame implements Subscriber {
         this.addToCartButton = new JButton("Add to Cart");
         decorator.adjustButton(addToCartButton);
         setLayout(new BorderLayout());
-        setMinimumSize(new Dimension(800, 750));
-    //   setMaximumSize(new Dimension(1500, 1200));
+        setMinimumSize(new Dimension(850, 800));
         setBackground(backgroundColor);
         centerPanel = new JPanel(new BorderLayout());
         centerPanel.setBackground(backgroundColor);
@@ -190,10 +189,8 @@ public class MainFrame extends JFrame implements Subscriber {
             showMenuPanel();
         }
     }
-
     private void showEditPanel(){
         System.out.println("showEditPanel is reached");
-//        if (currentEvent.getContents() != null && currentEvent.getContents() instanceof Customer customer){
             centerPanel.removeAll();
             this.editPanel = new EditCustomerPanel(this, decorator, currentCustomer);
             centerPanel.add(editPanel);
@@ -363,7 +360,7 @@ public class MainFrame extends JFrame implements Subscriber {
                                 System.out.println("case VIEW is reached");
                                 if (event.getExtraContents() != null && event.getExtraContents() instanceof Event.Subject) {
                                     showAdminInfoPanel();
-                                } else if (event.getPhase() == Event.Phase.DISPLAY && event.getSubject() == Event.Subject.SHOE) {
+                                } else if ((event.getPhase() == Event.Phase.DISPLAY || event.getPhase() == Event.Phase.COMPLETE) && event.getSubject() == Event.Subject.SHOE ) {
                                     showOptionsPanel(event);
                                 } else if (event.getSubject() == Event.Subject.CART) {
                                     showCartPanel(event);
