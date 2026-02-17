@@ -75,7 +75,7 @@ public class MenuPanel extends JPanel {
         });
         JButton optionEditDetails = new JButton("See account details");
         allOptionButtons.add(optionEditDetails);
-        optionSeeCart.addActionListener(new ActionListener() {
+        optionEditDetails.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {

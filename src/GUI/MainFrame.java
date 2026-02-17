@@ -6,6 +6,7 @@ import GUI.AdminGUI.AdminInfoPanel;
 import GUI.AdminGUI.AdminMenuPanel;
 import Model.DataHandling.ProductTerm;
 import Model.DataHandling.Product;
+import Model.DataHandling.Customer;
 
 import javax.swing.*;
 import java.awt.*;
@@ -16,11 +17,13 @@ import java.sql.SQLException;
 public class MainFrame extends JFrame implements Subscriber {
     private final ApplicationManager manager;
     private final PanelDecorator decorator;
+    private int customerId;
     private JPanel centerPanel;
     private JPanel bottomPanel;
     private HeaderPanel headerPanel;
     private LoginPanel loginPanel;
     private MenuPanel menuPanel;
+    private EditCustomerPanel editPanel;
     private OptionsPanel optionsPanel;
     private CartPanel cartPanel;
     private PurchasePanel purchasePanel;
@@ -82,7 +85,7 @@ public class MainFrame extends JFrame implements Subscriber {
         revalidate();
        // pack();
     }
-    private void showLoginPanel() {
+    void showLoginPanel() {
         removeHeader();
         adjustHeaderAndFooter("ShoeShop", false, false, false);
         add(headerPanel, BorderLayout.NORTH);
@@ -185,6 +188,16 @@ public class MainFrame extends JFrame implements Subscriber {
             showMenuPanel();
         }
     }
+
+    private void showEditPanel(){
+        if (currentEvent.getContents() != null && currentEvent.getContents() instanceof Customer customer){
+            centerPanel.removeAll();
+            this.editPanel = new EditCustomerPanel(this, decorator, customer);
+            centerPanel.add(editPanel);
+            revalidate();
+            repaint();
+        }
+    }
     private void showAdminMenu() {
         System.out.println("showAdminMenu is reached in MainFrame");
         adjustHeaderAndFooter("Choose what you would like to do: ", false, false, false);
@@ -236,6 +249,9 @@ public class MainFrame extends JFrame implements Subscriber {
             }
         }
     }
+    public int getCustomerId(){
+        return customerId;
+    }
     public int getMaxHeight(){
         return maxHeight;
     }
@@ -282,6 +298,11 @@ public class MainFrame extends JFrame implements Subscriber {
                                 manager.Update(event);
                             }
                         }
+                        case EDIT -> {
+                            if (event.getOutcome() == Event.Outcome.PENDING) {
+                                manager.Update(event);
+                            }
+                        }
                         case PURCHASE -> {
                             manager.Update(event);
                         }
@@ -289,8 +310,13 @@ public class MainFrame extends JFrame implements Subscriber {
                 }
                     case LOGIC -> {
                         switch (event.getAction()) {
+                            case EDIT -> {
+                                    showEditPanel();
+                            }
                             case VALIDATE -> {
-
+                                if (event.getExtraContents() instanceof Integer id){
+                                    this.customerId = id;
+                                }
                                 if (event.getPhase() == Event.Phase.AWAIT_INPUT && event.getSubject() == Event.Subject.NONE) {
                                     showLoginPanel();
                                 } else {

@@ -22,7 +22,6 @@ public class AdminRepo implements Subscriber {
         this.databaseRelay = databaseRelay;
         this.c = c;
     }
-
     private void getOrders() throws SQLException, ClassNotFoundException {
         List<OrderPost> allPosts = new ArrayList<>();
         PreparedStatement s = c.prepareStatement("select * from order_Inventory");
@@ -50,7 +49,6 @@ public class AdminRepo implements Subscriber {
         PreparedStatement s = c.prepareStatement("select * from shoe_view");
         ResultSet rs = s.executeQuery();
         while (rs.next()){
-//            String category = rs.getString("category");
             String brand = rs.getString("brand");
             String name  = rs.getString("productName");
             String color = rs.getString("color");
@@ -101,53 +99,51 @@ public class AdminRepo implements Subscriber {
         }
         relay(Event.returnAdminInfo(event.getSubject(), outcome, allPosts));
     }
-private void assessIfAdmin(Event event) throws SQLException, ClassNotFoundException {
-    List<String> userInput = new ArrayList<>();
-    boolean isAdmin = false;
-    Event.Outcome outcome = Event.Outcome.NOT_FOUND;
-    if (event.getContents() instanceof List list){
-        if (!list.isEmpty() && list.getFirst() instanceof String){
-            userInput = (List<String>) event.getContents();
-            String email = userInput.get(0).trim();
-            String userPassword = userInput.get(1).trim();
-
-            CallableStatement s = c.prepareCall("CALL checkIfAdmin(?, ?, ?)");
-            s.setString(1, email);
-            s.setString(2, userPassword);
-            ResultSet rs = s.executeQuery();
-            isAdmin = s.getBoolean(3);
+    private void assessIfAdmin(Event event) throws SQLException, ClassNotFoundException {
+        List<String> userInput = new ArrayList<>();
+        boolean isAdmin = false;
+        Event.Outcome outcome = Event.Outcome.NOT_FOUND;
+        if (event.getContents() instanceof List list){
+            if (!list.isEmpty() && list.getFirst() instanceof String){
+                userInput = (List<String>) event.getContents();
+                String email = userInput.get(0).trim();
+                String userPassword = userInput.get(1).trim();
+                CallableStatement s = c.prepareCall("CALL checkIfAdmin(?, ?, ?)");
+                s.setString(1, email);
+                s.setString(2, userPassword);
+                s.registerOutParameter(3, Types.BOOLEAN);
+                ResultSet rs = s.executeQuery();
+                isAdmin = s.getBoolean(3);
+            }
+        }
+        if (isAdmin){
+            outcome = Event.Outcome.OK;
+        }
+        relay(new Event(Event.Phase.COMPLETE, Event.Action.VALIDATE, Event.Subject.ADMIN, Event.Origin.LOGIC, outcome, userInput, null));
+    }
+    private void relay(Event event) throws SQLException, ClassNotFoundException {
+        event.setExtraContents(Event.Subject.ADMIN);
+        databaseRelay.Relay(event);
+    }
+    @Override
+    public void Update(Event event) throws SQLException, ClassNotFoundException {
+        this.event = event;
+        switch (event.getSubject()){
+            case SALES -> {
+                getSales();
+            }
+            case STOCK -> {
+                getInventory();
+            }
+            case CART -> {
+                getOrders();
+            }
+            case ADMIN -> {
+                assessIfAdmin(event);
+            }
+            case NON_STOCK -> {
+                getOutOfStock();
+            }
         }
     }
-    if (isAdmin){
-        outcome = Event.Outcome.OK;
-    }
-    relay(new Event(Event.Phase.COMPLETE, Event.Action.VALIDATE, Event.Subject.ADMIN, Event.Origin.LOGIC, outcome, userInput, null));
-}
-
-private void relay(Event event) throws SQLException, ClassNotFoundException {
-    event.setExtraContents(Event.Subject.ADMIN);
-    databaseRelay.Relay(event);
-}
-@Override
-public void Update(Event event) throws SQLException, ClassNotFoundException {
-    this.event = event;
-    switch (event.getSubject()){
-        case SALES -> {
-            getSales();
-        }
-        case STOCK -> {
-            getInventory();
-        }
-        case CART -> {
-            getOrders();
-        }
-        case ADMIN -> {
-            assessIfAdmin(event);
-        }
-        case NON_STOCK -> {
-            getOutOfStock();
-        }
-    }
-
-}
 }

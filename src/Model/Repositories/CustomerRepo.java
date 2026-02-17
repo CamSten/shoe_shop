@@ -12,17 +12,19 @@ public class CustomerRepo implements Subscriber {
     private static DatabaseRelay databaseRelay;
     private static Connection c;
 
-    public CustomerRepo(DatabaseRelay databaseRelay, Connection c){
+    public CustomerRepo(DatabaseRelay databaseRelay, Connection c) {
         this.databaseRelay = databaseRelay;
         this.c = c;
     }
+
     private void getCustomerInfo(int customerId) throws SQLException, ClassNotFoundException {
         Customer customer = null;
         Event.Outcome outcome = Event.Outcome.OK;
+        Event.Action action = Event.Action.VIEW;
         PreparedStatement s = c.prepareStatement("SELECT * from customer where id = ?");
         s.setInt(1, customerId);
         ResultSet rs = s.executeQuery();
-        while (rs.next()){
+        while (rs.next()) {
             String firstName = rs.getString("firstName");
             String surname = rs.getString("surname");
             String streetAddress = rs.getString("streetAddress");
@@ -31,14 +33,22 @@ public class CustomerRepo implements Subscriber {
             String password = rs.getString("password");
             customer = new Customer(customerId, firstName, surname, streetAddress, city, email, password);
         }
-        if (customer == null){
+        if (customer == null) {
             outcome = Event.Outcome.NOT_FOUND;
         }
-        databaseRelay.Relay(new Event(Event.Phase.COMPLETE, Event.Action.VIEW, Event.Subject.CUSTOMER, Event.Origin.LOGIC, outcome, customer, null));
+        databaseRelay.Relay(new Event(Event.Phase.COMPLETE, action, Event.Subject.CUSTOMER, Event.Origin.LOGIC, outcome, customer, null));
     }
-    private void editCustomerInfo(Customer customer){
 
-
+    private void editCustomerInfo(Customer customer) throws ClassNotFoundException, SQLException {
+        int id = customer.getCustomerId();
+        PreparedStatement s = c.prepareStatement("UPDATE customer set firstname = ?, surname = ?, streetAddress = ?, city = ?, password = ? where id = ?");
+        s.setString(1, customer.getFirstName());
+        s.setString(2, customer.getSurname());
+        s.setString(3, customer.getStreetAddress());
+        s.setString(4, customer.getCity());
+        s.setString(5, customer.getPassword());
+        s.setInt(6, id);
+        ResultSet rs = s.executeQuery();
     }
 
     public static void checkCustomer(List<String> userInput) throws ClassNotFoundException, SQLException {
@@ -57,17 +67,13 @@ public class CustomerRepo implements Subscriber {
         s.registerOutParameter(5, Types.BOOLEAN);
         s.registerOutParameter(6, Types.INTEGER);
         s.execute();
-
         exists = s.getBoolean(4);
         validLogin = s.getBoolean(5);
         foundId = s.getInt(6);
-
         boolean[] results = new boolean[]{exists, validLogin};
-
         if (!exists) outcome = Event.Outcome.NOT_FOUND;
         else if (!validLogin) outcome = Event.Outcome.INVALID_INPUT;
         System.out.println("found id in customerRepo is: " + foundId);
-
         databaseRelay.Relay(new Event(Event.Phase.COMPLETE, Event.Action.VALIDATE, Event.Subject.CUSTOMER, Event.Origin.LOGIC, outcome, results, foundId));
     }
 
@@ -85,7 +91,6 @@ public class CustomerRepo implements Subscriber {
         System.out.println("addNewCustomerToDB in DBR is reached");
         int newId = -1;
         Event.Outcome outcome = Event.Outcome.OK;
-
         CallableStatement s = c.prepareCall("CALL addCustomer(?, ?, ?, ?, ?, ?, ?, ?)");
         s.setString(1, firstName);
         s.setString(2, surname);
@@ -94,11 +99,9 @@ public class CustomerRepo implements Subscriber {
         s.setString(5, city);
         s.setString(6, email);
         s.execute();
-
         newId = s.getInt(7);
         boolean alreadyExists = s.getBoolean(8);
         System.out.println("alreadyExists is: " + alreadyExists);
-
         if (newId == -1 || alreadyExists) {
             outcome = Event.Outcome.ALREADY_EXISTS;
         }
@@ -107,17 +110,29 @@ public class CustomerRepo implements Subscriber {
 
     @Override
     public void Update(Event event) throws SQLException, ClassNotFoundException {
-        System.out.println("CustomerRepo is reached, event is: " + event.getAction());
-        if (event.getAction() == Event.Action.VALIDATE && event.getContents() instanceof List list) {
-            checkCustomer((List<String>) list);
-        } else if (event.getAction() == Event.Action.CREATE_ACCOUNT && event.getContents() instanceof List list) {
-            addNewCustomer((List<String>) list);
-        }
-        else if (event.getAction() == Event.Action.VIEW && event.getContents() instanceof Integer){
-            getCustomerInfo((Integer) event.getContents());
-        }
-        else if (event.getAction() == Event.Action.EDIT && event.getContents() instanceof Customer customer){
-            editCustomerInfo(customer);
+        Event.Action currentAction = event.getAction();
+        switch (currentAction) {
+            System.out.println("CustomerRepo is reached, event is: " + event.getAction());
+            case VALIDATE -> {
+                if (event.getAction() == Event.Action.VALIDATE && event.getContents() instanceof List list) {
+                    checkCustomer((List<String>) list);
+                }
+            }
+            case CREATE_ACCOUNT -> {
+                if (event.getContents() instanceof List list) {
+                    addNewCustomer((List<String>) list);
+                }
+            }
+            case VIEW -> {
+                if (event.getContents() instanceof Integer) {
+                    getCustomerInfo((Integer) event.getContents(), false);
+                }
+            }
+            case EDIT -> {
+                if (event.getContents() instanceof Customer customer) {
+                    editCustomerInfo(customer);
+                }
+            }
         }
     }
 }

@@ -32,47 +32,30 @@ public class LoginPanel extends JPanel {
         add(centerPanel, BorderLayout.CENTER);
         showLoginPanel();
     }
-
     public void showLoginPanel() {
         centerPanel.removeAll();
-//        JPanel panel = new JPanel(new BorderLayout());
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setBackground(Colors.panel());
-
         JPanel inputCol = new JPanel(new GridLayout(2, 1));
-//        decorator.adjustInputPanel(inputCol);
         inputCol.setBackground(Colors.panel());
-//        JPanel labelWrapperMail = new JPanel();
         JLabel emailLabel = new JLabel("  Enter email:");
         decorator.adjustLabel(emailLabel);
         this.emailField = new JTextField();
         decorator.adjustTextField(emailField);
         inputCol.add(emailField);
-        //inputCol.setBorder(BorderFactory.createLineBorder(Colors.buttonHover(), 4, true));
-
-
         JPanel labelCol = new JPanel(new GridLayout(2,1));
-//        decorator.adjustInputPanel(labelCol);
         labelCol.setBackground(Colors.bg());
-//        JPanel labelWrapperPass = new JPanel();
         JLabel passwordLabel = new JLabel("  Enter password:");
-//        labelWrapperPass.add(passwordLabel);
         decorator.adjustLabel(passwordLabel);
         passwordField = new JPasswordField();
         decorator.adjustTextField(passwordField);
-
-//        labelCol.add(Box.createVerticalGlue());
         labelCol.add(emailLabel);
         labelCol.add(Box.createVerticalGlue());
         labelCol.add(passwordLabel);
-//        labelCol.add(Box.createVerticalGlue());
-
-//        inputCol.add(Box.createVerticalGlue());
         inputCol.add(emailField);
         inputCol.add(Box.createVerticalGlue());
         inputCol.add(passwordField);
-//        inputCol.add(Box.createVerticalGlue());
         JPanel wrapperPanel = new JPanel();
         wrapperPanel.setLayout(new BoxLayout(wrapperPanel, BoxLayout.X_AXIS));
         decorator.adjustWrapperPanel(wrapperPanel);
@@ -119,7 +102,6 @@ public class LoginPanel extends JPanel {
             throw new RuntimeException(e);
         }
     }
-
     public void showCreateAccountPanel() {
         centerPanel.removeAll();
         firstnameField = new JTextField();
@@ -130,21 +112,19 @@ public class LoginPanel extends JPanel {
         mainFrame.adjustHeaderAndFooter("Fill in your details:", false, false, false);
 
         List<JTextField> fields = List.of(firstnameField, surnameField, streetField, cityField, emailField, passwordField);
-        for (JTextField f : fields) decorator.adjustTextField(f);
+        for (JTextField f : fields) {
+            decorator.adjustTextField(f);
+        }
 
         List<String> labelsText = List.of("First name:", "Surname:", "Street:", "City:", "Email:", "Password:");
         JPanel inputPanel = new JPanel();
-//        inputPanel.setLayout(new BoxLayout(inputPanel, BoxLayout.Y_AXIS));
         inputPanel.setBackground(Colors.bg());
         JPanel labelCol = new JPanel(new GridLayout(labelsText.size(), 1, 5, 5));
-//        labelCol.setLayout(new BoxLayout(labelCol, BoxLayout.Y_AXIS));
         JPanel inputCol = new JPanel(new GridLayout(fields.size(), 1, 5, 5));
-//        inputCol.setLayout(new BoxLayout(labelCol, BoxLayout.Y_AXIS));
         labelCol.setBackground(Colors.panel());
         inputCol.setBackground(Colors.panel());
 
         for (int i = 0; i < labelsText.size(); i++){
-//            JPanel row = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
             JLabel label = new JLabel(labelsText.get(i));
             decorator.adjustLabel(label);
             labelCol.add(label);
@@ -182,26 +162,15 @@ public class LoginPanel extends JPanel {
         userInput.add(streetField.getText().trim());
         userInput.add(cityField.getText().trim());
         userInput.add(emailField.getText().trim().toLowerCase());
-
         try {
-            manager.Update(new Event(
-                    Event.Phase.SUBMIT,
-                    Event.Action.CREATE_ACCOUNT,
-                    Event.Subject.CUSTOMER,
-                    Event.Origin.GUI,
-                    Event.Outcome.PENDING,
-                    userInput,
-                    null
-            ));
+            manager.Update(new Event(Event.Phase.SUBMIT, Event.Action.CREATE_ACCOUNT, Event.Subject.CUSTOMER, Event.Origin.GUI, Event.Outcome.PENDING, userInput, null));
         } catch (SQLException | ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
     }
-
     public void promptCompleteLogin() {
         JOptionPane.showMessageDialog(this, "All fields must be filled in.");
     }
-
     public void promptNoSuchUser() throws SQLException, ClassNotFoundException {
         int choice = JOptionPane.showOptionDialog(
                 this,
@@ -221,6 +190,5 @@ public class LoginPanel extends JPanel {
     }
     public void promptInvalidAdminLogin(){
         JOptionPane.showMessageDialog(this, "The password that you have entered is incorrect, admin login failed.");
-
     }
 }

@@ -101,7 +101,7 @@ public class ApplicationManager implements Subscriber {
                         }
                         mainFrame.Update(event);
                     }
-                    case VIEW, PURCHASE -> {
+                    case VIEW, PURCHASE, EDIT -> {
                             mainFrame.Update(event);
                     }
                 }

@@ -58,31 +58,7 @@ public class OrderRepo implements Subscriber {
         databaseRelay.Relay(new Event(Event.Phase.DISPLAY, action, Event.Subject.CART, Event.Origin.LOGIC, outcome, orders, null
         ));
     }
-    //    protected boolean callCheckInventory(String productName, int size, String color, int buyQuantity) throws SQLException {
-//        System.out.println("callCheckInventory is reached in DBR");
-//        CallableStatement s = c.prepareCall("CALL checkShoeInventory(?, ?, ?, ?, ?, ?, ?, ?, ?)");
-//        s.setString(1, productName);
-//        s.setInt(2, size);
-//        s.setString(3, color);
-//        s.setInt(4, buyQuantity);
-//        s.registerOutParameter(5, Types.BOOLEAN);
-//        s.registerOutParameter(6, Types.BOOLEAN);
-//        s.registerOutParameter(7, Types.BOOLEAN);
-//        s.registerOutParameter(8, Types.BOOLEAN);
-//        s.registerOutParameter(9, Types.INTEGER);
-//        s.execute();
-//        boolean shoeExists = s.getBoolean(5);
-//        boolean sizeExists = s.getBoolean(6);
-//        boolean sizeAndColorExists = s.getBoolean(7);
-//        boolean sufficientStock = s.getBoolean(8);
-//        int inventoryStock = s.getInt(9);
-//        System.out.println("in OrderRepo checkInventory, shoeExists is: " + shoeExists);
-//        System.out.println("in OrderRepo checkInventory, sizeExists is: " + sizeExists);
-//        System.out.println("in OrderRepo checkInventory, sizeAndColorExists is: " + sizeAndColorExists);
-//        System.out.println("in OrderRepo checkInventory, sufficientStock is: " + sufficientStock);
-//        System.out.println("in OrderRepo checkInventory, stock is: " + inventoryStock);
-//        return sufficientStock;
-//    }
+
     private void purchaseActions(Event event) throws SQLException, ClassNotFoundException {
         System.out.println("PurchaseActions in DBR was reached");
         OrderPost thisOrder = null;
@@ -98,15 +74,6 @@ public class OrderRepo implements Subscriber {
         }
         databaseRelay.Relay(new Event(Event.Phase.COMPLETE, Event.Action.PURCHASE, Event.Subject.SHOE, Event.Origin.LOGIC, outcome, thisOrder, lastInStock));
     }
-//    private void callGetProductOrder(int customerId) throws SQLException {
-//        System.out.println("callGetProductOrder is reached, customerId is: " + customerId);
-//        CallableStatement s = c.prepareCall("CALL getProductOrder(?, ?)");
-//        s.setInt(1, customerId);
-//        s.registerOutParameter(2, Types.INTEGER);
-//        s.execute();
-//        int orderId = s.getInt(2);
-//        System.out.println("in callGetProductOrder, orderId is: " + orderId);
-//    }
 
     private boolean callAddToCart(int customerId, String productName, int productId, int size, String color, int buyQuantity) throws ClassNotFoundException, SQLException {
         System.out.println("callAddToCart is reached in DBR, customerId is: " + customerId + " productId is: " + productId + " size is: " + size + " color is: " + color + " buyQuantity is: " + buyQuantity);
@@ -121,14 +88,8 @@ public class OrderRepo implements Subscriber {
         s.setInt(6, buyQuantity);
         s.setTimestamp(7, t);
         s.registerOutParameter(8, Types.BOOLEAN);
-//        s.registerOutParameter(9, Types.BOOLEAN);
-//        s.registerOutParameter(10, Types.BOOLEAN);
         s.registerOutParameter(9, Types.INTEGER);
         s.execute();
-//        boolean foundOrder = s.getBoolean(7);
-//        System.out.println("foundOrder is: " + foundOrder);
-//        boolean foundPost = s.getBoolean(8);
-//        System.out.println("foundPost is: " + foundPost);
         boolean success = s.getBoolean(8);
         System.out.println("success is: " + success);
         int updatedStock = s.getInt(9);
@@ -137,7 +98,6 @@ public class OrderRepo implements Subscriber {
             this.lastInStock = true;
         }
         return success;
-
     }
     @Override
     public void Update(Event event) throws SQLException, ClassNotFoundException {
