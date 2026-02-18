@@ -60,17 +60,6 @@ public class Event {
         PENDING,
         FAILURE
     }
-    public static Event initiate(){
-        return new Event(
-                Phase.AWAIT_INPUT,
-                Action.VALIDATE,
-                Subject.NONE,
-                Origin.LOGIC,
-                null,
-                null,
-                null
-        );
-    }
 
     public static Event awaitInput(Action action, Subject subject, Origin origin) {
         return new Event(
@@ -128,17 +117,7 @@ public class Event {
                 null
         );
     }
-    public static Event error(Action action, Origin origin, Outcome outcome) {
-        return new Event(
-                Phase.COMPLETE,
-                action,
-                Subject.NONE,
-                origin,
-                outcome,
-                null,
-                null
-        );
-    }
+
     public static Event returnAdminInfo(Subject subject, Outcome outcome, Object data) {
         return new Event(
                 Phase.COMPLETE,
@@ -161,27 +140,21 @@ public class Event {
                 Subject.ADMIN
         );
     }
-
     public Phase getPhase() {
         return phase;
     }
-
     public Action getAction() {
         return action;
     }
-
     public Subject getSubject() {
         return subject;
     }
-
     public Origin getOrigin() {
         return origin;
     }
-
     public Outcome getOutcome() {
         return outcome;
     }
-
     public Object getContents() {
         return contents;
     }

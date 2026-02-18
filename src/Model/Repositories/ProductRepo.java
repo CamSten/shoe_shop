@@ -5,7 +5,6 @@ import Model.DatabaseRelay;
 import Model.DataHandling.ProductTerm;
 import Model.DataHandling.Product;
 import Model.DataHandling.ShoeSpecification;
-
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -20,19 +19,12 @@ public class ProductRepo implements Subscriber {
         this.c = c;
         this.databaseRelay = databaseRelay;
     }
-
     public void getShoesFromDB(Event event, String choice) throws SQLException, ClassNotFoundException {
         ProductTerm productTerm = null;
-        System.out.println("getShoesFromDB is reached in ProductRepo.   Action=" + event.getAction() + ", Phase=" + event.getPhase() + ", Subject=" + event.getSubject() + ", Outcome=" + event.getOutcome() + ", Origin=" + event.getOrigin());
-
         if (event.getContents() instanceof ProductTerm p && p != null) {
             productTerm = (ProductTerm) event.getContents();
-            System.out.println("productTerm is:");
         } else {
             productTerm = ProductTerm.Category;
-        }
-        if (event.getExtraContents()!= null){
-            System.out.println("extraContents in shoeRepo instanceof: " + event.getExtraContents().getClass());
         }
         switch (productTerm) {
             case Category -> DBRetrievalOnCategory(productTerm, choice);
@@ -41,7 +33,6 @@ public class ProductRepo implements Subscriber {
         }
     }
     private List<Product> executeShoeQuery(ProductTerm productTerm, String choice, int id, PreparedStatement p) throws SQLException, ClassNotFoundException {
-        System.out.println("executeShoeQuery is reached");
         List<Product> foundShoes = new ArrayList<>();
         if (productTerm == null) {
             productTerm = ProductTerm.Name;
@@ -65,14 +56,12 @@ public class ProductRepo implements Subscriber {
         }
         return foundShoes;
     }
-
     private static Product createShoe(int id, String name, String brand, String color, String description, int size, int invQuantity, int price) {
         Product newShoe = new Product(id, name, brand, description, price);
         ShoeSpecification sc = new ShoeSpecification(size, color, invQuantity);
         newShoe.addSpecification(sc);
         return newShoe;
     }
-
     private void getUniqueProductValues(List<Product> allShoes, Product p) throws SQLException {
         Product existingProduct = null;
         if (allShoes.isEmpty()) {
@@ -80,14 +69,12 @@ public class ProductRepo implements Subscriber {
         } else {
             for (Product u : allShoes) {
                 if (u.getProductId() == p.getProductId()) {
-                    System.out.println("u.Id: " + u.getProductId() + " p.name: " + p.getProductId());
                     existingProduct = u;
                     break;
                 }
             }
             if (existingProduct == null) {
                 allShoes.add(p);
-                System.out.println("ADDED SHOE: " + p.getProductId());
             } else {
                 for (ShoeSpecification spec : p.getShoeSpecifications()) {
                     boolean exists = false;
@@ -99,7 +86,6 @@ public class ProductRepo implements Subscriber {
                         }
                     }
                     if (!exists) {
-                        System.out.println("adding specification: \nCOLOR: " + spec.getColor() + "\nSIZE: " + spec.getSize() + "\nINVQUANTITY: " + spec.getInvQuantity());
                         existingProduct.addSpecification(spec);
                     }
                 }
@@ -107,7 +93,6 @@ public class ProductRepo implements Subscriber {
         }
     }
     private void DBRetrievalAllBrands()  throws SQLException, ClassNotFoundException {
-        System.out.println("DBRetrievalAllBrands is reached");
         Event.Outcome outcome = Event.Outcome.OK;
         Set<String>brandSet = new LinkedHashSet<>();
         PreparedStatement s = c.prepareStatement("SELECT * from  shoe_view");
@@ -137,7 +122,6 @@ public class ProductRepo implements Subscriber {
         }
         databaseRelay.Relay(new Event(Event.Phase.COMPLETE, Event.Action.VIEW, Event.Subject.SHOE, Event.Origin.LOGIC, outcome, uniqueColors, ProductTerm.Color));
     }
-
     private void DBRetrievalOnCategory(ProductTerm productTerm, String choice) throws SQLException, ClassNotFoundException {
         Event.Outcome outcome = Event.Outcome.OK;
         if (!choice.equals("")) {
@@ -145,9 +129,7 @@ public class ProductRepo implements Subscriber {
             List<Product> allProducts = new ArrayList<>();
             PreparedStatement s = c.prepareStatement("SELECT * from category_view where category = ?");
             s.setString(1, choice);
-
             ResultSet r = s.executeQuery();
-
             while (r.next()) {
                 productIds.add(r.getInt("id"));
             }
@@ -160,7 +142,6 @@ public class ProductRepo implements Subscriber {
                 outcome = Event.Outcome.FAILURE;
             }
             databaseRelay.Relay(new Event(Event.Phase.DISPLAY, Event.Action.VIEW, Event.Subject.SHOE, Event.Origin.LOGIC, outcome, allProducts, productTerm));
-
         } else {
             List<String> outputList = new ArrayList<>();
             Set<String> results = new LinkedHashSet<>();
@@ -177,7 +158,6 @@ public class ProductRepo implements Subscriber {
         }
     }
     private void DBRetrievalOnBrand(ProductTerm productTerm, String choice) throws SQLException, ClassNotFoundException {
-        System.out.println("DBRetrievalOnBrand is reached");
         Event.Outcome outcome = Event.Outcome.OK;
         PreparedStatement s = c.prepareStatement("SELECT * from shoe_view where brand = ? and invQuantity > ?");
         List<Product> allProducts = executeShoeQuery(productTerm, choice, -1, s);
@@ -186,7 +166,6 @@ public class ProductRepo implements Subscriber {
         }
         databaseRelay.Relay(new Event(Event.Phase.DISPLAY, Event.Action.VIEW, Event.Subject.SHOE, Event.Origin.LOGIC, outcome, allProducts, productTerm));
     }
-
     private void DBRetrievalOnColor(ProductTerm productTerm, String choice) throws SQLException, ClassNotFoundException {
         Event.Outcome outcome = Event.Outcome.OK;
         PreparedStatement s = c.prepareStatement("SELECT * from shoe_view where color = ? and invQuantity > ?");
@@ -196,13 +175,11 @@ public class ProductRepo implements Subscriber {
         }
         databaseRelay.Relay(new Event(Event.Phase.DISPLAY, Event.Action.VIEW, Event.Subject.SHOE, Event.Origin.LOGIC, outcome, allProducts, productTerm));
     }
-
     @Override
     public void Update(Event event) throws SQLException, ClassNotFoundException {
         String choice = "";
         if (event.getExtraContents() instanceof String extra) {
             choice = extra;
-            System.out.println("choice is: " + choice);
             getShoesFromDB(event, choice);
         }
         else if (event.getContents() instanceof ProductTerm productTerm){

@@ -1,7 +1,6 @@
 package GUI.AdminGUI;
 
 import Control.Event;
-import Control.Subscriber;
 import GUI.Colors;
 import GUI.Fonts;
 import GUI.PanelDecorator;
@@ -10,11 +9,8 @@ import GUI.InfoPanel;
 import Model.DataHandling.InventoryPost;
 import Model.DataHandling.OrderPost;
 import Model.DataHandling.SalesPost;
-
 import javax.swing.*;
-import javax.swing.border.Border;
 import java.awt.*;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,13 +20,10 @@ public class AdminInfoPanel extends JPanel {
     private Event event;
     private JPanel centerPanel;
     private JPanel dataPanel;
-    private InfoPanel infoPanel;
     private List<String> titles;
-    private List<JLabel> columnHeaders;
     private List<List<JLabel>> dataEntries;
 
     public AdminInfoPanel(MainFrame mainFrame, PanelDecorator decorator, Event event) {
-        System.out.println("adminInfoPanel is reached");
         this.mainframe = mainFrame;
         this.decorator = decorator;
         this.event = event;
@@ -41,21 +34,18 @@ public class AdminInfoPanel extends JPanel {
         else {
             switch (event.getSubject()) {
                 case SALES -> {
-                    System.out.println("in adminInfoPanel, case SALES is reached");
                     if (event.getContents() instanceof List list && list.getFirst() instanceof SalesPost){
                         List<SalesPost> allPosts = (List<SalesPost>) list;
                         getSalesData(allPosts);
                     }
                 }
                 case STOCK -> {
-                    System.out.println("in adminInfoPanel, case STOCK is reached");
                     if (event.getContents() instanceof List list && list.getFirst() instanceof InventoryPost ) {
                         List<InventoryPost> allStock = (List<InventoryPost>) list;
                         getInventoryData(allStock);
                     }
                 }
                 case CART -> {
-                    System.out.println("in adminInfoPanel, case CART is reached");
                     if (event.getContents() instanceof List list && list.getFirst() instanceof OrderPost) {
                         List<OrderPost> allPosts = (List<OrderPost>) list;
                         getOrdersData(allPosts);
@@ -68,7 +58,6 @@ public class AdminInfoPanel extends JPanel {
                     }
                 }
             }
-
             this.dataPanel = new JPanel();
             decorator.adjustWrapperPanel(dataPanel);
             dataPanel.add(new InfoPanel(titles, dataEntries, decorator));
@@ -83,14 +72,11 @@ public class AdminInfoPanel extends JPanel {
         dataPanel.add(nullConf);
         decorator.adjustSingleResultLine(dataPanel);
     }
-
     private void getSalesData(List<SalesPost> allPosts){
-        System.out.println("getSalesPanel is reached in adminInfoPanel");
         this.titles = new ArrayList<>();
         titles.add("Brand:");
         titles.add("Name:");
         titles.add("Quantity sold:");
-
         this.dataEntries = new ArrayList<>();
         for (SalesPost post : allPosts){
             List<JLabel> row = new ArrayList<>();
@@ -107,7 +93,6 @@ public class AdminInfoPanel extends JPanel {
         titles.add("Color:");
         titles.add("Size:");
         titles.add("Price:");
-
         this.dataEntries = new ArrayList<>();
         for (InventoryPost post : allStock) {
             List<JLabel> row = new ArrayList<>();
@@ -120,7 +105,6 @@ public class AdminInfoPanel extends JPanel {
         }
     }
     private void getInventoryData(List<InventoryPost> allStock){
-        System.out.println("getInventoryPanel is reached in AdminInfoPanel");
         this.titles = new ArrayList<>();
         titles.add("Brand:");
         titles.add("Name:");
@@ -128,7 +112,6 @@ public class AdminInfoPanel extends JPanel {
         titles.add("Size:");
         titles.add("Price:");
         titles.add("Available quantity:");
-
         this.dataEntries = new ArrayList<>();
         for (InventoryPost post : allStock){
             List<JLabel> row = new ArrayList<>();
@@ -142,7 +125,6 @@ public class AdminInfoPanel extends JPanel {
         }
     }
     private void getOrdersData(List<OrderPost> allPosts){
-        System.out.println("getOrdersPanel is reached in AdminInfoPanel");
         this.titles = new ArrayList<>();
         titles.add("Customer ID:");
         titles.add("Brand");
@@ -151,9 +133,7 @@ public class AdminInfoPanel extends JPanel {
         titles.add("Size");
         titles.add("Quantity");
         titles.add("Added");
-
         this.dataEntries = new ArrayList<>();
-        int total = 0;
         for (OrderPost op : allPosts) {
             List<JLabel> row = new ArrayList<>();
             row.add(getCellLabel(String.valueOf(op.getCustomerId())));
@@ -166,7 +146,6 @@ public class AdminInfoPanel extends JPanel {
             dataEntries.add(row);
         }
     }
-
     private JLabel getCellLabel(String text) {
         JLabel label = new JLabel(text);
         decorator.adjustLabel(label);

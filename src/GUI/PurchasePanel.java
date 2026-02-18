@@ -4,9 +4,7 @@ import Control.Event;
 import Model.DataHandling.OrderPost;
 import Model.DataHandling.Product;
 import Model.DataHandling.ShoeSpecification;
-
 import javax.swing.*;
-import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.sql.SQLException;
@@ -37,17 +35,11 @@ public class PurchasePanel extends JPanel {
     private final String endOfHTML = "</div></html>";
 
     public PurchasePanel(MainFrame mainFrame, Event event, PanelDecorator decorator){
-        System.out.println("purchasePanel constructor is reached");
         this.mainFrame = mainFrame;
         this.event = event;
         if (event.getContents()!= null && event.getContents() instanceof Product){
             this.p = (Product) event.getContents();
         }
-        System.out.println("in purchasePanel: Action=" + event.getAction() +
-                ", Phase=" + event.getPhase() +
-                ", Subject=" + event.getSubject() +
-                ", Outcome=" + event.getOutcome() +
-                ", Origin=" + event.getOrigin());
         this.decorator = decorator;
         setBackground(Colors.panel());
         add(getCartPanel(event));
@@ -104,7 +96,6 @@ public class PurchasePanel extends JPanel {
         }
         this.sizeListener = e -> {
             if (sizeBox.getSelectedItem() != null && !sizeBox.getSelectedItem().equals(sizeIntro)) {
-                System.out.println("sizeListener is activated");
                 String selected = (String) sizeBox.getSelectedItem();
                 int thisSize = 0;
                 try { thisSize = Integer.parseInt(selected);
@@ -150,11 +141,9 @@ public class PurchasePanel extends JPanel {
         return cartPanel;
     }
     public void getConfirmationPanel(Event event){
-        System.out.println("getConfirmationPanel is reached in PurchasePanel");
         cartPanel.removeAll();
         this.confirmationPanel = new JPanel(new BorderLayout());
         decorator.adjustWrapperPanel(confirmationPanel);
-        Product product = null;
         String confText = "";
         switch  (event.getOutcome()){
             case OK -> {
@@ -173,7 +162,6 @@ public class PurchasePanel extends JPanel {
         List<String> stringValues = new ArrayList<>();
         List<Integer> intValues = new ArrayList<>();
         List<JLabel> infoLabels = new ArrayList<>();
-        List<JPanel> valueLabels = new ArrayList<>();
         List<String> descriptions = new ArrayList<>();
         descriptions.add("Brand:");
         descriptions.add("Name:");
@@ -231,14 +219,9 @@ public class PurchasePanel extends JPanel {
             }
         }
     }
-
     private JPanel createShoeInfoPanel(Product p) {
         JPanel wrapperPanel = new JPanel(new BorderLayout());
         decorator.adjustWrapperPanel(wrapperPanel);
-//        wrapperPanel.setBorder(BorderFactory.createCompoundBorder(
-//                new LineBorder(Colors.border(), 7, true),
-//                BorderFactory.createEmptyBorder(12,12,12,12)
-//        ));
         JPanel singleShoePanel = new JPanel();
         JPanel shoeInfo = new JPanel();
         shoeInfo.setLayout(new BoxLayout(shoeInfo, BoxLayout.Y_AXIS));
@@ -302,7 +285,6 @@ public class PurchasePanel extends JPanel {
             sizePanel.add(Box.createHorizontalStrut(5));
             sizePanel.add(size);
             sizePanel.add(Box.createHorizontalStrut(5));
-
         }
         JLabel colorLabel = new JLabel("Available colors:");
         JLabel sizeLabel = new JLabel("Available sizes:");
@@ -319,8 +301,7 @@ public class PurchasePanel extends JPanel {
         wrapperPanel.add(singleShoePanel, BorderLayout.CENTER);
         return wrapperPanel;
     }
-    private void getEmptyStockMsg(){
-        System.out.println("- - - - getEmptyStockMessage is reached in CartPanel");
+    private void getEmptyStockMsg(){;
         JPanel wrapper = new JPanel(new GridLayout(2, 1));
         JLabel msg = new JLabel("These shoes are flying off the shelves!");
         decorator.adjustBrandLabel(msg);
@@ -335,12 +316,9 @@ public class PurchasePanel extends JPanel {
         confirmationPanel.add(stockMsgPanel, BorderLayout.SOUTH);
     }
     public void submitActions() throws SQLException, ClassNotFoundException {
-        System.out.println("submitActions is reached in CartPanel");
         int buyQuantity = assessQuantityInput();
         if (colorBox.getSelectedItem() != null && sizeBox.getSelectedItem() != null) {
-            System.out.println("values != null");
             if (buyQuantity > 0) {
-                System.out.println("buyQuantity is: " + buyQuantity);
                 String color = (String) colorBox.getSelectedItem();
                 try {
                     int size = Integer.parseInt(sizeBox.getSelectedItem().toString());
@@ -354,15 +332,11 @@ public class PurchasePanel extends JPanel {
     }
     private int assessQuantityInput(){
         String qInput = quantityChosenArea.getText();
-        System.out.println("qInput: " + qInput);
         int quantity = -1;
         try {
-            System.out.println("tryparse in AssessQuantity is reached");
             quantity = Integer.parseInt(qInput);
-            System.out.println("quantity is: " + quantity);
             int availableQuantity = Integer.parseInt(quantityAvailabilityArea.getText());
             if (quantity > availableQuantity){
-                System.out.println("quantity > availableQuantity");
                 quantity = -1;
                 JOptionPane.showMessageDialog(this, "The quantity you have submitted is too large.");
             }
@@ -373,27 +347,22 @@ public class PurchasePanel extends JPanel {
     private void setAvailableQuantity(Product product){
         String selectedColor = (String) colorBox.getSelectedItem();
         String selectedSize = (String) sizeBox.getSelectedItem();
-        System.out.println("SET AVAILABLE QUANTITY is reached in PurchasePanel. Color: " + selectedColor + " Size: " + selectedSize);
         if (selectedColor!= null && !selectedColor.equals(colorIntro) && selectedSize!= null && !selectedSize.equals(sizeIntro)) {
             try {
-                System.out.println("tryParse is reached in setAvailableQuantity");
                 int thisSize = Integer.parseInt(selectedSize);
                 int q = getCurrentInventoryFor(selectedColor, thisSize);
-                System.out.println("---- \n size is: " + thisSize + "\ncolor is: " + selectedColor +  "\nq is: " + q);
                 quantityAvailabilityArea.setText(String.valueOf(q));
             } catch (NumberFormatException e) {
             }
         }
     }
     private void getSizes(Product product, String color) {
-        System.out.println("getSizes is reached, value is: " + color);
         String thisSize = (String) sizeBox.getSelectedItem();
         List<Integer> newSizes = new ArrayList<>();
         if (!color.equals(colorIntro)) {
             sizeBox.removeActionListener(sizeListener);
             sizeBox.removeAllItems();
             sizeBox.addItem(sizeIntro);
-            System.out.println("sc.size: " + product.getShoeSpecifications().size());
             Set<Integer> sizeSet = new LinkedHashSet<>();
             for (ShoeSpecification sc : product.getShoeSpecifications()) {
                 if (sc.getColor().equals(color)) {
@@ -402,7 +371,6 @@ public class PurchasePanel extends JPanel {
             }
             newSizes.addAll(sizeSet);
             for (int i : newSizes) {
-                System.out.println("newSize: " + i);
                 sizeBox.addItem(String.valueOf(i));
                 if (String.valueOf(i).equals(thisSize)){
                     sizeBox.setSelectedItem(String.valueOf(i));
@@ -442,10 +410,8 @@ public class PurchasePanel extends JPanel {
     }
 
     public int getCurrentInventoryFor(String color, int size) {
-        System.out.println("getInventoryFor is reached. Color: " + color + " size: " + size);
         for (ShoeSpecification sc : p.getShoeSpecifications()) {
             if (sc.getColor().equals(color) && sc.getSize() == size) {
-                System.out.println("invQuantity is: " + sc.getInvQuantity());
                 return sc.getInvQuantity();
             }
         }

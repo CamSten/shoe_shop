@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class InfoPanel extends JPanel{
-    private MainFrame mainFrame;
     private PanelDecorator decorator;
     private List<String> titles;
     List<List<JLabel>> dataEntries;
@@ -14,6 +13,7 @@ public class InfoPanel extends JPanel{
     public InfoPanel(List<String> titles, List<List<JLabel>> dataEntries, PanelDecorator decorator) {
         this.titles = titles;
         this.dataEntries = dataEntries;
+        this.decorator = decorator;
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
         setBackground(Colors.panel());
         List<JLabel> headers = new ArrayList<>();

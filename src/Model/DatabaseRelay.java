@@ -21,7 +21,6 @@ public class DatabaseRelay implements Subscriber {
 
     public DatabaseRelay(ApplicationManager applicationManager) throws SQLException {
         this.applicationManager = applicationManager;
-        System.out.println("connection:  url:" + PropertyRetriever.getUrl() +" user: " + PropertyRetriever.getUser() + " pass: "+ PropertyRetriever.getPassword());
         this.c = DriverManager.getConnection(PropertyRetriever.getUrl(), PropertyRetriever.getUser(), PropertyRetriever.getPassword());
         this.adminRepo = new AdminRepo(this, c);
         this.customerRepo = new CustomerRepo(this, c);
@@ -29,7 +28,6 @@ public class DatabaseRelay implements Subscriber {
         this.productRepo = new ProductRepo(this, c);
     }
     public void Relay(Event event) throws SQLException, ClassNotFoundException {
-        System.out.println("RELAY in D B R is reached.    Action=" + event.getAction() + ", Phase=" + event.getPhase() + ", Subject=" + event.getSubject() + ", Outcome=" + event.getOutcome() + ", Origin=" + event.getOrigin());
         if(admin){
             event.setExtraContents(Event.Subject.ADMIN);
         }
@@ -38,7 +36,6 @@ public class DatabaseRelay implements Subscriber {
     @Override
     public void Update(Event event) throws SQLException, ClassNotFoundException {
         admin = false;
-        System.out.println("UPDATE IN DBR IS REACHED.  Action=" + event.getAction() + ", Phase=" + event.getPhase() + ", Subject=" + event.getSubject() + ", Outcome=" + event.getOutcome() + ", Origin=" + event.getOrigin());
         if (event.getExtraContents() instanceof Event.Subject subject && subject == Event.Subject.ADMIN) {
             admin = true;
         }

@@ -3,12 +3,10 @@ package GUI;
 import javax.swing.*;
 import Control.Event;
 import Model.DataHandling.Customer;
-
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
 
@@ -37,7 +35,6 @@ public class EditCustomerPanel extends JPanel {
             mainFrame.showMenuPanel();
         }
     };
-
     public EditCustomerPanel(MainFrame mainFrame, PanelDecorator decorator, Customer customer) {
         this.mainFrame = mainFrame;
         this.decorator = decorator;
@@ -51,7 +48,6 @@ public class EditCustomerPanel extends JPanel {
         repaint();
     }
     private void getEditPanel(){
-        System.out.println("getEditPanel is reached in EditCustomerPanel");
         getPanelContents();
         List<JTextField> fields = List.of(firstnameField, surnameField, streetField, cityField, emailField, passwordField);
         for (JTextField f : fields) {
@@ -89,7 +85,6 @@ public class EditCustomerPanel extends JPanel {
         this.emailField = new JTextField(customer.getEmail());
         this.passwordField = new JPasswordField(customer.getPassword());
         mainFrame.adjustHeaderAndFooter("Account details:", false, false, false);
-
         this.buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
         buttonPanel.setBackground(Colors.bg());
         this.saveButton = new JButton("Submit changes");
@@ -105,7 +100,6 @@ public class EditCustomerPanel extends JPanel {
         repaint();
     }
     private void submitActions(){
-        System.out.println("submitActions is reached in EditCustomerPanel");
         String firstName = firstnameField.getText().trim();
         String surname = surnameField.getText().trim();
         String street = streetField.getText().trim();
@@ -118,13 +112,11 @@ public class EditCustomerPanel extends JPanel {
         } catch (SQLException | ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
-
     }
     void showConfirmation(){
         saveButton.removeActionListener(saver);
         saveButton.addActionListener(returner);
         saveButton.setText("Return to menu");
-        System.out.println("- - - - getEmptyStockMessage is reached in CartPanel");
         JPanel wrapper = new JPanel(new GridLayout(2, 1));
         JLabel msg = new JLabel("Your details have been updated.");
         decorator.adjustBrandLabel(msg);

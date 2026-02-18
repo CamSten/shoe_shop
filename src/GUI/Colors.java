@@ -5,8 +5,7 @@ public class Colors {
     private static final Color PANEL = new Color(186, 173, 194);
     private static final Color CARD = Color.WHITE;
     private static final Color ACCENT = new Color(186, 173, 194);
-    //= new Color(255, 153, 51);
-    private static final Color TEXT_PRIMARY = new Color(40, 40, 40);
+
     private static final Color TEXT_SECONDARY = new Color(90, 90, 90);
     private static final Color BORDER = new Color(200, 200, 200);
     private static final Color BUTTON_BG = ACCENT;
@@ -17,7 +16,6 @@ public class Colors {
     public static Color card() { return CARD; }
     public static Color accent() { return ACCENT; }
     public static Color text() { return TEXT_SECONDARY;}
-    //return TEXT_PRIMARY; }
     public static Color textMuted() { return TEXT_SECONDARY; }
     public static Color border() { return BORDER; }
     public static Color button() { return BUTTON_BG; }

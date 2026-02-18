@@ -2,7 +2,6 @@ package GUI;
 
 import Control.Event;
 import Model.DataHandling.OrderPost;
-
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
@@ -20,7 +19,6 @@ public class CartPanel extends JPanel {
     private JPanel cartPanel;
 
     public CartPanel(MainFrame mainFrame, Event event, PanelDecorator decorator) {
-        System.out.println("cartPanel constructor is reached");
         this.mainFrame = mainFrame;
         this.event = event;
         this.decorator = decorator;
@@ -67,7 +65,6 @@ public class CartPanel extends JPanel {
         titles.add("Size");
         titles.add("Quantity");
         titles.add("Added");
-
         this.dataEntries = new ArrayList<>();
         getColumnHeaders();
         int total = 0;
@@ -83,7 +80,6 @@ public class CartPanel extends JPanel {
             total += op.getPrice() * op.getQuantity();
             totalPriceLabel.setText("Total price: " + total + " SEK");
         }
-
         JPanel infoPanel = new JPanel();
         infoPanel.setLayout(new BoxLayout(infoPanel, BoxLayout.X_AXIS));
         for (int i = 0; i < columnHeaders.size(); i++){
@@ -92,10 +88,8 @@ public class CartPanel extends JPanel {
             JPanel column = new JPanel();
             decorator.adjustInputPanel(column);
             column.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
-            System.out.println("columnHeaders.get(i): " + columnHeaders.get(i).getText());
             column.add(columnHeaders.get(i));
             for (List<JLabel> labelList : dataEntries){
-                System.out.println("dataEntries.get(i).get(j): " + labelList.get(i).getText());
                 column.add(labelList.get(i));
             }
             wrapper.add(column);
@@ -110,50 +104,12 @@ public class CartPanel extends JPanel {
     private void getColumnHeaders() {
         this.columnHeaders = new ArrayList<>();
         for (String t : titles) {
-            System.out.println("title in getColumnHeaderPanel: " + t);
             JLabel label = new JLabel(t);
             decorator.adjustBrandLabel(label);
             label.setBorder(BorderFactory.createLineBorder(Colors.border(), 5, true));
-//            label.setOpaque(true);
             columnHeaders.add(label);
         }
     }
-    private JPanel getColumnHeaderPanel() {
-        JPanel wrapperPanel = new JPanel();
-        JPanel columnPanel = new JPanel();
-        columnPanel.setLayout(new BoxLayout(columnPanel, BoxLayout.X_AXIS));
-        columnPanel.setBackground(Colors.panel());
-        columnPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-        String[] titles = {"Brand", "Name", "Color", "Size", "Quantity", "Added"};
-        for (String t : titles) {
-            System.out.println("title in getColumnHeaderPanel: " + t);
-            JLabel label = new JLabel(t);
-            decorator.adjustLabel(label);
-            label.setOpaque(true);
-            columnPanel.add(label);
-        }
-        wrapperPanel.add(columnPanel);
-        return wrapperPanel;
-    }
-
-    private void populateOrders(JPanel wrapperPanel, List<OrderPost> orders) {
-        orderPanel.removeAll();
-        JPanel subWrapper = new JPanel();
-        subWrapper.setLayout(new GridLayout(orders.size(), 1));
-        int total = 0;
-        for (OrderPost op : orders) {
-            JPanel rowWrapper = new JPanel();
-            JPanel row = getOrderRowPanel(op);
-            rowWrapper.add(row);
-            subWrapper.add(rowWrapper);
-            total += op.getPrice() * op.getQuantity();
-        }
-        wrapperPanel.add(subWrapper, BorderLayout.CENTER);
-        totalPriceLabel.setText("Total price: " + total + " SEK");
-        orderPanel.repaint();
-        orderPanel.revalidate();
-    }
-
     private JPanel getOrderRowPanel(OrderPost order) {
         JPanel wrapperPanel = new JPanel();
         JPanel row = new JPanel();
@@ -169,7 +125,6 @@ public class CartPanel extends JPanel {
         wrapperPanel.add(row);
         return wrapperPanel;
     }
-
     private JLabel getCellLabel(String text) {
         JLabel label = new JLabel(text);
         decorator.adjustLabel(label);

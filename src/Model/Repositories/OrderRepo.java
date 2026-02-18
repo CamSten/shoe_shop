@@ -4,8 +4,6 @@ import Control.Event;
 import Control.Subscriber;
 import Model.DatabaseRelay;
 import Model.DataHandling.OrderPost;
-
-
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -23,7 +21,6 @@ public class OrderRepo implements Subscriber {
         this.c = c;
     }
     private void executeOrderQuery(int customerId, boolean admin) throws SQLException, ClassNotFoundException {
-        System.out.println("executeOrderQuery in DBR reached for customerId: " + customerId);
         List<OrderPost> orders = new ArrayList<>();
         Event.Outcome outcome = Event.Outcome.OK;
         ResultSet rs = null;
@@ -51,20 +48,16 @@ public class OrderRepo implements Subscriber {
             OrderPost post = new OrderPost(customerId, productId, brand, productName, color, size, buyQuantity, price, date);
             orders.add(post);
         }
-        System.out.println("Orders fetched: " + orders.size());
         if (orders.isEmpty()){
             outcome = Event.Outcome.FAILURE;
         }
         databaseRelay.Relay(new Event(Event.Phase.DISPLAY, action, Event.Subject.CART, Event.Origin.LOGIC, outcome, orders, null
         ));
     }
-
     private void purchaseActions(Event event) throws SQLException, ClassNotFoundException {
-        System.out.println("PurchaseActions in DBR was reached");
         OrderPost thisOrder = null;
         Event.Outcome outcome = Event.Outcome.OK;
         int customerId = databaseRelay.getCustomerId();
-
         if (event.getContents() instanceof OrderPost){
             thisOrder = (OrderPost) event.getContents();
             boolean result = callAddToCart(customerId, thisOrder.getName(), thisOrder.getProductId(), thisOrder.getSize(), thisOrder.getColor(), thisOrder.getQuantity());
@@ -74,9 +67,7 @@ public class OrderRepo implements Subscriber {
         }
         databaseRelay.Relay(new Event(Event.Phase.COMPLETE, Event.Action.PURCHASE, Event.Subject.SHOE, Event.Origin.LOGIC, outcome, thisOrder, lastInStock));
     }
-
     private boolean callAddToCart(int customerId, String productName, int productId, int size, String color, int buyQuantity) throws ClassNotFoundException, SQLException {
-        System.out.println("callAddToCart is reached in DBR, customerId is: " + customerId + " productId is: " + productId + " size is: " + size + " color is: " + color + " buyQuantity is: " + buyQuantity);
         this.lastInStock = false;
         Timestamp t = Timestamp.valueOf(LocalDateTime.now());
         CallableStatement s = c.prepareCall("CALL addToCart(?, ?, ?, ?, ?, ?, ?, ?, ?)");
@@ -91,9 +82,7 @@ public class OrderRepo implements Subscriber {
         s.registerOutParameter(9, Types.INTEGER);
         s.execute();
         boolean success = s.getBoolean(8);
-        System.out.println("success is: " + success);
         int updatedStock = s.getInt(9);
-        System.out.println("updated stock: " + updatedStock);
         if (updatedStock < 1){
             this.lastInStock = true;
         }
@@ -114,7 +103,6 @@ public class OrderRepo implements Subscriber {
             }
             else if (event.getContents() instanceof Integer) {
                 customerId = (Integer) event.getContents();
-                System.out.println("customerId:" + customerId);
             }
             executeOrderQuery(customerId, admin);
         }

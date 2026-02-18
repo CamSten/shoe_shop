@@ -23,7 +23,6 @@ public class Fonts {
     public static Font getInputFont() {
         return inputFont;
     }
-
     public static Font getTinyFont() {
         return tinyFont;
     }

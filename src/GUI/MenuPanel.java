@@ -10,11 +10,9 @@ import Control.Event;
 
 public class MenuPanel extends JPanel {
     private MainFrame mainFrame;
-    private PanelDecorator decorator;
     private List<JButton> allOptionButtons = new ArrayList<>();
 
     public MenuPanel(MainFrame mainFrame, PanelDecorator decorator) {
-        System.out.println("showMenuPanel constructor is reached");
         this.mainFrame = mainFrame;
         setLayout(new BorderLayout());
         setBackground(Colors.bg());
@@ -53,7 +51,6 @@ public class MenuPanel extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    System.out.println("--- IN MENU PANEL, SEE SHOES IS CHOSEN");
                     Update(Event.select(Event.Subject.SHOE));
                 } catch (SQLException | ClassNotFoundException ex) {
                     throw new RuntimeException(ex);
@@ -66,7 +63,6 @@ public class MenuPanel extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    System.out.println("--- IN MENU PANEL, SEE CART IS CHOSEN");
                     Update(Event.select(Event.Subject.CART));
                 } catch (SQLException | ClassNotFoundException ex) {
                     throw new RuntimeException(ex);
@@ -79,7 +75,6 @@ public class MenuPanel extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    System.out.println("--- IN MENU PANEL, ACCOUNT DETAILS IS CHOSEN");
                     Update(new Event(Event.Phase.SELECT, Event.Action.EDIT, Event.Subject.CUSTOMER, Event.Origin.GUI, Event.Outcome.PENDING, null, null));
                 } catch (SQLException | ClassNotFoundException ex) {
                     throw new RuntimeException(ex);
@@ -92,7 +87,6 @@ public class MenuPanel extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    System.out.println("--- IN MENU PANEL, LOG OUT IS CHOSEN");
                     Update(new Event(Event.Phase.SELECT, Event.Action.LOG_OUT, Event.Subject.CUSTOMER, Event.Origin.GUI, Event.Outcome.PENDING, null, null));
                 } catch (SQLException | ClassNotFoundException ex) {
                     throw new RuntimeException(ex);
@@ -101,7 +95,6 @@ public class MenuPanel extends JPanel {
         });
     }
     public void Update(Event event ) throws SQLException, ClassNotFoundException {
-        System.out.println("UPDATE IN MENUPANEL IS REACHED, event.Subject is: " + event.getSubject());
         mainFrame.Update(event);
     }
 }

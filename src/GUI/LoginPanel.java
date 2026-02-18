@@ -2,7 +2,6 @@
 package GUI;
 import Control.ApplicationManager;
 import Control.Event;
-
 import javax.swing.*;
 import java.awt.*;
 import java.sql.SQLException;
@@ -14,7 +13,6 @@ public class LoginPanel extends JPanel {
     private MainFrame mainFrame;
     private PanelDecorator decorator;
     private JPanel centerPanel;
-
     private JTextField firstnameField;
     private JTextField surnameField;
     private JTextField streetField;
@@ -63,13 +61,10 @@ public class LoginPanel extends JPanel {
         wrapperPanel.add(Box.createHorizontalGlue());
         wrapperPanel.add(inputCol);
 
-
         JPanel buttonWrapperPanel = new JPanel();
         decorator.adjustWrapperPanel(buttonWrapperPanel);
-//        JPanel buttonPanel = new JPanel();
         JPanel buttonPanel = new JPanel(new GridLayout(2, 1));
         decorator.adjustWrapperPanel(buttonPanel);
-//        buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.Y_AXIS));
         buttonPanel.setBackground(Colors.bg());
         JButton loginButton = new JButton("Log in");
         decorator.adjustButton(loginButton);
@@ -80,10 +75,8 @@ public class LoginPanel extends JPanel {
         buttonPanel.add(loginButton);
         buttonPanel.add(newUserButton);
         buttonWrapperPanel.add(buttonPanel);
-
         panel.add(wrapperPanel, BorderLayout.CENTER);
         panel.add(buttonWrapperPanel, BorderLayout.SOUTH);
-
         centerPanel.add(panel, BorderLayout.CENTER);
         revalidate();
         repaint();
@@ -110,12 +103,10 @@ public class LoginPanel extends JPanel {
         cityField = new JTextField();
         passwordField = new JPasswordField();
         mainFrame.adjustHeaderAndFooter("Fill in your details:", false, false, false);
-
         List<JTextField> fields = List.of(firstnameField, surnameField, streetField, cityField, emailField, passwordField);
         for (JTextField f : fields) {
             decorator.adjustTextField(f);
         }
-
         List<String> labelsText = List.of("First name:", "Surname:", "Street:", "City:", "Email:", "Password:");
         JPanel inputPanel = new JPanel();
         inputPanel.setBackground(Colors.bg());
@@ -123,7 +114,6 @@ public class LoginPanel extends JPanel {
         JPanel inputCol = new JPanel(new GridLayout(fields.size(), 1, 5, 5));
         labelCol.setBackground(Colors.panel());
         inputCol.setBackground(Colors.panel());
-
         for (int i = 0; i < labelsText.size(); i++){
             JLabel label = new JLabel(labelsText.get(i));
             decorator.adjustLabel(label);
@@ -137,7 +127,6 @@ public class LoginPanel extends JPanel {
         wrapperPanel.add(inputCol);
         inputPanel.add(wrapperPanel);
         inputPanel.add(wrapperPanel);
-
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
         buttonPanel.setBackground(Colors.bg());
         JButton saveButton = new JButton("Save");
@@ -168,9 +157,6 @@ public class LoginPanel extends JPanel {
             throw new RuntimeException(e);
         }
     }
-    public void promptCompleteLogin() {
-        JOptionPane.showMessageDialog(this, "All fields must be filled in.");
-    }
     public void promptNoSuchUser() throws SQLException, ClassNotFoundException {
         int choice = JOptionPane.showOptionDialog(
                 this,
@@ -188,7 +174,7 @@ public class LoginPanel extends JPanel {
     public void promptWrongPassword() {
         JOptionPane.showMessageDialog(this, "The password that you have entered is incorrect");
     }
-    public void promptInvalidAdminLogin(){
-        JOptionPane.showMessageDialog(this, "The password that you have entered is incorrect, admin login failed.");
-    }
+//    public void promptInvalidAdminLogin(){
+//        JOptionPane.showMessageDialog(this, "The password that you have entered is incorrect, admin login failed.");
+//    }
 }

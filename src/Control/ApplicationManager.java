@@ -1,12 +1,9 @@
 package Control;
-import GUI.AdminGUI.AdminInfoPanel;
-import GUI.AdminGUI.AdminMenuPanel;
 import GUI.LoginPanel;
 import GUI.MainFrame;
 import Model.DataHandling.ProductTerm;
 import Model.DataHandling.Customer;
 import Model.DatabaseRelay;
-
 import java.sql.*;
 import java.util.*;
 
@@ -31,7 +28,6 @@ public class ApplicationManager implements Subscriber {
     }
 
     public ApplicationManager() {
-        System.out.println("appManager constructor is reached");
         this.mainFrame = new MainFrame(this);
         try {
             this.databaseRelay = new DatabaseRelay(this);
@@ -39,19 +35,11 @@ public class ApplicationManager implements Subscriber {
             e.printStackTrace();
         }
     }
-
     public void Update(Event event) throws SQLException, ClassNotFoundException {
         admin = false;
         Event.Origin origin = event.getOrigin();
-        System.out.println("in APPMANAGER UPDATE event.Action is: " + event.getAction() + " Phase is: " + event.getPhase() + " subject is: " + event.getSubject() + " outcome is: " + event.getOutcome() + " origin is: " + event.getOrigin());
-        if (event.getContents() != null) {
-            System.out.println("contents instance of: " + event.getContents().getClass());
-        }
+
         if (event.getExtraContents() != null) {
-            System.out.println("extra contents instance of: " + event.getExtraContents().getClass());
-            if (event.getExtraContents() instanceof ProductTerm pt) {
-                System.out.println("productTerm in AppManager.update is: " + pt);
-            }
             if (event.getExtraContents() instanceof Event.Subject subject && subject == Event.Subject.ADMIN) {
                 admin = true;
             }
@@ -123,7 +111,6 @@ public class ApplicationManager implements Subscriber {
             System.out.println("customerId is: " + customerId);
         }
     }
-
     private void createNewAccount(Event event) throws SQLException, ClassNotFoundException {
         System.out.println("createNewAccount in AppManager is reached");
         List<String> userInput = new ArrayList<>();
@@ -134,10 +121,9 @@ public class ApplicationManager implements Subscriber {
             }
         }
     }
-    private void promptInvalidAdminLogin(){
-        loginPanel.promptInvalidAdminLogin();
-    }
-
+//    private void promptInvalidAdminLogin(){
+//        loginPanel.promptInvalidAdminLogin();
+//    }
     private void promptCreateNewAccount() throws SQLException, ClassNotFoundException {
         mainFrame.Update(new Event(Event.Phase.AWAIT_INPUT, Event.Action.VALIDATE, Event.Subject.CUSTOMER, Event.Origin.LOGIC, Event.Outcome.NOT_FOUND, null, null));
     }
@@ -153,7 +139,6 @@ public class ApplicationManager implements Subscriber {
     }
 
     public void validateCustomer(String emailInput, String password) throws SQLException, ClassNotFoundException {
-        System.out.println("VALIDATE USER in appManager is reached, email is: " + emailInput + " password is: " + password);
         Event.Subject subject = Event.Subject.CUSTOMER;
         if (emailInput.equals(adminId)){
             subject = Event.Subject.ADMIN;

@@ -4,9 +4,7 @@ import java.io.FileInputStream;
 import java.util.Properties;
 
 public class PropertyRetriever {
-
     private static Properties prop = new Properties();
-
     static {
         try(FileInputStream in = new FileInputStream("src/Model/DB.properties")) {
             prop.load(in);

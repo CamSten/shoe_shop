@@ -6,7 +6,6 @@ import Model.DataHandling.InventoryPost;
 import Model.DataHandling.OrderPost;
 import Model.DataHandling.SalesPost;
 import Model.DatabaseRelay;
-
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -64,7 +63,6 @@ public class AdminRepo implements Subscriber {
         relay(Event.returnAdminInfo(event.getSubject(), outcome, allPosts));
     }
     private void getSales() throws SQLException, ClassNotFoundException {
-        System.out.println("getSales is reached in adminRepo");
         List<SalesPost> topSold = new ArrayList<>();
         PreparedStatement s = c.prepareStatement("select * from get_most_sold");
         ResultSet rs = s.executeQuery();
@@ -81,7 +79,6 @@ public class AdminRepo implements Subscriber {
         relay(Event.returnAdminInfo(event.getSubject(), outcome, topSold));
     }
     private void getOutOfStock() throws SQLException, ClassNotFoundException {
-        System.out.println("getOutOfStock is reached in AdminRepo");
         List<InventoryPost> allPosts = new ArrayList<>();
         PreparedStatement s = c.prepareStatement("select * from out_of_stock");
         ResultSet rs = s.executeQuery();

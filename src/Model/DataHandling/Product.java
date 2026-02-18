@@ -1,7 +1,5 @@
 package Model.DataHandling;
 
-import Model.DataHandling.ShoeSpecification;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,8 +12,6 @@ public class Product {
     private int buyQuantity;
     private List<ShoeSpecification> shoeSpecifications;
     private ShoeSpecification boughtSpecification;
-
-
 
     public Product(int productId, String name, String brand, String description, int price) {
         this.productId = productId;
@@ -33,7 +29,6 @@ public class Product {
     public void setBoughtSpecification(ShoeSpecification boughtSpecification) {
         this.boughtSpecification = boughtSpecification;
     }
-
     public int getBuyQuantity() {
         return buyQuantity;
     }
@@ -42,20 +37,13 @@ public class Product {
         this.buyQuantity = buyQuantity;
     }
 
-
     public List<ShoeSpecification> getShoeSpecifications() {
         return shoeSpecifications;
     }
 
-
-
     public void addSpecification(ShoeSpecification specification){
         shoeSpecifications.add(specification);
     }
-    public void setSpecifications(List<ShoeSpecification> shoeSpecifications) {
-        this.shoeSpecifications = shoeSpecifications;
-    }
-
 
     public int getPrice() {
         return price;
@@ -96,6 +84,4 @@ public class Product {
     public void setDescription(String description) {
         this.description = description;
     }
-
-
 }

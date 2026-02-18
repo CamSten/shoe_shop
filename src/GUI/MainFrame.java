@@ -7,8 +7,6 @@ import GUI.AdminGUI.AdminMenuPanel;
 import Model.DataHandling.ProductTerm;
 import Model.DataHandling.Product;
 import Model.DataHandling.Customer;
-
-import javax.lang.model.util.SimpleElementVisitor6;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
@@ -34,10 +32,8 @@ public class MainFrame extends JFrame implements Subscriber {
     private final Color backgroundColor = Colors.bg();
     private final JButton addToCartButton;
     private JButton returnButton;
-    private Product currentProduct;
     private Event currentEvent;
     private Customer currentCustomer;
-    private JButton getAddToCartButton;
     int maxHeight = 700;
 
     public MainFrame(ApplicationManager manager) {
@@ -105,7 +101,6 @@ public class MainFrame extends JFrame implements Subscriber {
         repaint();
     }
     private void showOptionsPanel(Event event) {
-        System.out.println("showOptionsPanel is reached");
         adjustHeaderAndFooter("Browse shoes", true, false, false);
         centerPanel.removeAll();
         this.optionsPanel = new OptionsPanel(this, decorator, event);
@@ -122,7 +117,6 @@ public class MainFrame extends JFrame implements Subscriber {
         repaint();
     }
     private void showPurchasePanel(Event event) {
-        System.out.println("showPurchasePanel is reached");
         adjustHeaderAndFooter("Choose color and size", true, true, true);
         centerPanel.removeAll();
         this.purchasePanel = new PurchasePanel(this, event, decorator);
@@ -137,7 +131,6 @@ public class MainFrame extends JFrame implements Subscriber {
         }
     }
     public void adjustHeaderAndFooter(String headerText, boolean showBackToMenu, boolean showReturn, boolean showAdd) {
-        System.out.println("headerText: " + headerText + " showBackToMenu: " + showBackToMenu + " showReturn: " + showReturn + " showAdd: " + showAdd);
         bottomPanel.removeAll();
         removeHeader();
         this.headerPanel = new HeaderPanel(decorator, headerText);
@@ -180,7 +173,6 @@ public class MainFrame extends JFrame implements Subscriber {
         bottomPanel.setVisible(true);
         revalidate();
         repaint();
-        //pack();
     }
     private void showMenu() {
         if (currentEvent.getExtraContents() != null && currentEvent.getExtraContents() instanceof Event.Subject subject && subject == Event.Subject.ADMIN) {
@@ -190,7 +182,6 @@ public class MainFrame extends JFrame implements Subscriber {
         }
     }
     private void showEditPanel(){
-        System.out.println("showEditPanel is reached");
             centerPanel.removeAll();
             this.editPanel = new EditCustomerPanel(this, decorator, currentCustomer);
             centerPanel.add(editPanel);
@@ -198,7 +189,6 @@ public class MainFrame extends JFrame implements Subscriber {
             repaint();
     }
     private void showAdminMenu() {
-        System.out.println("showAdminMenu is reached in MainFrame");
         adjustHeaderAndFooter("Choose what you would like to do: ", false, false, false);
         centerPanel.removeAll();
         this.adminMenu = new AdminMenuPanel(this, decorator);
@@ -231,7 +221,6 @@ public class MainFrame extends JFrame implements Subscriber {
         pack();
     }
     private void adminActions(Event event) throws SQLException, ClassNotFoundException {
-        System.out.println("adminActions in MainFrame is reached");
         switch (event.getOrigin()) {
             case GUI -> {
                 manager.Update(event);
@@ -255,7 +244,6 @@ public class MainFrame extends JFrame implements Subscriber {
         this.customerId = id;
     }
     public void setCurrentCustomer(Customer c){
-        System.out.println("setCurrentCustomer is reached in MainFrame");
         this.currentCustomer = c;
     }
     public int getCustomerId(){
@@ -267,15 +255,8 @@ public class MainFrame extends JFrame implements Subscriber {
     public void Update(Event event) throws SQLException, ClassNotFoundException {
         this.currentEvent = event;
         boolean admin = false;
-        System.out.println("in MainFrame.UPDATE: Action=" + event.getAction() + ", Phase=" + event.getPhase() + ", Subject=" + event.getSubject() + ", Outcome=" + event.getOutcome() + ", Origin=" + event.getOrigin());
-        if (event.getContents() != null) {
-            System.out.println("Contents instance of: " + event.getContents().getClass());
-        }
+
         if (event.getExtraContents() != null) {
-            System.out.println("ExtraContents instance of: " + event.getExtraContents().getClass());
-            if (event.getExtraContents() instanceof ProductTerm pt) {
-                System.out.println("ProductTerm: " + pt);
-            }
             if (event.getExtraContents() instanceof Event.Subject subject && subject == Event.Subject.ADMIN) {
                 admin = true;
                 adminActions(event);
@@ -308,9 +289,7 @@ public class MainFrame extends JFrame implements Subscriber {
                             }
                         }
                         case EDIT -> {
-                            //showEditPanel();
                             if (event.getOutcome() == Event.Outcome.PENDING && event.getPhase() == Event.Phase.SELECT) {
-                                System.out.println("in mainFrame, case EDIT is reached");
                                 if (currentCustomer != null) {
                                     showEditPanel();
                                 }
@@ -328,7 +307,6 @@ public class MainFrame extends JFrame implements Subscriber {
                         switch (event.getAction()) {
                             case EDIT -> {
                                 if (event.getPhase() == Event.Phase.COMPLETE && event.getContents() instanceof Customer customer) {
-
                                     if (event.getOutcome() == Event.Outcome.OK) {
                                         setCurrentCustomer(customer);
                                         editPanel.showConfirmation();
@@ -357,7 +335,6 @@ public class MainFrame extends JFrame implements Subscriber {
                                 }
                             }
                             case VIEW -> {
-                                System.out.println("case VIEW is reached");
                                 if (event.getExtraContents() != null && event.getExtraContents() instanceof Event.Subject) {
                                     showAdminInfoPanel();
                                 } else if ((event.getPhase() == Event.Phase.DISPLAY || event.getPhase() == Event.Phase.COMPLETE) && event.getSubject() == Event.Subject.SHOE ) {
